@@ -157,7 +157,7 @@ async function fetchPlaylist() {
         }
     } catch (err) {
         console.warn('Playlist fetch failed:', err);
-        showCustomAlert('哦哦，你的歌单（走丢了~/也太小众了吧）');
+        showCustomAlert(getRandomPlaylistErrorMessage());
         
         // Restore previous valid playlist ID
         const lastValidId = localStorage.getItem('om-playlistid') || '17910751956';
@@ -665,7 +665,7 @@ function initEventListeners() {
                 fetchPlaylist();
                 playlistSettingsPanel.classList.add('hidden');
             } else {
-                showCustomAlert('哦哦，你的歌单（走丢了~/也太小众了吧）\n请检查输入的是否为数字 ID 或有效的网易云歌单分享链接！');
+                showCustomAlert(getRandomPlaylistErrorMessage() + '\n请检查输入的是否为数字 ID 或有效的网易云歌单分享链接！');
             }
         }
     });
@@ -994,4 +994,12 @@ function showCustomAlert(message) {
         alertMessage.innerHTML = message.replace(/\n/g, '<br>');
         alertModal.classList.remove('hidden');
     }
+}
+
+function getRandomPlaylistErrorMessage() {
+    const messages = [
+        '哦哦，你的歌单也太小众了吧~',
+        '哦哦，你的歌单走丢了~'
+    ];
+    return messages[Math.floor(Math.random() * messages.length)];
 }
