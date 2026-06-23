@@ -1168,3 +1168,66 @@ body {
         transform: scale(1);
     }
 }
+
+/* Alert Modal Card Specifics */
+.alert-card {
+    max-width: 380px;
+    padding: 35px 30px;
+    align-items: center;
+    text-align: center;
+    gap: 20px;
+}
+
+.alert-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    background: rgba(var(--accent-color-rgb), 0.1);
+    border: 1px solid rgba(var(--accent-color-rgb), 0.15);
+    margin-bottom: 5px;
+    animation: alertPulse 2s infinite alternate;
+}
+
+.alert-message {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: var(--text-main);
+    font-weight: 500;
+}
+
+.alert-btn {
+    background: var(--accent-color);
+    color: var(--bg-dark);
+    border: none;
+    border-radius: 12px;
+    padding: 10px 24px;
+    font-family: var(--font-body);
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity var(--transition-fast), transform var(--transition-fast);
+    width: 100%;
+    outline: none;
+    box-shadow: 0 4px 15px rgba(var(--accent-color-rgb), 0.25);
+}
+
+.alert-btn:hover {
+    opacity: 0.9;
+    transform: scale(1.02);
+}
+
+.alert-btn:active {
+    transform: scale(0.98);
+}
+
+@keyframes alertPulse {
+    0% {
+        box-shadow: 0 0 0 0px rgba(var(--accent-color-rgb), 0.2);
+    }
+    100% {
+        box-shadow: 0 0 0 10px rgba(var(--accent-color-rgb), 0);
+    }
+}

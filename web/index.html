@@ -235,6 +235,19 @@
         </div>
     </div>
 
+    <!-- Alert Modal Overlay -->
+    <div class="modal-overlay hidden" id="alert-modal">
+        <div class="modal-card alert-card">
+            <div class="alert-icon">
+                <svg viewBox="0 0 24 24" style="width: 48px; height: 48px; fill: var(--accent-color); filter: drop-shadow(0 0 10px rgba(var(--accent-color-rgb), 0.45));">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                </svg>
+            </div>
+            <div class="alert-message" id="alert-message">哦哦，你的歌单（走丢了~/也太小众了吧）</div>
+            <button class="alert-btn" id="close-alert-modal">我知道了</button>
+        </div>
+    </div>
+
     <!-- JavaScript logic -->
     <script src="app.js"></script>
 </body>

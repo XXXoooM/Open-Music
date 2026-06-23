@@ -157,7 +157,7 @@ async function fetchPlaylist() {
         }
     } catch (err) {
         console.warn('Playlist fetch failed:', err);
-        alert('哦哦，你的歌单（走丢了~/也太小众了吧）');
+        showCustomAlert('哦哦，你的歌单（走丢了~/也太小众了吧）');
         
         // Restore previous valid playlist ID
         const lastValidId = localStorage.getItem('om-playlistid') || '17910751956';
@@ -665,7 +665,7 @@ function initEventListeners() {
                 fetchPlaylist();
                 playlistSettingsPanel.classList.add('hidden');
             } else {
-                alert('哦哦，你的歌单（走丢了~/也太小众了吧）\n请检查输入的是否为数字 ID 或有效的网易云歌单分享链接！');
+                showCustomAlert('哦哦，你的歌单（走丢了~/也太小众了吧）\n请检查输入的是否为数字 ID 或有效的网易云歌单分享链接！');
             }
         }
     });
@@ -699,6 +699,23 @@ function initEventListeners() {
         helpModal.addEventListener('click', (e) => {
             if (e.target === helpModal) {
                 helpModal.classList.add('hidden');
+            }
+        });
+    }
+
+    // Alert Modal Event Bindings
+    const alertModal = document.getElementById('alert-modal');
+    const closeAlertModal = document.getElementById('close-alert-modal');
+
+    if (alertModal && closeAlertModal) {
+        closeAlertModal.addEventListener('click', () => {
+            alertModal.classList.add('hidden');
+        });
+
+        // Close when clicking outside of modal card
+        alertModal.addEventListener('click', (e) => {
+            if (e.target === alertModal) {
+                alertModal.classList.add('hidden');
             }
         });
     }
@@ -968,4 +985,13 @@ function parsePlaylistId(input) {
         return input;
     }
     return null;
+}
+
+function showCustomAlert(message) {
+    const alertModal = document.getElementById('alert-modal');
+    const alertMessage = document.getElementById('alert-message');
+    if (alertModal && alertMessage) {
+        alertMessage.innerHTML = message.replace(/\n/g, '<br>');
+        alertModal.classList.remove('hidden');
+    }
 }
