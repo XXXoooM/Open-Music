@@ -141,6 +141,7 @@ function loadSettings() {
 }
 
 // Fetch playlist data
+// Fetch playlist data
 async function fetchPlaylist() {
     try {
         lrcStatus.textContent = '载入歌曲列表中...';
@@ -149,18 +150,39 @@ async function fetchPlaylist() {
         const data = await response.json();
         if (Array.isArray(data) && data.length > 0) {
             playlist = data;
+            // Cache the successfully loaded playlist ID
+            localStorage.setItem('om-playlistid', playlistId);
         } else {
             throw new Error('API returned empty playlist');
         }
     } catch (err) {
-        console.warn('API fetch failed, loading fallback playlist:', err);
-        // Only load fallback if we are on the default playlist ID to prevent showing unrelated songs
-        if (playlistId === '17910751956') {
-            playlist = FALLBACK_PLAYLIST;
-        } else {
-            lrcStatus.textContent = '加载歌单失败，请检查ID是否正确或重试';
-            playlist = [];
+        console.warn('Playlist fetch failed:', err);
+        alert('哦哦，你的歌单（走丢了~/也太小众了吧）');
+        
+        // Restore previous valid playlist ID
+        const lastValidId = localStorage.getItem('om-playlistid') || '17910751956';
+        playlistId = lastValidId;
+        
+        // Refetch the restored valid playlist
+        try {
+            const restoreResponse = await fetch(getApiUrl());
+            if (restoreResponse.ok) {
+                const restoreData = await restoreResponse.json();
+                if (Array.isArray(restoreData) && restoreData.length > 0) {
+                    playlist = restoreData;
+                    filteredPlaylist = [...playlist];
+                    renderPlaylist();
+                    return;
+                }
+            }
+        } catch (restoreErr) {
+            console.warn('Restoring last playlist failed, using fallback:', restoreErr);
         }
+        
+        // Ultimate fallback
+        playlist = FALLBACK_PLAYLIST;
+        playlistId = '17910751956';
+        localStorage.setItem('om-playlistid', '17910751956');
     } finally {
         filteredPlaylist = [...playlist];
         if (currentTrackIndex >= playlist.length) {
@@ -633,14 +655,18 @@ function initEventListeners() {
     });
 
     btnSaveSettings.addEventListener('click', () => {
-        const id = inputPlaylistId.value.trim();
-        if (id) {
-            playlistId = id;
-            localStorage.setItem('om-playlistid', playlistId);
-            currentTrackIndex = 0;
-            localStorage.setItem('om-trackindex', 0);
-            fetchPlaylist();
-            playlistSettingsPanel.classList.add('hidden');
+        const rawInput = inputPlaylistId.value.trim();
+        if (rawInput) {
+            const parsedId = parsePlaylistId(rawInput);
+            if (parsedId) {
+                playlistId = parsedId;
+                currentTrackIndex = 0;
+                localStorage.setItem('om-trackindex', 0);
+                fetchPlaylist();
+                playlistSettingsPanel.classList.add('hidden');
+            } else {
+                alert('哦哦，你的歌单（走丢了~/也太小众了吧）\n请检查输入的是否为数字 ID 或有效的网易云歌单分享链接！');
+            }
         }
     });
 
@@ -653,6 +679,29 @@ function initEventListeners() {
         fetchPlaylist();
         playlistSettingsPanel.classList.add('hidden');
     });
+
+    // Help Modal Event Bindings
+    const btnHelp = document.getElementById('btn-help');
+    const helpModal = document.getElementById('help-modal');
+    const closeHelpModal = document.getElementById('close-help-modal');
+
+    if (btnHelp && helpModal && closeHelpModal) {
+        btnHelp.addEventListener('click', (e) => {
+            e.stopPropagation();
+            helpModal.classList.remove('hidden');
+        });
+
+        closeHelpModal.addEventListener('click', () => {
+            helpModal.classList.add('hidden');
+        });
+
+        // Close when clicking outside of modal card
+        helpModal.addEventListener('click', (e) => {
+            if (e.target === helpModal) {
+                helpModal.classList.add('hidden');
+            }
+        });
+    }
 }
 
 /* ==========================================================================
@@ -904,4 +953,19 @@ function initKeyboardShortcuts() {
                 break;
         }
     });
+}
+
+function parsePlaylistId(input) {
+    input = input.trim();
+    // 1. Matches id=xxxx query parameter from sharing links
+    const urlMatch = input.match(/[?&]id=(\d+)/);
+    if (urlMatch) {
+        return urlMatch[1];
+    }
+    // 2. Matches raw numeric strings
+    const pureNumberMatch = input.match(/^\d+$/);
+    if (pureNumberMatch) {
+        return input;
+    }
+    return null;
 }

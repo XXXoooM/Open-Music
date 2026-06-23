@@ -160,6 +160,11 @@
                 <div class="drawer-header">
                     <div class="drawer-title-area">
                         <h3>播放列表</h3>
+                        <button class="icon-btn" id="btn-help" title="使用说明" style="margin-right: 6px;">
+                            <svg viewBox="0 0 24 24" style="width: 17px; height: 17px;">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 16h-2v-2h2v2zm1.07-7.75l-.9.92c-.41.39-.72.69-.72 1.28h-2v-.43c0-.6.24-1.1.7-1.56l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H7c0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.04-.42 1.99-1.07 2.75z"/>
+                            </svg>
+                        </button>
                         <button class="icon-btn" id="btn-playlist-settings" title="歌单配置">
                             <svg viewBox="0 0 24 24" style="width: 18px; height: 18px;">
                                 <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
@@ -196,6 +201,38 @@
             </aside>
             
         </main>
+    </div>
+
+    <!-- Help Modal Overlay -->
+    <div class="modal-overlay hidden" id="help-modal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>功能与使用帮助</h3>
+                <button class="icon-btn close-modal-btn" id="close-help-modal" title="关闭说明">✕</button>
+            </div>
+            <div class="modal-body">
+                <h4>🎵 开放式功能设计</h4>
+                <p>Open Music 秉承<b>“开放式音乐”</b>与<b>“极简”</b>的理念，提供纯净流畅的听歌体验：</p>
+                <ul>
+                    <li><b>环境律动光晕</b>：智能提取歌曲配色，打造沉浸式毛玻璃唱片机体验。</li>
+                    <li><b>歌词精确寻轨</b>：双击或单击歌词面板任意歌词，音频播放器将自动精确定位跳转至对应时刻。</li>
+                    <li><b>PWA 应用支持</b>：在手机或电脑浏览器中可直接“添加到主屏幕”，生成桌面图标以 Standalone 无地址栏的独立 App 形式运行。</li>
+                </ul>
+                
+                <h4>⌨️ 桌面端键盘快捷键</h4>
+                <table class="shortcuts-table">
+                    <tr><td><kbd>Space</kbd></td><td>播放 / 暂停 音乐</td></tr>
+                    <tr><td><kbd>→</kbd> / <kbd>←</kbd></td><td>快进 / 快退 5 秒</td></tr>
+                    <tr><td><kbd>↑</kbd> / <kbd>↓</kbd></td><td>递增 / 递减 音量大小</td></tr>
+                    <tr><td><kbd>M</kbd></td><td>静音 / 取消静音 切换</td></tr>
+                    <tr><td><kbd>L</kbd></td><td>列表循环 / 单曲循环 切换</td></tr>
+                    <tr><td><kbd>S</kbd></td><td>开启 / 关闭 随机播放</td></tr>
+                </table>
+
+                <h4>💡 导入外部网易云歌单</h4>
+                <p>打开侧边栏列表顶部的“齿轮（配置）”按钮，可以直接粘贴您喜欢的<b>网易云音乐歌单分享链接</b>（如 <i>https://music.163.com/#/playlist?id=xxx</i>）或者直接输入<b>歌单 ID 数字</b>，点击载入即可同步收听。</p>
+            </div>
+        </div>
     </div>
 
     <!-- JavaScript logic -->
