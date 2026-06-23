@@ -1,0 +1,16 @@
+# System Files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+npm-debug.log*
+
+# Node modules (if initialized later)
+node_modules/
+package-lock.json
+
+# Local storage overrides
+.vscode/
+.idea/

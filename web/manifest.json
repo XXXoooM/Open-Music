@@ -1,0 +1,18 @@
+{
+  "name": "Open Music 开放式音乐",
+  "short_name": "Open Music",
+  "description": "Open Music - 开放式音乐播放器",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#07080d",
+  "theme_color": "#00e5ff",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='100' fill='%2307080d'/><circle cx='256' cy='256' r='200' fill='none' stroke='%2300e5ff' stroke-width='10' filter='drop-shadow(0 0 15px rgba(0, 229, 255, 0.45))'/><path d='M256 120v210.55c-11.8-6.8-25.4-11-40-11-44.2 0-80 35.8-80 80s35.8 80 80 80 80-35.8 80-80V200h80v-80h-120z' fill='%2300e5ff'/></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

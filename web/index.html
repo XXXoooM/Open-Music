@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Open Music - 开放式音乐</title>
+    <!-- PWA Capabilities -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#07080d">
+    <!-- SVG Favicon Data URI -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2300e5ff'&gt;&lt;circle cx='12' cy='12' r='10' fill='%2307080d'/&gt;&lt;path d='M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z'/&gt;&lt;/svg&gt;">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Dynamic Ambient Background -->
+    <div class="ambient-bg" id="ambient-bg"></div>
+    <div class="bg-overlay"></div>
+
+    <!-- Main Container -->
+    <div class="app-container">
+        <!-- Main Glass Card -->
+        <main class="music-card" id="music-card">
+            
+            <!-- Left Side: Player -->
+            <section class="player-panel">
+                <!-- Header / Logo -->
+                <header class="app-header">
+                    <div class="logo">
+                        <svg viewBox="0 0 24 24" class="logo-icon">
+                            <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+                        </svg>
+                        <span>Open Music - 开放式音乐</span>
+                    </div>
+                    <button class="icon-btn toggle-playlist-btn" id="toggle-playlist" title="播放列表" aria-label="播放列表">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h10v2H4z"/>
+                        </svg>
+                    </button>
+                </header>
+
+                <!-- Album Art Vinyl / Disk -->
+                <div class="disc-wrapper">
+                    <!-- Tonearm / Stylus -->
+                    <div class="tonearm" id="tonearm">
+                        <svg viewBox="0 0 30 100" class="tonearm-svg">
+                            <!-- Base mount -->
+                            <circle cx="15" cy="15" r="8" fill="#444" />
+                            <circle cx="15" cy="15" r="4" fill="#888" />
+                            <!-- Main arm -->
+                            <path d="M15 15 L15 65 L22 80 L22 90" stroke="#bbb" stroke-width="3" fill="none" stroke-linecap="round" />
+                            <!-- Cartridge/Head -->
+                            <rect x="18" y="87" width="8" height="10" rx="1" fill="#222" />
+                        </svg>
+                    </div>
+                    <!-- Vinyl Disc -->
+                    <div class="vinyl-disc" id="vinyl-disc">
+                        <img src="" alt="Album Art" class="album-art" id="album-art">
+                        <div class="vinyl-groove"></div>
+                        <div class="vinyl-center"></div>
+                    </div>
+                </div>
+
+                <!-- Song Info -->
+                <div class="song-meta">
+                    <h1 class="song-title" id="song-title">加载中...</h1>
+                    <p class="song-artist" id="song-artist">请稍候</p>
+                </div>
+
+                <!-- Progress Bar -->
+                <div class="progress-area">
+                    <div class="time-stamp" id="current-time">00:00</div>
+                    <div class="progress-bar-container" id="progress-container">
+                        <div class="progress-bar" id="progress-bar">
+                            <div class="progress-handle" id="progress-handle"></div>
+                        </div>
+                    </div>
+                    <div class="time-stamp" id="total-duration">00:00</div>
+                </div>
+
+                <!-- Controls -->
+                <div class="controls-area">
+                    <!-- Shuffle Button -->
+                    <button class="icon-btn control-btn" id="btn-shuffle" title="随机播放">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.45 20 9.5V4h-5.5zm.38 10.17l-1.42 1.41 3.17 3.17L14.5 20H20v-5.5l-2.04 2.04-3.08-3.07z"/>
+                        </svg>
+                    </button>
+
+                    <!-- Previous Button -->
+                    <button class="icon-btn control-btn" id="btn-prev" title="上一首">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
+                        </svg>
+                    </button>
+
+                    <!-- Play / Pause Button -->
+                    <button class="play-btn" id="btn-play-pause" title="播放/暂停">
+                        <!-- Play Icon -->
+                        <svg viewBox="0 0 24 24" class="play-icon" id="svg-play">
+                            <path d="M8 5v14l11-7z"/>
+                        </svg>
+                        <!-- Pause Icon -->
+                        <svg viewBox="0 0 24 24" class="pause-icon hidden" id="svg-pause">
+                            <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                        </svg>
+                    </button>
+
+                    <!-- Next Button -->
+                    <button class="icon-btn control-btn" id="btn-next" title="下一首">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M6 18l8.5-6L6 6zm9-12v12h2V6z"/>
+                        </svg>
+                    </button>
+
+                    <!-- Repeat / Loop Button -->
+                    <button class="icon-btn control-btn" id="btn-repeat" title="单曲循环 / 列表循环">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/>
+                        </svg>
+                        <span class="badge hidden" id="repeat-badge">1</span>
+                    </button>
+                </div>
+
+                <!-- Volume Panel -->
+                <div class="volume-container">
+                    <button class="icon-btn" id="btn-mute" title="静音">
+                        <svg viewBox="0 0 24 24" id="volume-icon">
+                            <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                        </svg>
+                    </button>
+                    <div class="volume-slider-container" id="volume-slider-container">
+                        <div class="volume-slider" id="volume-slider"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Side: Lyrics -->
+            <section class="lyrics-panel">
+                <div class="lyrics-header">
+                    <h2>歌词同步</h2>
+                    <span class="lrc-status" id="lrc-status"></span>
+                </div>
+                <div class="lyrics-container" id="lyrics-container">
+                    <div class="lyrics-scroll-wrapper" id="lyrics-wrapper">
+                        <!-- Lyrics lines will be loaded dynamically here -->
+                        <div class="lyric-line placeholder">选择一首歌曲，开启音乐之旅...</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Slide-in Drawer: Playlist -->
+            <aside class="playlist-drawer" id="playlist-drawer">
+                <div class="drawer-header">
+                    <div class="drawer-title-area">
+                        <h3>播放列表</h3>
+                        <button class="icon-btn" id="btn-playlist-settings" title="歌单配置">
+                            <svg viewBox="0 0 24 24" style="width: 18px; height: 18px;">
+                                <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <button class="icon-btn close-btn" id="close-playlist" title="关闭">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                        </svg>
+                    </button>
+                </div>
+                <!-- Custom Playlist Settings Panel (Collapsible) -->
+                <div class="playlist-settings-panel hidden" id="playlist-settings-panel">
+                    <p class="settings-desc">导入网易云音乐歌单 ID：</p>
+                    <div class="settings-input-group">
+                        <input type="text" id="input-playlist-id" placeholder="默认: 17910751956">
+                        <button id="btn-save-settings">载入</button>
+                    </div>
+                    <button class="text-btn" id="btn-reset-playlist">恢复默认歌单</button>
+                </div>
+                <!-- Search Box -->
+                <div class="search-box">
+                    <svg viewBox="0 0 24 24" class="search-icon">
+                        <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                    </svg>
+                    <input type="text" id="playlist-search-input" placeholder="搜索歌曲、歌手...">
+                    <button class="clear-search-btn hidden" id="clear-search" title="清空搜索">✕</button>
+                </div>
+                <!-- Playlist Tracks -->
+                <div class="track-list" id="track-list">
+                    <!-- Dynamic track rows go here -->
+                </div>
+            </aside>
+            
+        </main>
+    </div>
+
+    <!-- JavaScript logic -->
+    <script src="app.js"></script>
+</body>
+</html>
