@@ -1,0 +1,26 @@
+{
+  "name": "open-music",
+  "version": "1.0.0",
+  "description": "一个大道至简、拥有高端毛玻璃视觉风格的轻量级 Web 音乐播放器。支持 PWA（渐进式网页应用），可在移动端及桌面端直接“安装”为独立的本地 App 运行。",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/XXXoooM/Open-Music.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/XXXoooM/Open-Music/issues"
+  },
+  "homepage": "https://github.com/XXXoooM/Open-Music#readme",
+  "dependencies": {
+    "@capacitor/android": "^8.4.1",
+    "@capacitor/cli": "^8.4.1",
+    "@capacitor/core": "^8.4.1"
+  }
+}
