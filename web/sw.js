@@ -1,4 +1,4 @@
-const CACHE_NAME = 'open-music-v1';
+const CACHE_NAME = 'open-music-v2';
 const ASSETS = [
   './',
   './index.html',
