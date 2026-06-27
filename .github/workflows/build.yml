@@ -1,0 +1,79 @@
+name: Multi-Platform Automated Build
+
+on:
+  push:
+    branches: [ main, Beta ]
+  workflow_dispatch: # Allows manual trigger from GitHub UI
+
+jobs:
+  # Job 1: Build Android APK
+  build-android:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Install Project Dependencies
+        run: npm install
+
+      - name: Sync Web Assets to Containers
+        run: |
+          npm run sync
+
+      - name: Make Gradlew Executable
+        working-directory: android
+        run: chmod +x gradlew
+
+      - name: Build Android Debug APK
+        working-directory: android
+        run: ./gradlew assembleDebug
+
+      - name: Upload Android APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Open-Music-Android-APK
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+
+  # Job 2: Build Windows Desktop App (Electron)
+  build-desktop-windows:
+    runs-on: windows-latest
+    needs: build-android
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Desktop App Dependencies
+        working-directory: electron
+        run: npm install
+
+      - name: Copy Web Assets to Electron App
+        run: |
+          npm run sync
+
+      - name: Build and Package Windows Desktop App
+        working-directory: electron
+        run: npm run electron:pack
+
+      - name: Upload Windows Desktop Installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: Open-Music-Windows-Desktop
+          path: |
+            electron/dist/*.exe
+            electron/dist/*.zip
