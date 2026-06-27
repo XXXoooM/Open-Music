@@ -7,7 +7,7 @@ import com.getcapacitor.BridgeActivity;
 
 public class MainActivity extends BridgeActivity {
     @Override
-    protected void onPause() {
+    public void onPause() {
         super.onPause();
         // Force the WebView to resume execution in the background so that
         // JavaScript events (e.g. ended, next song loading) continue to run.
