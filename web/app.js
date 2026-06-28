@@ -5,7 +5,7 @@
  */
 
 // API Configuration
-const API_BASE = 'https://api.music.yuia.fun/meting/';
+const API_BASE = 'https://api.qijieya.cn/meting/';
 let playlistId = '17910751956';
 function getApiUrl() {
     return `${API_BASE}?server=netease&type=playlist&id=${playlistId}`;
