@@ -29,6 +29,14 @@ const NativeBridge = {
 
     console.log('[NativeBridge] Initialized in environment:', this.env);
 
+    // Initialize player engine based on environment
+    const isNativeContainer = this.env.isCapacitor || this.env.isHarmony || !!window.__TAURI__;
+    if (isNativeContainer && window.NativePlayer) {
+      window.player = new window.NativePlayer();
+    } else if (window.WebPlayer) {
+      window.player = new window.WebPlayer();
+    }
+
     // Disable Service Worker in native containers to avoid offline caching bugs/conflicts
     if (!this.env.isWeb && navigator.serviceWorker) {
       navigator.serviceWorker.getRegistrations().then(registrations => {
@@ -112,6 +120,5 @@ const NativeBridge = {
   }
 };
 
-document.addEventListener('DOMContentLoaded', () => {
-  NativeBridge.init();
-});
+// Initialize immediately so that window.player is ready before subsequent scripts (app.js) run
+NativeBridge.init();
