@@ -30,8 +30,12 @@ const NativeBridge = {
     console.log('[NativeBridge] Initialized in environment:', this.env);
 
     // Initialize player engine based on environment
-    const isNativeContainer = this.env.isCapacitor || this.env.isHarmony || !!window.__TAURI__;
-    if (isNativeContainer && window.NativePlayer) {
+    // Capacitor (Android/iOS) and HarmonyOS require native players (ExoPlayer/AVPlayer/AVSession)
+    // to prevent background activity restrictions on mobile.
+    // Web, Electron, and Tauri run standard HTML5 Audio with native MediaSession support
+    // which does not suffer from background execution suspension on desktop.
+    const needsNativePlayer = (this.env.isCapacitor && !this.env.isElectron) || this.env.isHarmony;
+    if (needsNativePlayer && window.NativePlayer) {
       window.player = new window.NativePlayer();
     } else if (window.WebPlayer) {
       window.player = new window.WebPlayer();
