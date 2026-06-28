@@ -37,7 +37,8 @@
 
         <service android:name=".AudioService"
                  android:enabled="true"
-                 android:exported="false">
+                 android:exported="false"
+                 android:foregroundServiceType="mediaPlayback">
             <intent-filter>
                 <action android:name="android.media.browse.MediaBrowserService" />
             </intent-filter>

@@ -7,6 +7,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ServiceInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -91,7 +92,11 @@ public class AudioService extends Service {
                 }
                 updatePlaybackState();
                 if (isPlaying) {
-                    startForeground(NOTIFICATION_ID, buildNotification());
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        startForeground(NOTIFICATION_ID, buildNotification(), ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK);
+                    } else {
+                        startForeground(NOTIFICATION_ID, buildNotification());
+                    }
                     startProgressTracker();
                 } else {
                     stopForeground(false);
