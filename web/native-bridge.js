@@ -62,6 +62,10 @@ class WebPlayer {
   }
 
   setVolume(vol) {
+    if (typeof vol !== 'number' || isNaN(vol) || !isFinite(vol)) {
+      vol = 0.7;
+    }
+    vol = Math.max(0, Math.min(1, vol));
     this.audio.volume = vol;
   }
 
@@ -214,6 +218,10 @@ class NativePlayer {
   }
 
   setVolume(vol) {
+    if (typeof vol !== 'number' || isNaN(vol) || !isFinite(vol)) {
+      vol = 0.7;
+    }
+    vol = Math.max(0, Math.min(1, vol));
     this._volume = vol;
     if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AudioPlayer) {
       window.Capacitor.Plugins.AudioPlayer.setVolume({ volume: vol });

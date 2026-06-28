@@ -114,28 +114,42 @@ window.addEventListener('DOMContentLoaded', () => {
 // Load configuration state from LocalStorage
 function loadSettings() {
     const savedPlaylistId = localStorage.getItem('om-playlistid');
-    if (savedPlaylistId !== null) {
+    if (savedPlaylistId !== null && savedPlaylistId !== 'undefined') {
         playlistId = savedPlaylistId;
     }
 
     const savedVolume = localStorage.getItem('om-volume');
-    if (savedVolume !== null) {
-        window.player.setVolume(parseFloat(savedVolume));
-        volumeSlider.style.width = `${parseFloat(savedVolume) * 100}%`;
+    if (savedVolume !== null && savedVolume !== 'undefined') {
+        const vol = parseFloat(savedVolume);
+        if (!isNaN(vol) && isFinite(vol)) {
+            const finalVol = Math.max(0, Math.min(1, vol));
+            window.player.setVolume(finalVol);
+            volumeSlider.style.width = `${finalVol * 100}%`;
+        } else {
+            window.player.setVolume(0.7);
+            volumeSlider.style.width = '70%';
+        }
     } else {
         window.player.setVolume(0.7);
         volumeSlider.style.width = '70%';
     }
 
     const savedPlayMode = localStorage.getItem('om-playmode');
-    if (savedPlayMode !== null) {
+    if (savedPlayMode !== null && savedPlayMode !== 'undefined') {
         playMode = savedPlayMode;
     }
     updatePlayModeUI();
 
     const savedTrackIndex = localStorage.getItem('om-trackindex');
-    if (savedTrackIndex !== null) {
-        currentTrackIndex = parseInt(savedTrackIndex, 10);
+    if (savedTrackIndex !== null && savedTrackIndex !== 'undefined') {
+        const index = parseInt(savedTrackIndex, 10);
+        if (!isNaN(index)) {
+            currentTrackIndex = index;
+        } else {
+            currentTrackIndex = 0;
+        }
+    } else {
+        currentTrackIndex = 0;
     }
 }
 
@@ -209,10 +223,14 @@ function loadTrack(index, shouldPlay = true) {
     if (playlist.length === 0) return;
 
     // Reset state
-    currentTrackIndex = index;
+    let trackIndex = parseInt(index, 10);
+    if (isNaN(trackIndex) || trackIndex < 0 || trackIndex >= playlist.length) {
+        trackIndex = 0;
+    }
+    currentTrackIndex = trackIndex;
     localStorage.setItem('om-trackindex', currentTrackIndex);
     
-    const track = playlist[index];
+    const track = playlist[currentTrackIndex];
 
     // Update Song Metadata UI
     songTitle.textContent = track.name;
