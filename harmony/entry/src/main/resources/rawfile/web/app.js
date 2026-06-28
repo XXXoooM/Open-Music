@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Open Music - Web Music Player Core Logic
  * Author: Antigravity
  * Technology: ES6+, HTML5 Audio API, LRC Parsing, Dynamic String Hashing
@@ -123,14 +123,14 @@ function loadSettings() {
         const vol = parseFloat(savedVolume);
         if (!isNaN(vol) && isFinite(vol)) {
             const finalVol = Math.max(0, Math.min(1, vol));
-            window.player.setVolume(finalVol);
+            window.playerEngine.setVolume(finalVol);
             volumeSlider.style.width = `${finalVol * 100}%`;
         } else {
-            window.player.setVolume(0.7);
+            window.playerEngine.setVolume(0.7);
             volumeSlider.style.width = '70%';
         }
     } else {
-        window.player.setVolume(0.7);
+        window.playerEngine.setVolume(0.7);
         volumeSlider.style.width = '70%';
     }
 
@@ -266,7 +266,7 @@ function loadTrack(index, shouldPlay = true) {
             title: track.name,
             artist: track.artist,
             cover: track.pic,
-            duration: window.player.getDuration() || 0
+            duration: window.playerEngine.getDuration() || 0
         });
     }
 
@@ -280,7 +280,7 @@ function loadTrack(index, shouldPlay = true) {
 function playAudio() {
     isPlaying = true;
     const track = playlist[currentTrackIndex];
-    const playPromise = window.player.play(track ? track.url : null);
+    const playPromise = window.playerEngine.play(track ? track.url : null);
     if (playPromise && typeof playPromise.catch === 'function') {
         playPromise.catch(e => {
             console.log('Play triggered action blocked by browser autoplay policy:', e);
@@ -304,7 +304,7 @@ function playAudio() {
 
 function pauseAudio() {
     isPlaying = false;
-    window.player.pause();
+    window.playerEngine.pause();
     
     svgPause.classList.add('hidden');
     svgPlay.classList.remove('hidden');
@@ -428,7 +428,7 @@ function renderLyrics() {
         
         // Click/Tap lyric line to seek directly
         div.addEventListener('click', () => {
-            window.player.seek(line.time);
+            window.playerEngine.seek(line.time);
             playAudio();
             syncLyrics(true);
         });
@@ -448,7 +448,7 @@ function renderNoLyrics() {
 function syncLyrics(forceScroll = false) {
     if (parsedLyrics.length === 0) return;
 
-    const currentTime = window.player.getCurrentTime();
+    const currentTime = window.playerEngine.getCurrentTime();
     let newIndex = -1;
 
     for (let i = 0; i < parsedLyrics.length; i++) {
@@ -572,12 +572,12 @@ function filterPlaylist(query) {
    ========================================================================== */
 function initEventListeners() {
     // Audio engine event bindings using uniform player interface
-    window.player.on('timeupdate', () => {
+    window.playerEngine.on('timeupdate', () => {
         updateProgress();
         syncLyrics();
     });
 
-    window.player.on('durationchange', (data) => {
+    window.playerEngine.on('durationchange', (data) => {
         totalDurationEl.textContent = formatTime(data.duration);
         if (typeof NativeBridge !== 'undefined' && playlist[currentTrackIndex]) {
             const track = playlist[currentTrackIndex];
@@ -590,11 +590,11 @@ function initEventListeners() {
         }
     });
 
-    window.player.on('ended', () => {
+    window.playerEngine.on('ended', () => {
         handleTrackEnded();
     });
 
-    window.player.on('error', (e) => {
+    window.playerEngine.on('error', (e) => {
         console.error('Audio playback error details:', e);
         lrcStatus.textContent = '播放失败，正在自动跳到下一首...';
         // Auto skip to next track after 2 seconds
@@ -768,9 +768,9 @@ function initEventListeners() {
    Progress Updates & Seeking Logic
    ========================================================================== */
 function updateProgress() {
-    const duration = window.player.getDuration();
+    const duration = window.playerEngine.getDuration();
     if (duration) {
-        const currentTime = window.player.getCurrentTime();
+        const currentTime = window.playerEngine.getCurrentTime();
         const percent = (currentTime / duration) * 100;
         progressBar.style.width = `${percent}%`;
         currentTimeEl.textContent = formatTime(currentTime);
@@ -785,7 +785,7 @@ function startSeekDrag(e) {
         percentage = Math.max(0, Math.min(1, percentage));
         
         progressBar.style.width = `${percentage * 100}%`;
-        const duration = window.player.getDuration() || 0;
+        const duration = window.playerEngine.getDuration() || 0;
         currentTimeEl.textContent = formatTime(percentage * duration);
     };
 
@@ -795,9 +795,9 @@ function startSeekDrag(e) {
         let percentage = (clientX - rect.left) / rect.width;
         percentage = Math.max(0, Math.min(1, percentage));
         
-        const duration = window.player.getDuration();
+        const duration = window.playerEngine.getDuration();
         if (duration) {
-            window.player.seek(percentage * duration);
+            window.playerEngine.seek(percentage * duration);
         }
         
         document.removeEventListener('mousemove', handleDrag);
@@ -821,14 +821,14 @@ function startSeekDrag(e) {
 function toggleMute() {
     if (isMuted) {
         isMuted = false;
-        window.player.setVolume(previousVolume);
+        window.playerEngine.setVolume(previousVolume);
         volumeSlider.style.width = `${previousVolume * 100}%`;
         volumeIcon.innerHTML = '<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>';
         localStorage.setItem('om-volume', previousVolume);
     } else {
         isMuted = true;
-        previousVolume = window.player.getVolume();
-        window.player.setVolume(0);
+        previousVolume = window.playerEngine.getVolume();
+        window.playerEngine.setVolume(0);
         volumeSlider.style.width = '0%';
         volumeIcon.innerHTML = '<path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.21.05-.42.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>';
         localStorage.setItem('om-volume', 0);
@@ -842,7 +842,7 @@ function startVolumeDrag(e) {
         let percentage = (clientX - rect.left) / rect.width;
         percentage = Math.max(0, Math.min(1, percentage));
         
-        window.player.setVolume(percentage);
+        window.playerEngine.setVolume(percentage);
         volumeSlider.style.width = `${percentage * 100}%`;
         
         if (percentage > 0) {
@@ -876,7 +876,7 @@ function startVolumeDrag(e) {
    ========================================================================== */
 function handleTrackEnded() {
     if (playMode === 'single-loop') {
-        window.player.seek(0);
+        window.playerEngine.seek(0);
         playAudio();
     } else {
         handleNextTrack();
@@ -971,20 +971,20 @@ function initKeyboardShortcuts() {
             case 'ArrowRight':
                 e.preventDefault();
                 if (playlist.length === 0) return;
-                const durationRight = window.player.getDuration() || 0;
-                const timeRight = window.player.getCurrentTime() || 0;
-                window.player.seek(Math.min(durationRight, timeRight + 5));
+                const durationRight = window.playerEngine.getDuration() || 0;
+                const timeRight = window.playerEngine.getCurrentTime() || 0;
+                window.playerEngine.seek(Math.min(durationRight, timeRight + 5));
                 break;
             case 'ArrowLeft':
                 e.preventDefault();
                 if (playlist.length === 0) return;
-                const timeLeft = window.player.getCurrentTime() || 0;
-                window.player.seek(Math.max(0, timeLeft - 5));
+                const timeLeft = window.playerEngine.getCurrentTime() || 0;
+                window.playerEngine.seek(Math.max(0, timeLeft - 5));
                 break;
             case 'ArrowUp':
                 e.preventDefault();
-                const volUp = Math.min(1, window.player.getVolume() + 0.05);
-                window.player.setVolume(volUp);
+                const volUp = Math.min(1, window.playerEngine.getVolume() + 0.05);
+                window.playerEngine.setVolume(volUp);
                 volumeSlider.style.width = `${volUp * 100}%`;
                 localStorage.setItem('om-volume', volUp);
                 if (isMuted && volUp > 0) {
@@ -994,8 +994,8 @@ function initKeyboardShortcuts() {
                 break;
             case 'ArrowDown':
                 e.preventDefault();
-                const volDown = Math.max(0, window.player.getVolume() - 0.05);
-                window.player.setVolume(volDown);
+                const volDown = Math.max(0, window.playerEngine.getVolume() - 0.05);
+                window.playerEngine.setVolume(volDown);
                 volumeSlider.style.width = `${volDown * 100}%`;
                 localStorage.setItem('om-volume', volDown);
                 break;

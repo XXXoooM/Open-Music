@@ -312,9 +312,9 @@ const NativeBridge = {
     // Web, Electron, and Tauri run standard HTML5 Audio with native MediaSession support.
     const needsNativePlayer = (this.env.isCapacitor && !this.env.isElectron) || this.env.isHarmony;
     if (needsNativePlayer) {
-      window.player = new NativePlayer();
+      window.playerEngine = new NativePlayer();
     } else {
-      window.player = new WebPlayer();
+      window.playerEngine = new WebPlayer();
     }
 
     // Disable Service Worker in native containers to avoid offline caching bugs/conflicts
