@@ -155,7 +155,18 @@ function loadSettings() {
 }
 
 // Fetch playlist data
-// Fetch playlist data
+function normalizeUrl(path) {
+    if (!path) return '';
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+        return path;
+    }
+    const apiOrigin = new URL(API_BASE).origin;
+    if (path.startsWith('/')) {
+        return apiOrigin + path;
+    }
+    return API_BASE + path;
+}
+
 async function fetchPlaylist() {
     try {
         lrcStatus.textContent = '载入歌曲列表中...';
@@ -163,7 +174,12 @@ async function fetchPlaylist() {
         if (!response.ok) throw new Error('API server returned error code');
         const data = await response.json();
         if (Array.isArray(data) && data.length > 0) {
-            playlist = data;
+            playlist = data.map(track => ({
+                ...track,
+                url: normalizeUrl(track.url),
+                pic: normalizeUrl(track.pic),
+                lrc: normalizeUrl(track.lrc)
+            }));
             // Cache the successfully loaded playlist ID
             localStorage.setItem('om-playlistid', playlistId);
         } else {
@@ -183,7 +199,12 @@ async function fetchPlaylist() {
             if (restoreResponse.ok) {
                 const restoreData = await restoreResponse.json();
                 if (Array.isArray(restoreData) && restoreData.length > 0) {
-                    playlist = restoreData;
+                    playlist = restoreData.map(track => ({
+                        ...track,
+                        url: normalizeUrl(track.url),
+                        pic: normalizeUrl(track.pic),
+                        lrc: normalizeUrl(track.lrc)
+                    }));
                     filteredPlaylist = [...playlist];
                     renderPlaylist();
                     return;
