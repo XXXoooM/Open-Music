@@ -145,40 +145,52 @@ public class AudioService extends Service {
         this.listener = listener;
     }
 
-    public void playUrl(String url) {
-        MediaItem mediaItem = MediaItem.fromUri(Uri.parse(url));
-        player.setMediaItem(mediaItem);
-        player.prepare();
-        player.play();
+    public void playUrl(final String url) {
+        handler.post(() -> {
+            MediaItem mediaItem = MediaItem.fromUri(Uri.parse(url));
+            player.setMediaItem(mediaItem);
+            player.prepare();
+            player.play();
+        });
     }
 
     public void play() {
-        player.play();
+        handler.post(() -> {
+            player.play();
+        });
     }
 
     public void pause() {
-        player.pause();
+        handler.post(() -> {
+            player.pause();
+        });
     }
 
-    public void seek(long positionMs) {
-        player.seekTo(positionMs);
+    public void seek(final long positionMs) {
+        handler.post(() -> {
+            player.seekTo(positionMs);
+        });
     }
 
-    public void setVolume(float volume) {
-        player.setVolume(volume);
+    public void setVolume(final float volume) {
+        handler.post(() -> {
+            player.setVolume(volume);
+        });
     }
 
-    public void updateMetadata(String title, String artist, String coverUrl) {
-        this.currentTitle = title != null ? title : "Open Music";
-        this.currentArtist = artist != null ? artist : "未知歌手";
-        
-        if (coverUrl != null && !coverUrl.equals(this.currentCoverUrl)) {
-            this.currentCoverUrl = coverUrl;
-            loadCoverBitmap(coverUrl);
-        } else {
-            updateMediaSessionMetadata();
-            updateNotification();
-        }
+    public void updateMetadata(final String title, final String artist, final String coverUrl) {
+        handler.post(() -> {
+            this.currentTitle = title != null ? title : "Open Music";
+            this.currentArtist = artist != null ? artist : "未知歌手";
+            
+            if (coverUrl != null && !coverUrl.equals(this.currentCoverUrl)) {
+                this.currentCoverUrl = coverUrl;
+                loadCoverBitmap(coverUrl);
+            } else {
+                updateMediaSessionMetadata();
+                updateNotification();
+            }
+        });
     }
 
     private void loadCoverBitmap(final String coverUrl) {
