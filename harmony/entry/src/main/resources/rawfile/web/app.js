@@ -1,13 +1,14 @@
-﻿/**
+/**
  * Open Music - Web Music Player Core Logic
  * Author: Antigravity
  * Technology: ES6+, HTML5 Audio API, LRC Parsing, Dynamic String Hashing
  */
 
 // API Configuration
+const API_BASE = 'https://api.injahow.cn/meting/';
 let playlistId = '17910751956';
 function getApiUrl() {
-    return `https://api.qijieya.cn/meting/?server=netease&type=playlist&id=${playlistId}`;
+    return `${API_BASE}?server=netease&type=playlist&id=${playlistId}`;
 }
 
 // Curated Fallbacks (Used if API fails, rate-limits, or offline)
@@ -15,37 +16,37 @@ const FALLBACK_PLAYLIST = [
     {
         name: "你若成风",
         artist: "许嵩/莫诗旎",
-        url: "https://api.qijieya.cn/meting/?server=netease&type=url&id=167929",
-        pic: "https://api.qijieya.cn/meting/?server=netease&type=pic&id=109951172188951978",
-        lrc: "https://api.qijieya.cn/meting/?server=netease&type=lrc&id=167929"
+        url: `${API_BASE}?server=netease&type=url&id=167929`,
+        pic: `${API_BASE}?server=netease&type=pic&id=109951172188951978`,
+        lrc: `${API_BASE}?server=netease&type=lrc&id=167929`
     },
     {
         name: "雅俗共赏",
         artist: "许嵩",
-        url: "https://api.qijieya.cn/meting/?server=netease&type=url&id=411214279",
-        pic: "https://api.qijieya.cn/meting/?server=netease&type=pic&id=3431575794705764",
-        lrc: "https://api.qijieya.cn/meting/?server=netease&type=lrc&id=411214279"
+        url: `${API_BASE}?server=netease&type=url&id=411214279`,
+        pic: `${API_BASE}?server=netease&type=pic&id=3431575794705764`,
+        lrc: `${API_BASE}?server=netease&type=lrc&id=411214279`
     },
     {
         name: "走马",
         artist: "陈粒",
-        url: "https://api.qijieya.cn/meting/?server=netease&type=url&id=30431367",
-        pic: "https://api.qijieya.cn/meting/?server=netease&type=pic&id=7721870161993398",
-        lrc: "https://api.qijieya.cn/meting/?server=netease&type=lrc&id=30431367"
+        url: `${API_BASE}?server=netease&type=url&id=30431367`,
+        pic: `${API_BASE}?server=netease&type=pic&id=7721870161993398`,
+        lrc: `${API_BASE}?server=netease&type=lrc&id=30431367`
     },
     {
         name: "美人鱼",
         artist: "林俊杰",
-        url: "https://api.qijieya.cn/meting/?server=netease&type=url&id=108931",
-        pic: "https://api.qijieya.cn/meting/?server=netease&type=pic&id=109951171891430447",
-        lrc: "https://api.qijieya.cn/meting/?server=netease&type=lrc&id=108931"
+        url: `${API_BASE}?server=netease&type=url&id=108931`,
+        pic: `${API_BASE}?server=netease&type=pic&id=109951171891430447`,
+        lrc: `${API_BASE}?server=netease&type=lrc&id=108931`
     },
     {
         name: "情歌",
         artist: "梁静茹",
-        url: "https://api.qijieya.cn/meting/?server=netease&type=url&id=254059",
-        pic: "https://api.qijieya.cn/meting/?server=netease&type=pic&id=109951168163257789",
-        lrc: "https://api.qijieya.cn/meting/?server=netease&type=lrc&id=254059"
+        url: `${API_BASE}?server=netease&type=url&id=254059`,
+        pic: `${API_BASE}?server=netease&type=pic&id=109951168163257789`,
+        lrc: `${API_BASE}?server=netease&type=lrc&id=254059`
     }
 ];
 
