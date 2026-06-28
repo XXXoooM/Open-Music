@@ -960,6 +960,29 @@ body {
     border-color: var(--accent-color);
 }
 
+.settings-select {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: var(--text-main);
+    font-family: var(--font-body);
+    font-size: 0.82rem;
+    outline: none;
+    transition: border-color var(--transition-fast);
+    cursor: pointer;
+}
+
+.settings-select:focus {
+    border-color: var(--accent-color);
+}
+
+.settings-select option {
+    background: #0f111a;
+    color: var(--text-main);
+}
+
 #btn-save-settings {
     background: var(--accent-color);
     color: var(--bg-dark);

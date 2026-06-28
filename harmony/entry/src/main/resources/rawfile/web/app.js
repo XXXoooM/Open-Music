@@ -5,50 +5,67 @@
  */
 
 // API Configuration
-const API_BASE = 'https://api.qijieya.cn/meting/';
+const API_SOURCES = {
+    qijieya: {
+        baseUrl: 'https://api.qijieya.cn/meting/',
+        buildUrl: (type, id) => `https://api.qijieya.cn/meting/?type=${type}&id=${id}`
+    },
+    mikus: {
+        baseUrl: 'https://meting.mikus.ink/api',
+        buildUrl: (type, id) => `https://meting.mikus.ink/api?server=netease&type=${type}&id=${id}`
+    }
+};
+
+let currentApiSource = localStorage.getItem('om-apisource') || 'qijieya';
 let playlistId = '17910751956';
+
 function getApiUrl() {
-    return `${API_BASE}?server=netease&type=playlist&id=${playlistId}`;
+    return API_SOURCES[currentApiSource].buildUrl('playlist', playlistId);
 }
 
 // Curated Fallbacks (Used if API fails, rate-limits, or offline)
-const FALLBACK_PLAYLIST = [
+const FALLBACK_PLAYLIST_METADATA = [
     {
         name: "你若成风",
         artist: "许嵩/莫诗旎",
-        url: `${API_BASE}?server=netease&type=url&id=167929`,
-        pic: `${API_BASE}?server=netease&type=pic&id=109951172188951978`,
-        lrc: `${API_BASE}?server=netease&type=lrc&id=167929`
+        id: "167929",
+        picId: "109951172188951978"
     },
     {
         name: "雅俗共赏",
         artist: "许嵩",
-        url: `${API_BASE}?server=netease&type=url&id=411214279`,
-        pic: `${API_BASE}?server=netease&type=pic&id=3431575794705764`,
-        lrc: `${API_BASE}?server=netease&type=lrc&id=411214279`
+        id: "411214279",
+        picId: "3431575794705764"
     },
     {
         name: "走马",
         artist: "陈粒",
-        url: `${API_BASE}?server=netease&type=url&id=30431367`,
-        pic: `${API_BASE}?server=netease&type=pic&id=7721870161993398`,
-        lrc: `${API_BASE}?server=netease&type=lrc&id=30431367`
+        id: "30431367",
+        picId: "7721870161993398"
     },
     {
         name: "美人鱼",
         artist: "林俊杰",
-        url: `${API_BASE}?server=netease&type=url&id=108931`,
-        pic: `${API_BASE}?server=netease&type=pic&id=109951171891430447`,
-        lrc: `${API_BASE}?server=netease&type=lrc&id=108931`
+        id: "108931",
+        picId: "109951171891430447"
     },
     {
         name: "情歌",
         artist: "梁静茹",
-        url: `${API_BASE}?server=netease&type=url&id=254059`,
-        pic: `${API_BASE}?server=netease&type=pic&id=109951168163257789`,
-        lrc: `${API_BASE}?server=netease&type=lrc&id=254059`
+        id: "254059",
+        picId: "109951168163257789"
     }
 ];
+
+function getFallbackPlaylist() {
+    return FALLBACK_PLAYLIST_METADATA.map(track => ({
+        name: track.name,
+        artist: track.artist,
+        url: API_SOURCES[currentApiSource].buildUrl('url', track.id),
+        pic: API_SOURCES[currentApiSource].buildUrl('pic', track.picId),
+        lrc: API_SOURCES[currentApiSource].buildUrl('lrc', track.id)
+    }));
+}
 
 // App State
 let playlist = [];
@@ -167,11 +184,12 @@ function normalizeUrl(path) {
     if (path.startsWith('http://') || path.startsWith('https://')) {
         return path;
     }
-    const apiOrigin = new URL(API_BASE).origin;
+    const currentBase = API_SOURCES[currentApiSource].baseUrl;
+    const apiOrigin = new URL(currentBase).origin;
     if (path.startsWith('/')) {
         return apiOrigin + path;
     }
-    return API_BASE + path;
+    return currentBase + (currentBase.endsWith('/') ? '' : '/') + path;
 }
 
 async function fetchPlaylist() {
@@ -222,7 +240,7 @@ async function fetchPlaylist() {
         }
         
         // Ultimate fallback
-        playlist = FALLBACK_PLAYLIST;
+        playlist = getFallbackPlaylist();
         playlistId = '17910751956';
         localStorage.setItem('om-playlistid', '17910751956');
     } finally {
@@ -730,6 +748,7 @@ function initEventListeners() {
     const btnPlaylistSettings = document.getElementById('btn-playlist-settings');
     const playlistSettingsPanel = document.getElementById('playlist-settings-panel');
     const inputPlaylistId = document.getElementById('input-playlist-id');
+    const selectApiSource = document.getElementById('select-api-source');
     const btnSaveSettings = document.getElementById('btn-save-settings');
     const btnResetPlaylist = document.getElementById('btn-reset-playlist');
 
@@ -737,6 +756,9 @@ function initEventListeners() {
         e.stopPropagation();
         playlistSettingsPanel.classList.toggle('hidden');
         if (!playlistSettingsPanel.classList.contains('hidden')) {
+            if (selectApiSource) {
+                selectApiSource.value = currentApiSource;
+            }
             inputPlaylistId.value = playlistId === '17910751956' ? '' : playlistId;
             inputPlaylistId.focus();
         }
@@ -748,22 +770,40 @@ function initEventListeners() {
     });
 
     btnSaveSettings.addEventListener('click', () => {
+        let changed = false;
+        
+        if (selectApiSource && selectApiSource.value !== currentApiSource) {
+            currentApiSource = selectApiSource.value;
+            localStorage.setItem('om-apisource', currentApiSource);
+            changed = true;
+        }
+
         const rawInput = inputPlaylistId.value.trim();
         if (rawInput) {
             const parsedId = parsePlaylistId(rawInput);
             if (parsedId) {
-                playlistId = parsedId;
-                currentTrackIndex = 0;
-                localStorage.setItem('om-trackindex', 0);
-                fetchPlaylist();
-                playlistSettingsPanel.classList.add('hidden');
+                if (parsedId !== playlistId) {
+                    playlistId = parsedId;
+                    currentTrackIndex = 0;
+                    localStorage.setItem('om-trackindex', 0);
+                }
+                changed = true;
             } else {
                 showCustomAlert(getRandomPlaylistErrorMessage() + '\n请检查输入的是否为数字 ID 或有效的网易云歌单分享链接！');
+                return;
             }
         }
+
+        fetchPlaylist();
+        playlistSettingsPanel.classList.add('hidden');
     });
 
     btnResetPlaylist.addEventListener('click', () => {
+        currentApiSource = 'qijieya';
+        localStorage.setItem('om-apisource', 'qijieya');
+        if (selectApiSource) {
+            selectApiSource.value = 'qijieya';
+        }
         playlistId = '17910751956';
         inputPlaylistId.value = '';
         localStorage.removeItem('om-playlistid');

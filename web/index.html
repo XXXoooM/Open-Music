@@ -190,7 +190,14 @@
                 </div>
                 <!-- Custom Playlist Settings Panel (Collapsible) -->
                 <div class="playlist-settings-panel hidden" id="playlist-settings-panel">
-                    <p class="settings-desc">导入网易云音乐歌单 ID：</p>
+                    <p class="settings-desc">API 数据源选择：</p>
+                    <div class="settings-input-group">
+                        <select id="select-api-source" class="settings-select">
+                            <option value="qijieya">祈杰丫 (api.qijieya.cn)</option>
+                            <option value="mikus">Mikus (meting.mikus.ink)</option>
+                        </select>
+                    </div>
+                    <p class="settings-desc" style="margin-top: 5px;">导入网易云音乐歌单 ID：</p>
                     <div class="settings-input-group">
                         <input type="text" id="input-playlist-id" placeholder="默认: 17910751956">
                         <button id="btn-save-settings">载入</button>
