@@ -60,12 +60,15 @@ let isPlaying = false;
 let isMuted = false;
 let previousVolume = 0.7;
 let playMode = 'list-loop'; // 'list-loop', 'single-loop', 'shuffle'
+let playbackHistory = [];
+let isNavigatingHistory = false;
 
 // DOM Elements
 const ambientBg = document.getElementById('ambient-bg');
 const albumArt = document.getElementById('album-art');
 const tonearm = document.getElementById('tonearm');
 const vinylDisc = document.getElementById('vinyl-disc');
+const vinylWrapper = document.getElementById('vinyl-wrapper');
 const songTitle = document.getElementById('song-title');
 const songArtist = document.getElementById('song-artist');
 const currentTimeEl = document.getElementById('current-time');
@@ -89,8 +92,10 @@ const btnMute = document.getElementById('btn-mute');
 const volumeIcon = document.getElementById('volume-icon');
 const volumeSliderContainer = document.getElementById('volume-slider-container');
 const volumeSlider = document.getElementById('volume-slider');
+const volumeTooltip = document.getElementById('volume-tooltip');
 
 // Lyrics & Playlist Sidebar
+const lyricsPanel = document.getElementById('lyrics-panel');
 const lyricsContainer = document.getElementById('lyrics-container');
 const lyricsWrapper = document.getElementById('lyrics-wrapper');
 const lrcStatus = document.getElementById('lrc-status');
@@ -100,6 +105,8 @@ const closePlaylistBtn = document.getElementById('close-playlist');
 const trackListContainer = document.getElementById('track-list');
 const searchInput = document.getElementById('playlist-search-input');
 const clearSearchBtn = document.getElementById('clear-search');
+const toggleLyricsBtn = document.getElementById('toggle-lyrics-mobile');
+const closeLyricsBtn = document.getElementById('close-lyrics-mobile');
 
 /* ==========================================================================
    Initialization & API Fetching
@@ -249,6 +256,15 @@ function loadTrack(index, shouldPlay = true) {
     if (isNaN(trackIndex) || trackIndex < 0 || trackIndex >= playlist.length) {
         trackIndex = 0;
     }
+    
+    // Save to history before changing currentTrackIndex, if it is a new track and not a history navigation
+    if (trackIndex !== currentTrackIndex && !isNavigatingHistory) {
+        if (playbackHistory.length >= 100) {
+            playbackHistory.shift();
+        }
+        playbackHistory.push(currentTrackIndex);
+    }
+    
     currentTrackIndex = trackIndex;
     localStorage.setItem('om-trackindex', currentTrackIndex);
     
@@ -664,13 +680,25 @@ function initEventListeners() {
     progressContainer.addEventListener('mousedown', startSeekDrag);
     progressContainer.addEventListener('touchstart', startSeekDrag, { passive: true });
 
+    const closeDrawer = () => {
+        playlistDrawer.classList.remove('open');
+        if (searchInput.value) {
+            searchInput.value = '';
+            filterPlaylist('');
+        }
+    };
+
     // Playlist Drawer toggling
     togglePlaylistBtn.addEventListener('click', () => {
-        playlistDrawer.classList.toggle('open');
+        if (playlistDrawer.classList.contains('open')) {
+            closeDrawer();
+        } else {
+            playlistDrawer.classList.add('open');
+        }
     });
 
     closePlaylistBtn.addEventListener('click', () => {
-        playlistDrawer.classList.remove('open');
+        closeDrawer();
     });
 
     // Close drawer when clicking outside card or inside lyrics panel
@@ -678,7 +706,7 @@ function initEventListeners() {
         if (!playlistDrawer.contains(e.target) && 
             !togglePlaylistBtn.contains(e.target) && 
             playlistDrawer.classList.contains('open')) {
-            playlistDrawer.classList.remove('open');
+            closeDrawer();
         }
     });
 
@@ -784,6 +812,47 @@ function initEventListeners() {
             }
         });
     }
+
+    // Mobile lyrics toggling
+    if (toggleLyricsBtn) {
+        toggleLyricsBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            lyricsPanel.classList.add('active-mobile');
+        });
+    }
+
+    if (closeLyricsBtn) {
+        closeLyricsBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            lyricsPanel.classList.remove('active-mobile');
+        });
+    }
+
+    if (vinylWrapper) {
+        vinylWrapper.addEventListener('click', () => {
+            if (window.innerWidth <= 960) {
+                lyricsPanel.classList.add('active-mobile');
+            }
+        });
+    }
+
+    // Volume Tooltip Hover Actions
+    if (volumeSliderContainer && volumeTooltip) {
+        const updateTooltip = (vol) => {
+            volumeTooltip.textContent = `${Math.round(vol * 100)}%`;
+            volumeTooltip.style.left = `${vol * 100}%`;
+        };
+
+        volumeSliderContainer.addEventListener('mouseenter', () => {
+            const vol = window.playerEngine.getVolume();
+            updateTooltip(vol);
+            volumeTooltip.classList.add('visible');
+        });
+
+        volumeSliderContainer.addEventListener('mouseleave', () => {
+            volumeTooltip.classList.remove('visible');
+        });
+    }
 }
 
 /* ==========================================================================
@@ -867,6 +936,12 @@ function startVolumeDrag(e) {
         window.playerEngine.setVolume(percentage);
         volumeSlider.style.width = `${percentage * 100}%`;
         
+        if (volumeTooltip) {
+            volumeTooltip.textContent = `${Math.round(percentage * 100)}%`;
+            volumeTooltip.style.left = `${percentage * 100}%`;
+            volumeTooltip.classList.add('visible');
+        }
+        
         if (percentage > 0) {
             isMuted = false;
             previousVolume = percentage;
@@ -883,6 +958,9 @@ function startVolumeDrag(e) {
         document.removeEventListener('mouseup', stopDrag);
         document.removeEventListener('touchmove', handleDrag);
         document.removeEventListener('touchend', stopDrag);
+        if (volumeTooltip) {
+            volumeTooltip.classList.remove('visible');
+        }
     };
 
     handleDrag(e);
@@ -922,15 +1000,23 @@ function handleNextTrack() {
 function handlePrevTrack() {
     if (playlist.length === 0) return;
 
-    let prevIndex = currentTrackIndex;
-    
-    if (playMode === 'shuffle') {
-        prevIndex = Math.floor(Math.random() * playlist.length);
+    let prevIndex;
+    if (playbackHistory.length > 0) {
+        isNavigatingHistory = true;
+        prevIndex = playbackHistory.pop();
+        if (prevIndex >= playlist.length) {
+            prevIndex = 0;
+        }
     } else {
-        prevIndex = (currentTrackIndex - 1 + playlist.length) % playlist.length;
+        if (playMode === 'shuffle') {
+            prevIndex = Math.floor(Math.random() * playlist.length);
+        } else {
+            prevIndex = (currentTrackIndex - 1 + playlist.length) % playlist.length;
+        }
     }
     
     loadTrack(prevIndex, true);
+    isNavigatingHistory = false;
 }
 
 function updatePlayModeUI() {
