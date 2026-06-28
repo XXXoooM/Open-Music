@@ -132,7 +132,15 @@ window.addEventListener('DOMContentLoaded', () => {
     loadSettings();
     initEventListeners();
     initKeyboardShortcuts();
-    fetchPlaylist();
+    
+    if (playlist.length > 0) {
+        renderPlaylist();
+        loadTrack(currentTrackIndex, false);
+        fetchPlaylist(true); // Silent background sync
+    } else {
+        fetchPlaylist(false); // Normal foreground fetch
+    }
+    
     registerServiceWorker();
 });
 
@@ -141,6 +149,17 @@ function loadSettings() {
     const savedPlaylistId = localStorage.getItem('om-playlistid');
     if (savedPlaylistId !== null && savedPlaylistId !== 'undefined') {
         playlistId = savedPlaylistId;
+    }
+
+    // Restore cached playlist data if available
+    const cachedPlaylist = localStorage.getItem('om-cachedplaylist');
+    if (cachedPlaylist) {
+        try {
+            playlist = JSON.parse(cachedPlaylist);
+            filteredPlaylist = [...playlist];
+        } catch (e) {
+            console.warn('Failed to parse cached playlist:', e);
+        }
     }
 
     const savedVolume = localStorage.getItem('om-volume');
@@ -192,27 +211,33 @@ function normalizeUrl(path) {
     return currentBase + (currentBase.endsWith('/') ? '' : '/') + path;
 }
 
-async function fetchPlaylist() {
+async function fetchPlaylist(isSilent = false) {
     try {
-        lrcStatus.textContent = '载入歌曲列表中...';
+        if (!isSilent) {
+            lrcStatus.textContent = '载入歌曲列表中...';
+        }
         const response = await fetch(getApiUrl());
         if (!response.ok) throw new Error('API server returned error code');
         const data = await response.json();
         if (Array.isArray(data) && data.length > 0) {
             playlist = data.map(track => ({
-                ...track,
+                name: track.name || track.title || '未知歌名',
+                artist: track.artist || track.author || '未知歌手',
                 url: normalizeUrl(track.url),
                 pic: normalizeUrl(track.pic),
                 lrc: normalizeUrl(track.lrc)
             }));
-            // Cache the successfully loaded playlist ID
+            // Cache the successfully loaded playlist ID and playlist data
             localStorage.setItem('om-playlistid', playlistId);
+            localStorage.setItem('om-cachedplaylist', JSON.stringify(playlist));
         } else {
             throw new Error('API returned empty playlist');
         }
     } catch (err) {
         console.warn('Playlist fetch failed:', err);
-        showCustomAlert(getRandomPlaylistErrorMessage());
+        if (!isSilent) {
+            showCustomAlert(getRandomPlaylistErrorMessage());
+        }
         
         // Restore previous valid playlist ID
         const lastValidId = localStorage.getItem('om-playlistid') || '17910751956';
@@ -225,11 +250,13 @@ async function fetchPlaylist() {
                 const restoreData = await restoreResponse.json();
                 if (Array.isArray(restoreData) && restoreData.length > 0) {
                     playlist = restoreData.map(track => ({
-                        ...track,
+                        name: track.name || track.title || '未知歌名',
+                        artist: track.artist || track.author || '未知歌手',
                         url: normalizeUrl(track.url),
                         pic: normalizeUrl(track.pic),
                         lrc: normalizeUrl(track.lrc)
                     }));
+                    localStorage.setItem('om-cachedplaylist', JSON.stringify(playlist));
                     filteredPlaylist = [...playlist];
                     renderPlaylist();
                     return;
@@ -239,10 +266,12 @@ async function fetchPlaylist() {
             console.warn('Restoring last playlist failed, using fallback:', restoreErr);
         }
         
-        // Ultimate fallback
-        playlist = getFallbackPlaylist();
-        playlistId = '17910751956';
-        localStorage.setItem('om-playlistid', '17910751956');
+        // Ultimate fallback: only use fallback list if there's no cache at all
+        if (playlist.length === 0) {
+            playlist = getFallbackPlaylist();
+            playlistId = '17910751956';
+            localStorage.setItem('om-playlistid', '17910751956');
+        }
     } finally {
         filteredPlaylist = [...playlist];
         if (currentTrackIndex >= playlist.length) {
@@ -250,15 +279,19 @@ async function fetchPlaylist() {
             localStorage.setItem('om-trackindex', 0);
         }
         renderPlaylist();
-        if (playlist.length > 0) {
-            loadTrack(currentTrackIndex, false);
-        } else {
-            // Empty state UI updates
-            songTitle.textContent = '无歌曲';
-            songArtist.textContent = '请配置有效歌单';
-            albumArt.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="%23222"/></svg>';
-            ambientBg.style.backgroundImage = 'none';
-            renderNoLyrics();
+        
+        // If it's a silent sync, do NOT reload track to avoid interrupting playback!
+        if (!isSilent) {
+            if (playlist.length > 0) {
+                loadTrack(currentTrackIndex, false);
+            } else {
+                // Empty state UI updates
+                songTitle.textContent = '无歌曲';
+                songArtist.textContent = '请配置有效歌单';
+                albumArt.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="%23222"/></svg>';
+                ambientBg.style.backgroundImage = 'none';
+                renderNoLyrics();
+            }
         }
     }
 }
@@ -1176,15 +1209,24 @@ function initKeyboardShortcuts() {
 
 function parsePlaylistId(input) {
     input = input.trim();
-    // 1. Matches id=xxxx query parameter from sharing links
-    const urlMatch = input.match(/[?&]id=(\d+)/);
-    if (urlMatch) {
-        return urlMatch[1];
-    }
-    // 2. Matches raw numeric strings
-    const pureNumberMatch = input.match(/^\d+$/);
-    if (pureNumberMatch) {
+    // 1. Check if it's a raw numeric string
+    if (/^\d+$/.test(input)) {
         return input;
+    }
+    // 2. Matches id=xxxx query parameter (works for normal queries and hash parameters like toplist?id=xxxx)
+    const queryMatch = input.match(/[?&]id=(\d+)/);
+    if (queryMatch) {
+        return queryMatch[1];
+    }
+    // 3. Matches /playlist/xxxx or /toplist/xxxx or /album/xxxx in path
+    const pathMatch = input.match(/\/(playlist|toplist|album)\/(\d+)/);
+    if (pathMatch) {
+        return pathMatch[2];
+    }
+    // 4. Fallback: match any sequence of 5 to 12 digits in the string
+    const fallbackMatch = input.match(/\b(\d{5,12})\b/);
+    if (fallbackMatch) {
+        return fallbackMatch[1];
     }
     return null;
 }
