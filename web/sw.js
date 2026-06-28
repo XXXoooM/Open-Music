@@ -1,9 +1,10 @@
-const CACHE_NAME = 'open-music-v2';
+const CACHE_NAME = 'open-music-v3';
 const ASSETS = [
   './',
   './index.html',
   './style.css',
   './app.js',
+  './native-bridge.js',
   './manifest.json'
 ];
 

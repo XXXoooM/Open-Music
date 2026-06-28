@@ -923,7 +923,8 @@ function formatTime(seconds) {
    PWA & Keyboard Shortcuts Registrations
    ========================================================================== */
 function registerServiceWorker() {
-    if ('serviceWorker' in navigator) {
+    const isNative = !!(window.Capacitor || window.__TAURI__ || window.ohosNative || navigator.userAgent.includes('Electron'));
+    if (!isNative && 'serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('./sw.js')
                 .then(reg => console.log('PWA Service Worker registration successful. Scope:', reg.scope))
