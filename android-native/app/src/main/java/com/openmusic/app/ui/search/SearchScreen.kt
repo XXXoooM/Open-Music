@@ -2,12 +2,16 @@ package com.openmusic.app.ui.search
 
 import android.net.Uri
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -51,7 +55,10 @@ fun SearchScreen(
                     .padding(bottom = 32.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(onClick = onBackClick) {
+                IconButton(
+                    onClick = onBackClick,
+                    modifier = Modifier.background(Color.Black.copy(0.2f), CircleShape)
+                ) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
                         contentDescription = "Back",
@@ -64,7 +71,7 @@ fun SearchScreen(
                     color = TextMain,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(start = 8.dp)
+                    modifier = Modifier.padding(start = 12.dp)
                 )
             }
 
@@ -73,33 +80,37 @@ fun SearchScreen(
                 text = "选择 API 接口线路",
                 color = TextMuted,
                 fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
-                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)
             )
 
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 24.dp),
+                    .padding(bottom = 28.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                MetingRepository.ApiRoute.values().forEach { route ->
+                MetingRepository.ApiRoute.entries.forEach { route ->
                     val isSelected = viewModel.selectedRoute == route
-                    val bgColor = if (isSelected) SoftMint else CharcoalGray
-                    val borderStrokeColor = if (isSelected) NeonMint else Color.Transparent
+                    val bgColor = if (isSelected) SoftMint.copy(alpha = 0.1f) else DeepCharcoal
+                    val borderColor = if (isSelected) NeonMint else CharcoalGray
                     
                     Box(
                         modifier = Modifier
                             .weight(1f)
-                            .height(50.dp)
+                            .height(52.dp)
                             .clip(RoundedCornerShape(12.dp))
                             .background(bgColor)
-                            .clickable { viewModel.selectRoute(route) }
-                            .padding(1.dp), // Simulation of border
+                            .border(
+                                width = 1.5.dp,
+                                color = borderColor,
+                                shape = RoundedCornerShape(12.dp)
+                            )
+                            .clickable { viewModel.selectRoute(route) },
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = if (route == MetingRepository.ApiRoute.QIJIEYA) "祈杰丫 (api.qijieya.cn)" else "Mikus (mikus.ink)",
+                            text = if (route == MetingRepository.ApiRoute.QIJIEYA) "祈杰丫线路" else "Mikus线路",
                             color = if (isSelected) NeonMint else TextMuted,
                             fontSize = 14.sp,
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
@@ -111,25 +122,40 @@ fun SearchScreen(
 
             // 2. Playlist Input Section
             Text(
-                text = "输入歌单 ID 或分享链接",
+                text = "输入歌单 ID 或粘贴分享链接",
                 color = TextMuted,
                 fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
-                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)
             )
 
             OutlinedTextField(
                 value = inputVal,
                 onValueChange = { inputVal = it },
-                placeholder = { Text("例如：3779629 或 粘贴网易云分享链接", color = TextInactive) },
+                placeholder = { Text("例如：3779629 或粘贴网页链接", color = TextInactive) },
                 singleLine = true,
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Share,
+                        contentDescription = "Link icon",
+                        tint = TextInactive
+                    )
+                },
                 shape = RoundedCornerShape(12.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = TextMain,
+                    unfocusedTextColor = TextMain,
+                    focusedBorderColor = NeonMint,
+                    unfocusedBorderColor = CharcoalGray,
+                    focusedContainerColor = DeepCharcoal,
+                    unfocusedContainerColor = DeepCharcoal
+                ),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 24.dp)
+                    .padding(bottom = 28.dp)
             )
 
-            // 3. Load / Search Button
+            // 3. Load Action Button
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -137,7 +163,7 @@ fun SearchScreen(
                     .clip(RoundedCornerShape(14.dp))
                     .background(
                         Brush.horizontalGradient(
-                            colors = listOf(NeonMint, NeonMint.copy(alpha = 0.8f))
+                            colors = listOf(NeonMint, NeonMint.copy(alpha = 0.85f))
                         )
                     )
                     .clickable(enabled = !viewModel.isLoading) {
@@ -152,35 +178,48 @@ fun SearchScreen(
                         modifier = Modifier.size(24.dp)
                     )
                 } else {
-                    Text(
-                        text = "解析并载入歌单",
-                        color = RichBlack,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = null,
+                            tint = RichBlack
+                        )
+                        Text(
+                            text = "解析并载入歌单",
+                            color = RichBlack,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(36.dp))
 
             // 4. Currently Loaded Playlist status
             if (viewModel.playlist.isNotEmpty()) {
                 Card(
-                    colors = CardDefaults.cardColors(containerColor = DeepCharcoal),
+                    colors = CardDefaults.cardColors(containerColor = TranslucentCard),
                     shape = RoundedCornerShape(16.dp),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(1.dp, CharcoalGray, RoundedCornerShape(16.dp))
                 ) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(16.dp),
+                            .padding(18.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = "当前载入歌单",
+                                text = "当前已载入歌单",
                                 color = TextMuted,
-                                fontSize = 12.sp
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
@@ -198,8 +237,8 @@ fun SearchScreen(
                         
                         Box(
                             modifier = Modifier
-                                .size(40.dp)
-                                .clip(RoundedCornerShape(10.dp))
+                                .size(44.dp)
+                                .clip(RoundedCornerShape(12.dp))
                                 .background(SoftMint)
                                 .clickable { onBackClick() },
                             contentAlignment = Alignment.Center
@@ -207,7 +246,8 @@ fun SearchScreen(
                             Icon(
                                 imageVector = Icons.Default.PlayArrow,
                                 contentDescription = "Play",
-                                tint = NeonMint
+                                tint = NeonMint,
+                                modifier = Modifier.size(28.dp)
                             )
                         }
                     }

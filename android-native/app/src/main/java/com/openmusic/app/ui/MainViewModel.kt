@@ -322,7 +322,7 @@ class MainViewModel : ViewModel() {
     }
 
     private suspend fun fetchLyricText(url: String): String {
-        return kotlinx.coroutines.Dispatchers.IO.run {
+        return kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
             val client = OkHttpClient()
             val request = Request.Builder().url(url).build()
             client.newCall(request).execute().use { response ->
