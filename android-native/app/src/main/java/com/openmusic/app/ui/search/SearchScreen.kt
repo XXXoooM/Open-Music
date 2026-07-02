@@ -5,8 +5,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.PlayArrow
@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.openmusic.app.data.MetingRepository
 import com.openmusic.app.ui.MainViewModel
+import com.openmusic.app.ui.components.LiquidBackdrop
 import com.openmusic.app.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -40,12 +41,35 @@ fun SearchScreen(
         modifier = modifier
             .fillMaxSize()
             .background(RichBlack)
-            .systemBarsPadding()
     ) {
+        // 1. Dynamic Liquid Backgound
+        LiquidBackdrop(
+            primaryColor = NeonMint,
+            secondaryColor = Color(0xFF1E88E5), // Premium Slate Blue
+            modifier = Modifier.fillMaxSize()
+        )
+        
+        // Deep overlay wash
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            Color.Black.copy(alpha = 0.45f),
+                            RichBlack.copy(alpha = 0.82f),
+                            RichBlack
+                        )
+                    )
+                )
+        )
+
+        // 2. Content Layout
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(24.dp),
+                .padding(24.dp)
+                .systemBarsPadding(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Header Bar
@@ -57,7 +81,7 @@ fun SearchScreen(
             ) {
                 IconButton(
                     onClick = onBackClick,
-                    modifier = Modifier.background(Color.Black.copy(0.2f), CircleShape)
+                    modifier = Modifier.background(Color.Black.copy(0.25f), CircleShape)
                 ) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
@@ -92,7 +116,7 @@ fun SearchScreen(
             ) {
                 MetingRepository.ApiRoute.entries.forEach { route ->
                     val isSelected = viewModel.selectedRoute == route
-                    val bgColor = if (isSelected) SoftMint.copy(alpha = 0.1f) else DeepCharcoal
+                    val bgColor = if (isSelected) SoftMint.copy(alpha = 0.15f) else TranslucentCard
                     val borderColor = if (isSelected) NeonMint else CharcoalGray
                     
                     Box(
@@ -147,8 +171,8 @@ fun SearchScreen(
                     unfocusedTextColor = TextMain,
                     focusedBorderColor = NeonMint,
                     unfocusedBorderColor = CharcoalGray,
-                    focusedContainerColor = DeepCharcoal,
-                    unfocusedContainerColor = DeepCharcoal
+                    focusedContainerColor = TranslucentCard,
+                    unfocusedContainerColor = TranslucentCard
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -206,7 +230,7 @@ fun SearchScreen(
                     shape = RoundedCornerShape(16.dp),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .border(1.dp, CharcoalGray, RoundedCornerShape(16.dp))
+                        .border(1.dp, Color.White.copy(0.1f), RoundedCornerShape(16.dp))
                 ) {
                     Row(
                         modifier = Modifier
