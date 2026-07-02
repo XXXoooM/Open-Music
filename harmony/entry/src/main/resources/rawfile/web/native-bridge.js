@@ -53,6 +53,10 @@ class WebPlayer {
     this.audio.currentTime = time;
   }
 
+  setPlaylist(playlist, index) {}
+  setPlayMode(mode) {}
+  setTrackIndex(index) {}
+
   getCurrentTime() {
     return this.audio.currentTime;
   }
@@ -124,10 +128,15 @@ class NativePlayer {
         
         AudioPlayer.addListener('onTimeUpdate', (data) => {
           this._currentTime = data.currentTime;
-          this._duration = data.duration;
+          if (data.duration && data.duration > 0 && data.duration !== this._duration) {
+            this._duration = data.duration;
+            this._emit('durationchange', { duration: data.duration });
+          } else if (data.duration && data.duration > 0) {
+            this._duration = data.duration;
+          }
           this._emit('timeupdate', {
             currentTime: data.currentTime,
-            duration: data.duration
+            duration: this._duration
           });
         });
 
@@ -143,6 +152,10 @@ class NativePlayer {
 
         AudioPlayer.addListener('onStateChanged', (data) => {
           this._isPlaying = data.isPlaying;
+        });
+
+        AudioPlayer.addListener('onTrackChanged', (data) => {
+          this._emit('trackchanged', { index: data.index });
         });
 
         console.log('[NativePlayer] Successfully bound Capacitor AudioPlayer listeners');
@@ -206,6 +219,30 @@ class NativePlayer {
       window.__TAURI__.invoke('seek', { time });
     } else if (window.ohosNative) {
       window.ohosNative.seek(time);
+    }
+  }
+
+  setPlaylist(playlist, index) {
+    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AudioPlayer) {
+      const formattedList = playlist.map(track => ({
+        url: track.url,
+        title: track.name || track.title || '未知歌名',
+        artist: track.artist || track.author || '未知歌手',
+        cover: track.pic || ''
+      }));
+      window.Capacitor.Plugins.AudioPlayer.setPlaylist({ playlist: formattedList, index });
+    }
+  }
+
+  setPlayMode(mode) {
+    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AudioPlayer) {
+      window.Capacitor.Plugins.AudioPlayer.setPlayMode({ mode });
+    }
+  }
+
+  setTrackIndex(index) {
+    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AudioPlayer) {
+      window.Capacitor.Plugins.AudioPlayer.setTrackIndex({ index });
     }
   }
 

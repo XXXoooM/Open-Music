@@ -134,6 +134,9 @@ window.addEventListener('DOMContentLoaded', () => {
     initKeyboardShortcuts();
     
     if (playlist.length > 0) {
+        if (window.playerEngine && typeof window.playerEngine.setPlaylist === 'function') {
+            window.playerEngine.setPlaylist(playlist, currentTrackIndex);
+        }
         renderPlaylist();
         loadTrack(currentTrackIndex, false);
         fetchPlaylist(true); // Silent background sync
@@ -278,6 +281,9 @@ async function fetchPlaylist(isSilent = false) {
             currentTrackIndex = 0;
             localStorage.setItem('om-trackindex', 0);
         }
+        if (window.playerEngine && typeof window.playerEngine.setPlaylist === 'function') {
+            window.playerEngine.setPlaylist(playlist, currentTrackIndex);
+        }
         renderPlaylist();
         
         // If it's a silent sync, do NOT reload track to avoid interrupting playback!
@@ -318,6 +324,10 @@ function loadTrack(index, shouldPlay = true) {
     
     currentTrackIndex = trackIndex;
     localStorage.setItem('om-trackindex', currentTrackIndex);
+    
+    if (window.playerEngine && typeof window.playerEngine.setTrackIndex === 'function') {
+        window.playerEngine.setTrackIndex(currentTrackIndex);
+    }
     
     const track = playlist[currentTrackIndex];
 
@@ -666,6 +676,16 @@ function initEventListeners() {
         syncLyrics();
     });
 
+    window.playerEngine.on('trackchanged', (data) => {
+        loadTrack(data.index, false);
+        isPlaying = true;
+        svgPlay.classList.add('hidden');
+        svgPause.classList.remove('hidden');
+        tonearm.classList.add('playing');
+        vinylDisc.classList.add('playing');
+        document.querySelector('.app-container').classList.remove('paused-eq');
+    });
+
     window.playerEngine.on('durationchange', (data) => {
         totalDurationEl.textContent = formatTime(data.duration);
         if (typeof NativeBridge !== 'undefined' && playlist[currentTrackIndex]) {
@@ -933,11 +953,12 @@ function initEventListeners() {
    ========================================================================== */
 function updateProgress() {
     const duration = window.playerEngine.getDuration();
-    if (duration) {
+    if (duration && duration > 0) {
         const currentTime = window.playerEngine.getCurrentTime();
         const percent = (currentTime / duration) * 100;
         progressBar.style.width = `${percent}%`;
         currentTimeEl.textContent = formatTime(currentTime);
+        totalDurationEl.textContent = formatTime(duration);
     }
 }
 
@@ -1105,6 +1126,10 @@ function updatePlayModeUI() {
         repeatBadge.classList.remove('hidden');
     } else if (playMode === 'list-loop') {
         btnRepeat.classList.add('active');
+    }
+
+    if (window.playerEngine && typeof window.playerEngine.setPlayMode === 'function') {
+        window.playerEngine.setPlayMode(playMode);
     }
 }
 

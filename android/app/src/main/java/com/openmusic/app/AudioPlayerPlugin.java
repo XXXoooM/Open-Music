@@ -7,10 +7,13 @@ import android.content.ServiceConnection;
 import android.os.IBinder;
 
 import com.getcapacitor.JSObject;
+import com.getcapacitor.JSArray;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
+import java.util.ArrayList;
+import java.util.List;
 
 @CapacitorPlugin(name = "AudioPlayer")
 public class AudioPlayerPlugin extends Plugin {
@@ -50,6 +53,13 @@ public class AudioPlayerPlugin extends Plugin {
                     JSObject ret = new JSObject();
                     ret.put("isPlaying", isPlaying);
                     notifyListeners("onStateChanged", ret);
+                }
+
+                @Override
+                public void onTrackChanged(int index) {
+                    JSObject ret = new JSObject();
+                    ret.put("index", index);
+                    notifyListeners("onTrackChanged", ret);
                 }
             });
         }
@@ -122,6 +132,54 @@ public class AudioPlayerPlugin extends Plugin {
         String cover = call.getString("cover");
         if (isBound && audioService != null) {
             audioService.updateMetadata(title, artist, cover);
+            call.resolve();
+        } else {
+            call.reject("AudioService not bound yet");
+        }
+    }
+
+    @PluginMethod
+    public void setPlaylist(PluginCall call) {
+        JSArray playlistArray = call.getArray("playlist");
+        Integer index = call.getInt("index", 0);
+        
+        if (isBound && audioService != null && playlistArray != null) {
+            List<AudioService.Track> nativeList = new ArrayList<>();
+            try {
+                for (int i = 0; i < playlistArray.length(); i++) {
+                    com.getcapacitor.JSObject obj = (com.getcapacitor.JSObject) playlistArray.get(i);
+                    String url = obj.getString("url");
+                    String title = obj.getString("title");
+                    String artist = obj.getString("artist");
+                    String cover = obj.getString("cover");
+                    nativeList.add(new AudioService.Track(url, title, artist, cover));
+                }
+                audioService.setPlaylist(nativeList, index);
+                call.resolve();
+            } catch (Exception e) {
+                call.reject("Error parsing playlist: " + e.getMessage());
+            }
+        } else {
+            call.reject("AudioService not bound yet");
+        }
+    }
+
+    @PluginMethod
+    public void setPlayMode(PluginCall call) {
+        String mode = call.getString("mode");
+        if (isBound && audioService != null && mode != null) {
+            audioService.setPlayMode(mode);
+            call.resolve();
+        } else {
+            call.reject("AudioService not bound yet");
+        }
+    }
+
+    @PluginMethod
+    public void setTrackIndex(PluginCall call) {
+        Integer index = call.getInt("index");
+        if (isBound && audioService != null && index != null) {
+            audioService.setTrackIndex(index);
             call.resolve();
         } else {
             call.reject("AudioService not bound yet");

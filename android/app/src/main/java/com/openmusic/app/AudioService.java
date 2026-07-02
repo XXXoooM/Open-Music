@@ -30,6 +30,7 @@ import com.google.android.exoplayer2.Player;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.List;
 
 public class AudioService extends Service {
     private static final String CHANNEL_ID = "open_music_playback_channel";
@@ -49,11 +50,31 @@ public class AudioService extends Service {
     private final Handler handler = new Handler(Looper.getMainLooper());
     private boolean isTrackingProgress = false;
 
+    // Native playlist tracking variables
+    public static class Track {
+        public final String url;
+        public final String title;
+        public final String artist;
+        public final String cover;
+
+        public Track(String url, String title, String artist, String cover) {
+            this.url = url;
+            this.title = title;
+            this.artist = artist;
+            this.cover = cover;
+        }
+    }
+
+    private List<Track> playlist = new java.util.ArrayList<>();
+    private int currentTrackIndex = 0;
+    private String playMode = "list-loop"; // "list-loop", "single-loop", "shuffle"
+
     public interface AudioServiceListener {
         void onTimeUpdate(long currentTimeMs, long durationMs);
         void onEnded();
         void onError(String errorMsg);
         void onStateChanged(boolean isPlaying);
+        void onTrackChanged(int index);
     }
 
     public class LocalBinder extends Binder {
@@ -68,8 +89,18 @@ public class AudioService extends Service {
         notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         createNotificationChannel();
 
-        // Initialize ExoPlayer
-        player = new ExoPlayer.Builder(this).build();
+        // Initialize ExoPlayer with background audio attributes and wake locks
+        com.google.android.exoplayer2.audio.AudioAttributes audioAttributes = 
+            new com.google.android.exoplayer2.audio.AudioAttributes.Builder()
+                .setUsage(com.google.android.exoplayer2.C.USAGE_MEDIA)
+                .setContentType(com.google.android.exoplayer2.C.CONTENT_TYPE_MUSIC)
+                .build();
+
+        player = new ExoPlayer.Builder(this)
+            .setAudioAttributes(audioAttributes, true)
+            .setHandleAudioBecomingNoisy(true)
+            .build();
+        player.setWakeMode(com.google.android.exoplayer2.C.WAKE_MODE_NETWORK);
         player.setRepeatMode(Player.REPEAT_MODE_OFF);
         player.addListener(new Player.Listener() {
             @Override
@@ -78,7 +109,7 @@ public class AudioService extends Service {
                     if (listener != null) {
                         listener.onEnded();
                     }
-                    stopForeground(true);
+                    playNext();
                 } else if (playbackState == Player.STATE_READY) {
                     updateMediaSessionMetadata();
                     updateNotification();
@@ -121,15 +152,12 @@ public class AudioService extends Service {
 
             @Override
             public void onSkipToNext() {
-                if (listener != null) {
-                    // Trigger next in web client via bridge command if needed, or through event
-                    listener.onEnded(); // Simulates end to skip next
-                }
+                playNext();
             }
 
             @Override
             public void onSkipToPrevious() {
-                // Notifier plugin triggers prev
+                playPrevious();
             }
         });
         mediaSession.setActive(true);
@@ -335,7 +363,11 @@ public class AudioService extends Service {
         public void run() {
             if (player != null && player.isPlaying()) {
                 if (listener != null) {
-                    listener.onTimeUpdate(player.getCurrentPosition(), player.getDuration());
+                    long duration = player.getDuration();
+                    if (duration < 0) {
+                        duration = 0;
+                    }
+                    listener.onTimeUpdate(player.getCurrentPosition(), duration);
                 }
                 handler.postDelayed(this, 1000);
             }
@@ -365,6 +397,78 @@ public class AudioService extends Service {
         if (mediaSession != null) {
             mediaSession.release();
             mediaSession = null;
+        }
+    }
+
+    // Native playlist management and playback controls
+    public void setPlaylist(List<Track> list, int index) {
+        this.playlist = list;
+        this.currentTrackIndex = index;
+    }
+
+    public void setPlayMode(String mode) {
+        if (mode != null) {
+            this.playMode = mode;
+        }
+    }
+
+    public void setTrackIndex(int index) {
+        if (playlist != null && index >= 0 && index < playlist.size()) {
+            this.currentTrackIndex = index;
+        }
+    }
+
+    public void playTrack(int index) {
+        if (playlist == null || playlist.isEmpty()) return;
+        if (index < 0 || index >= playlist.size()) index = 0;
+        this.currentTrackIndex = index;
+        Track track = playlist.get(index);
+        
+        // Update metadata for notification & media session
+        updateMetadata(track.title, track.artist, track.cover);
+        
+        // Play URL
+        playUrl(track.url);
+    }
+
+    public void playNext() {
+        if (playlist == null || playlist.isEmpty()) {
+            stopForeground(true);
+            return;
+        }
+        
+        int nextIndex = currentTrackIndex;
+        if ("single-loop".equals(playMode)) {
+            seek(0);
+            play();
+            return;
+        } else if ("shuffle".equals(playMode)) {
+            nextIndex = (int) (Math.random() * playlist.size());
+        } else { // list-loop
+            nextIndex = (currentTrackIndex + 1) % playlist.size();
+        }
+        
+        playTrack(nextIndex);
+        
+        if (listener != null) {
+            listener.onTrackChanged(nextIndex);
+        }
+    }
+
+    public void playPrevious() {
+        if (playlist == null || playlist.isEmpty()) return;
+        
+        int prevIndex = currentTrackIndex;
+        if ("shuffle".equals(playMode)) {
+            prevIndex = (int) (Math.random() * playlist.size());
+        } else {
+            prevIndex = (currentTrackIndex - 1 + playlist.size()) % playlist.size();
+        }
+        
+        playTrack(prevIndex);
+        
+        if (listener != null) {
+            listener.onTrackChanged(prevIndex);
         }
     }
 }
