@@ -26,6 +26,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.openmusic.app.ui.MainViewModel
 import com.openmusic.app.ui.theme.HslColorPalette
+import coil.compose.AsyncImage
+import androidx.compose.ui.layout.ContentScale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -153,24 +155,56 @@ fun LibraryScreen(
                                 .padding(horizontal = 12.dp, vertical = 12.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            // Left indicator (animated equalizer if playing, else formatted track index number)
+                            // Left indicator: Cover Art Card with Equalizer Overlay
                             Box(
                                 modifier = Modifier
-                                    .size(36.dp)
-                                    .padding(end = 12.dp),
-                                contentAlignment = Alignment.CenterStart
+                                    .size(48.dp)
+                                    .padding(end = 4.dp),
+                                contentAlignment = Alignment.Center
                             ) {
-                                if (isActive && viewModel.isPlaying) {
-                                    EqualizerAnimation(color = palette.primary)
-                                } else {
-                                    Text(
-                                        text = String.format("%02d", originalIndex + 1),
-                                        color = if (isActive) palette.primary else palette.textInactive,
-                                        fontSize = 13.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
+                                Card(
+                                    shape = RoundedCornerShape(8.dp),
+                                    modifier = Modifier.fillMaxSize(),
+                                    border = if (isActive) androidx.compose.foundation.BorderStroke(1.5.dp, palette.primary) else null
+                                ) {
+                                    if (track.cover.isNotEmpty()) {
+                                        AsyncImage(
+                                            model = track.cover,
+                                            contentDescription = null,
+                                            contentScale = ContentScale.Crop,
+                                            modifier = Modifier.fillMaxSize()
+                                        )
+                                    } else {
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .background(palette.textInactive.copy(alpha = 0.3f))
+                                        )
+                                    }
+                                }
+
+                                if (isActive) {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .clip(RoundedCornerShape(8.dp))
+                                            .background(Color.Black.copy(alpha = 0.55f)),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        if (viewModel.isPlaying) {
+                                            EqualizerAnimation(color = palette.primary)
+                                        } else {
+                                            Icon(
+                                                imageVector = Icons.Default.PlayArrow,
+                                                contentDescription = null,
+                                                tint = palette.primary,
+                                                modifier = Modifier.size(16.dp)
+                                            )
+                                        }
+                                    }
                                 }
                             }
+                            Spacer(modifier = Modifier.width(8.dp))
 
                             // Title and Artist Column
                             Column(modifier = Modifier.weight(1f)) {

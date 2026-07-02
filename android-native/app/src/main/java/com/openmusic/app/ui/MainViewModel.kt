@@ -30,6 +30,12 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.IOException
 
+enum class PlayMode {
+    LIST_LOOP,
+    SHUFFLE,
+    SINGLE_LOOP
+}
+
 class MainViewModel : ViewModel() {
 
     private val repository = MetingRepository()
@@ -40,6 +46,9 @@ class MainViewModel : ViewModel() {
     private var controller: MediaController? = null
 
     // UI States
+    var playMode by mutableStateOf(PlayMode.LIST_LOOP)
+        private set
+
     var playlist by mutableStateOf<List<Track>>(emptyList())
         private set
 
@@ -129,6 +138,8 @@ class MainViewModel : ViewModel() {
             syncPlaylistToController(playImmediately = false)
         }
 
+        applyPlayModeToController()
+
         // Register Player listeners for automated sync
         mediaController.addListener(object : Player.Listener {
             override fun onIsPlayingChanged(isPlayingChanged: Boolean) {
@@ -208,6 +219,7 @@ class MainViewModel : ViewModel() {
 
         mediaController.setMediaItems(mediaItems, currentTrackIndex.coerceAtLeast(0), 0L)
         mediaController.prepare()
+        applyPlayModeToController()
         if (playImmediately) {
             mediaController.play()
         }
@@ -227,6 +239,34 @@ class MainViewModel : ViewModel() {
             mediaController.pause()
         } else {
             mediaController.play()
+        }
+    }
+
+    fun cyclePlayMode() {
+        val nextMode = when (playMode) {
+            PlayMode.LIST_LOOP -> PlayMode.SHUFFLE
+            PlayMode.SHUFFLE -> PlayMode.SINGLE_LOOP
+            PlayMode.SINGLE_LOOP -> PlayMode.LIST_LOOP
+        }
+        playMode = nextMode
+        applyPlayModeToController()
+    }
+
+    fun applyPlayModeToController() {
+        val ctrl = controller ?: return
+        when (playMode) {
+            PlayMode.LIST_LOOP -> {
+                ctrl.repeatMode = Player.REPEAT_MODE_ALL
+                ctrl.shuffleModeEnabled = false
+            }
+            PlayMode.SHUFFLE -> {
+                ctrl.repeatMode = Player.REPEAT_MODE_ALL
+                ctrl.shuffleModeEnabled = true
+            }
+            PlayMode.SINGLE_LOOP -> {
+                ctrl.repeatMode = Player.REPEAT_MODE_ONE
+                ctrl.shuffleModeEnabled = false
+            }
         }
     }
 
