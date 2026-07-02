@@ -285,18 +285,30 @@ fun LyricsPanel(
     }
 
     val lazyListState = rememberLazyListState()
+    var lastUserInteractionTime by remember { mutableStateOf(0L) }
+
+    // Detect user manual scrolling to lock auto-scroll temporarily
+    LaunchedEffect(lazyListState.isScrollInProgress) {
+        if (lazyListState.isScrollInProgress) {
+            lastUserInteractionTime = System.currentTimeMillis()
+        }
+    }
     
     Box(modifier = modifier.fillMaxSize()) {
         BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
             val viewportHeightPx = with(LocalDensity.current) { maxHeight.toPx().toInt() }
             val centerOffset = -viewportHeightPx / 2
 
+            // Smart centering only if the user hasn't scrolled manually in the last 3.5s
             LaunchedEffect(viewModel.currentLyricIndex) {
-                if (viewModel.currentLyricIndex in viewModel.lyrics.indices) {
-                    lazyListState.animateScrollToItem(
-                        index = viewModel.currentLyricIndex,
-                        scrollOffset = centerOffset + 100
-                    )
+                val currentTime = System.currentTimeMillis()
+                if (currentTime - lastUserInteractionTime > 3500) {
+                    if (viewModel.currentLyricIndex in viewModel.lyrics.indices) {
+                        lazyListState.animateScrollToItem(
+                            index = viewModel.currentLyricIndex,
+                            scrollOffset = centerOffset + 60
+                        )
+                    }
                 }
             }
 
@@ -305,17 +317,17 @@ fun LyricsPanel(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(top = maxHeight / 2, bottom = maxHeight / 2),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(28.dp)
+                verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
                 itemsIndexed(viewModel.lyrics) { index, line ->
                     val distance = Math.abs(index - viewModel.currentLyricIndex)
                     
-                    // Cinematic focal-depth calculations (distant lyrics dissolve to 0.08f)
+                    // Cinematic focal-depth calculations (distant lyrics dissolve to readable 0.15f)
                     val alpha = when (distance) {
                         0 -> 1.0f
-                        1 -> 0.45f
-                        2 -> 0.22f
-                        else -> 0.08f
+                        1 -> 0.55f
+                        2 -> 0.30f
+                        else -> 0.15f
                     }
                     val scale = when (distance) {
                         0 -> 1.12f
@@ -346,6 +358,7 @@ fun LyricsPanel(
                             }
                             .clickable {
                                 viewModel.seekTo((line.time * 1000).toLong())
+                                lastUserInteractionTime = 0L // Instantly center the clicked line
                             }
                     )
                 }

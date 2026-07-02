@@ -3,8 +3,9 @@ package com.openmusic.app.data
 import com.google.gson.annotations.SerializedName
 
 data class Track(
-    @SerializedName("title") val title: String = "",
-    @SerializedName("author") val artist: String = "",
+    @SerializedName("id") val id: String = "",
+    @SerializedName(value = "title", alternate = ["name"]) val title: String = "",
+    @SerializedName(value = "author", alternate = ["artist"]) val artist: String = "",
     @SerializedName("url") val url: String = "",
     @SerializedName("pic") val cover: String = "",
     @SerializedName("lrc") val lrc: String = ""
