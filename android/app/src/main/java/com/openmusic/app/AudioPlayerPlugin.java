@@ -12,10 +12,19 @@ import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
+import com.getcapacitor.annotation.Permission;
 import java.util.ArrayList;
 import java.util.List;
 
-@CapacitorPlugin(name = "AudioPlayer")
+@CapacitorPlugin(
+    name = "AudioPlayer",
+    permissions = {
+        @Permission(
+            alias = "notifications",
+            strings = { "android.permission.POST_NOTIFICATIONS" }
+        )
+    }
+)
 public class AudioPlayerPlugin extends Plugin {
     private AudioService audioService;
     private boolean isBound = false;

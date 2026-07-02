@@ -129,6 +129,10 @@ const closeLyricsBtn = document.getElementById('close-lyrics-mobile');
    Initialization & API Fetching
    ========================================================================== */
 window.addEventListener('DOMContentLoaded', () => {
+    // Request notification permission for background playback if running natively
+    if (window.playerEngine && typeof window.playerEngine.requestNotificationPermission === 'function') {
+        window.playerEngine.requestNotificationPermission();
+    }
     loadSettings();
     initEventListeners();
     initKeyboardShortcuts();

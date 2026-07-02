@@ -191,8 +191,25 @@ class NativePlayer {
     }
   }
 
+  async requestNotificationPermission() {
+    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AudioPlayer) {
+      try {
+        const AP = window.Capacitor.Plugins.AudioPlayer;
+        if (typeof AP.checkPermissions === 'function') {
+          const check = await AP.checkPermissions();
+          if (check.notifications !== 'granted') {
+            await AP.requestPermissions({ permissions: ['notifications'] });
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to request notification permission:', e);
+      }
+    }
+  }
+
   play(url) {
     this._isPlaying = true;
+    this.requestNotificationPermission();
     if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AudioPlayer) {
       if (url && url === this._currentUrl) {
         window.Capacitor.Plugins.AudioPlayer.play({ url: null });
