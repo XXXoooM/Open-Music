@@ -32,39 +32,28 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.openmusic.app.ui.MainViewModel
 import com.openmusic.app.ui.components.LiquidBackdrop
-import com.openmusic.app.ui.theme.*
+import com.openmusic.app.ui.theme.HslColorPalette
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlayerScreen(
     viewModel: MainViewModel,
-    onSearchClick: () -> Unit,
+    palette: HslColorPalette,
     modifier: Modifier = Modifier
 ) {
     val track = viewModel.playlist.getOrNull(viewModel.currentTrackIndex)
     var showLyrics by remember { mutableStateOf(false) }
     var showPlaylistDrawer by remember { mutableStateOf(false) }
 
-    // Dynamically generate unique ambient colors based on the track name hash code
-    val songHash = track?.title?.hashCode() ?: 0
-    val primaryColor = remember(songHash) {
-        val hues = listOf(NeonMint, Color(0xFF1E88E5), Color(0xFF8E24AA), Color(0xFFD81B60), Color(0xFF00ACC1))
-        hues[Math.abs(songHash) % hues.size]
-    }
-    val secondaryColor = remember(songHash) {
-        val hues = listOf(Color(0xFF00ACC1), Color(0xFF3949AB), Color(0xFF5E35B1), Color(0xFFE53935), Color(0xFFFFB300))
-        hues[Math.abs(songHash + 1) % hues.size]
-    }
-
-    Box(modifier = modifier.fillMaxSize().background(RichBlack)) {
-        // 1. Dynamic Liquid极光 Background
+    Box(modifier = modifier.fillMaxSize().background(palette.background)) {
+        // 1. Dynamic Liquid Backgound synced with track hue
         LiquidBackdrop(
-            primaryColor = primaryColor,
-            secondaryColor = secondaryColor,
+            primaryColor = palette.primary,
+            secondaryColor = palette.softAccent,
             modifier = Modifier.fillMaxSize()
         )
         
-        // Deep overlay wash
+        // Dark background wash
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -72,21 +61,21 @@ fun PlayerScreen(
                     Brush.verticalGradient(
                         colors = listOf(
                             Color.Black.copy(alpha = 0.35f),
-                            RichBlack.copy(alpha = 0.75f),
-                            RichBlack
+                            palette.background.copy(alpha = 0.75f),
+                            palette.background
                         )
                     )
                 )
         )
 
-        // 2. Main Page Layout
+        // 2. Content Layout
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .systemBarsPadding(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Header Action Bar
+            // Header Action Row
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -95,19 +84,19 @@ fun PlayerScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(
-                    onClick = onSearchClick,
-                    modifier = Modifier.background(Color.Black.copy(0.25f), CircleShape)
+                    onClick = { showPlaylistDrawer = true },
+                    modifier = Modifier.background(Color.Black.copy(0.2f), CircleShape)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = "Search",
-                        tint = TextMain
+                        imageVector = Icons.Default.Menu,
+                        contentDescription = "Queue list",
+                        tint = palette.textMain
                     )
                 }
                 
                 Text(
                     text = "正在播放",
-                    color = TextMuted,
+                    color = palette.textMuted,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 2.sp
@@ -116,21 +105,21 @@ fun PlayerScreen(
                 IconButton(
                     onClick = { showLyrics = !showLyrics },
                     modifier = Modifier.background(
-                        if (showLyrics) SoftMint else Color.Black.copy(0.25f),
+                        if (showLyrics) palette.primary else Color.Black.copy(0.2f),
                         CircleShape
                     )
                 ) {
                     Icon(
                         imageVector = if (showLyrics) Icons.Default.List else Icons.Default.PlayArrow,
                         contentDescription = "Toggle Lyrics",
-                        tint = if (showLyrics) NeonMint else TextMain
+                        tint = if (showLyrics) palette.background else palette.textMain
                     )
                 }
             }
 
             Spacer(modifier = Modifier.weight(0.1f))
 
-            // Center Viewport: Rounded Card or Depth Lyrics
+            // Center Cover Art / Depth Lyrics Sheet
             Box(
                 modifier = Modifier
                     .weight(1.1f)
@@ -138,24 +127,26 @@ fun PlayerScreen(
                 contentAlignment = Alignment.Center
             ) {
                 if (showLyrics) {
-                    LyricsPanel(viewModel = viewModel)
+                    LyricsPanel(viewModel = viewModel, palette = palette)
                 } else {
                     FloatingAlbumArt(
                         coverUrl = track?.cover ?: "",
-                        isPlaying = viewModel.isPlaying
+                        isPlaying = viewModel.isPlaying,
+                        palette = palette
                     )
                 }
             }
 
             Spacer(modifier = Modifier.weight(0.1f))
 
-            // Frosted-Glass Controls Panel Card at bottom
+            // Premium Frosted Controls Panel Card
             Card(
-                colors = CardDefaults.cardColors(containerColor = TranslucentCard),
+                colors = CardDefaults.cardColors(containerColor = palette.surface.copy(alpha = 0.45f)),
                 shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
                 modifier = Modifier
                     .fillMaxWidth()
                     .wrapContentHeight()
+                    .border(1.dp, palette.textInactive.copy(alpha = 0.08f), RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp))
             ) {
                 Column(
                     modifier = Modifier
@@ -163,10 +154,10 @@ fun PlayerScreen(
                         .padding(horizontal = 24.dp, vertical = 28.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Track Title & Artist
+                    // Track title & Artist
                     Text(
                         text = track?.title ?: "未在播放",
-                        color = TextMain,
+                        color = palette.textMain,
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
                         maxLines = 1,
@@ -176,33 +167,33 @@ fun PlayerScreen(
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
                         text = track?.artist ?: "未知歌手",
-                        color = TextMuted,
+                        color = palette.textMuted,
                         fontSize = 15.sp,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         textAlign = TextAlign.Center
                     )
 
-                    Spacer(modifier = Modifier.height(28.dp))
+                    Spacer(modifier = Modifier.height(24.dp))
 
-                    // Player Progress Timeline and Actions
                     PlaybackControls(
                         viewModel = viewModel,
-                        onPlaylistClick = { showPlaylistDrawer = true }
+                        palette = palette
                     )
                 }
             }
         }
 
-        // Playlist Bottom Sheet Drawer
+        // Playlist queue bottom sheet
         if (showPlaylistDrawer) {
             ModalBottomSheet(
                 onDismissRequest = { showPlaylistDrawer = false },
-                containerColor = TranslucentBackground,
-                dragHandle = { BottomSheetDefaults.DragHandle(color = TextInactive) }
+                containerColor = palette.background,
+                dragHandle = { BottomSheetDefaults.DragHandle(color = palette.textInactive) }
             ) {
                 PlaylistDrawerContent(
                     viewModel = viewModel,
+                    palette = palette,
                     onTrackSelected = {
                         showPlaylistDrawer = false
                     }
@@ -216,9 +207,9 @@ fun PlayerScreen(
 fun FloatingAlbumArt(
     coverUrl: String,
     isPlaying: Boolean,
+    palette: HslColorPalette,
     modifier: Modifier = Modifier
 ) {
-    // Smooth spring physics scaling
     val scale by animateFloatAsState(
         targetValue = if (isPlaying) 1.0f else 0.88f,
         animationSpec = spring(
@@ -247,7 +238,7 @@ fun FloatingAlbumArt(
                 clip = false
             )
             .border(1.dp, Color.White.copy(0.12f), RoundedCornerShape(28.dp)),
-        colors = CardDefaults.cardColors(containerColor = DeepCharcoal)
+        colors = CardDefaults.cardColors(containerColor = palette.surface)
     ) {
         if (coverUrl.isNotEmpty()) {
             AsyncImage(
@@ -264,7 +255,7 @@ fun FloatingAlbumArt(
                 Icon(
                     imageVector = Icons.Default.PlayArrow,
                     contentDescription = null,
-                    tint = TextInactive,
+                    tint = palette.textInactive,
                     modifier = Modifier.size(64.dp)
                 )
             }
@@ -275,6 +266,7 @@ fun FloatingAlbumArt(
 @Composable
 fun LyricsPanel(
     viewModel: MainViewModel,
+    palette: HslColorPalette,
     modifier: Modifier = Modifier
 ) {
     if (viewModel.lyrics.isEmpty()) {
@@ -284,7 +276,7 @@ fun LyricsPanel(
         ) {
             Text(
                 text = "♫ 暂无歌词 / 纯音乐",
-                color = TextInactive,
+                color = palette.textInactive,
                 fontSize = 18.sp,
                 textAlign = TextAlign.Center
             )
@@ -294,7 +286,6 @@ fun LyricsPanel(
 
     val lazyListState = rememberLazyListState()
     
-    // Smooth scrolling auto-alignment
     Box(modifier = modifier.fillMaxSize()) {
         BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
             val viewportHeightPx = with(LocalDensity.current) { maxHeight.toPx().toInt() }
@@ -319,12 +310,12 @@ fun LyricsPanel(
                 itemsIndexed(viewModel.lyrics) { index, line ->
                     val distance = Math.abs(index - viewModel.currentLyricIndex)
                     
-                    // Focal-Depth computations for cinema rendering
+                    // Cinematic focal-depth calculations (distant lyrics dissolve to 0.08f)
                     val alpha = when (distance) {
                         0 -> 1.0f
-                        1 -> 0.55f
-                        2 -> 0.28f
-                        else -> 0.12f
+                        1 -> 0.45f
+                        2 -> 0.22f
+                        else -> 0.08f
                     }
                     val scale = when (distance) {
                         0 -> 1.12f
@@ -339,11 +330,10 @@ fun LyricsPanel(
                         else -> 14.sp
                     }
                     val fontWeight = if (distance == 0) FontWeight.Bold else FontWeight.Medium
-                    val textColor = if (distance == 0) TextMain else TextInactive
                     
                     Text(
                         text = line.text,
-                        color = textColor.copy(alpha = alpha),
+                        color = palette.textMain.copy(alpha = alpha),
                         fontSize = fontSize,
                         fontWeight = fontWeight,
                         textAlign = TextAlign.Center,
@@ -362,20 +352,20 @@ fun LyricsPanel(
             }
         }
 
-        // Fading gradients boundaries overlays
+        // Ambient top and bottom fade mask gradients
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(80.dp)
                 .align(Alignment.TopCenter)
-                .background(Brush.verticalGradient(listOf(RichBlack.copy(0.9f), Color.Transparent)))
+                .background(Brush.verticalGradient(listOf(palette.background.copy(0.9f), Color.Transparent)))
         )
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(80.dp)
                 .align(Alignment.BottomCenter)
-                .background(Brush.verticalGradient(listOf(Color.Transparent, RichBlack.copy(0.9f))))
+                .background(Brush.verticalGradient(listOf(Color.Transparent, palette.background.copy(0.9f))))
         )
     }
 }
@@ -383,7 +373,7 @@ fun LyricsPanel(
 @Composable
 fun PlaybackControls(
     viewModel: MainViewModel,
-    onPlaylistClick: () -> Unit,
+    palette: HslColorPalette,
     modifier: Modifier = Modifier
 ) {
     val position = viewModel.currentPosition
@@ -394,40 +384,40 @@ fun PlaybackControls(
         modifier = modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Slim, customized seek bar
+        // HSL themed timeline seekbar
         Slider(
             value = progress,
             onValueChange = { newProgress ->
                 viewModel.seekTo((newProgress * duration).toLong())
             },
             colors = SliderDefaults.colors(
-                thumbColor = NeonMint,
-                activeTrackColor = NeonMint,
-                inactiveTrackColor = Color.White.copy(alpha = 0.15f)
+                thumbColor = palette.primary,
+                activeTrackColor = palette.primary,
+                inactiveTrackColor = palette.textInactive.copy(alpha = 0.2f)
             ),
             modifier = Modifier.fillMaxWidth()
         )
         
-        // Time labels
+        // Time stamps
         Row(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
                 text = formatTime(position),
-                color = TextMuted,
+                color = palette.textMuted,
                 fontSize = 12.sp
             )
             Text(
                 text = formatTime(duration),
-                color = TextMuted,
+                color = palette.textMuted,
                 fontSize = 12.sp
             )
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(20.dp))
 
-        // Actions Row
+        // Controller row
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceAround,
@@ -437,7 +427,7 @@ fun PlaybackControls(
                 Icon(
                     imageVector = Icons.Default.Refresh,
                     contentDescription = "Shuffle",
-                    tint = TextInactive
+                    tint = palette.textInactive
                 )
             }
 
@@ -445,23 +435,19 @@ fun PlaybackControls(
                 Icon(
                     imageVector = Icons.Default.PlayArrow,
                     contentDescription = "Previous",
-                    tint = TextMain,
+                    tint = palette.textMain,
                     modifier = Modifier.size(36.dp).rotate(180f)
                 )
             }
 
-            // Glowing Play/Pause Circle Button
+            // Central active HSL color play pause button
             Box(
                 modifier = Modifier
-                    .size(72.dp)
+                    .size(68.dp)
                     .clip(CircleShape)
-                    .background(
-                        Brush.radialGradient(
-                            colors = listOf(NeonMint, SoftMint)
-                        )
-                    )
+                    .background(palette.primary)
                     .clickable { viewModel.togglePlayPause() }
-                    .shadow(16.dp, CircleShape, clip = false),
+                    .shadow(12.dp, CircleShape, clip = false),
                 contentAlignment = Alignment.Center
             ) {
                 if (viewModel.isPlaying) {
@@ -469,15 +455,15 @@ fun PlaybackControls(
                         horizontalArrangement = Arrangement.spacedBy(6.dp),
                         modifier = Modifier.align(Alignment.Center)
                     ) {
-                        Box(modifier = Modifier.size(width = 6.dp, height = 22.dp).background(RichBlack, RoundedCornerShape(2.dp)))
-                        Box(modifier = Modifier.size(width = 6.dp, height = 22.dp).background(RichBlack, RoundedCornerShape(2.dp)))
+                        Box(modifier = Modifier.size(width = 6.dp, height = 20.dp).background(palette.background, RoundedCornerShape(2.dp)))
+                        Box(modifier = Modifier.size(width = 6.dp, height = 20.dp).background(palette.background, RoundedCornerShape(2.dp)))
                     }
                 } else {
                     Icon(
                         imageVector = Icons.Default.PlayArrow,
                         contentDescription = "Play",
-                        tint = RichBlack,
-                        modifier = Modifier.size(38.dp)
+                        tint = palette.background,
+                        modifier = Modifier.size(36.dp)
                     )
                 }
             }
@@ -486,18 +472,18 @@ fun PlaybackControls(
                 Icon(
                     imageVector = Icons.Default.PlayArrow,
                     contentDescription = "Next",
-                    tint = TextMain,
+                    tint = palette.textMain,
                     modifier = Modifier.size(36.dp)
                 )
             }
 
-            IconButton(onClick = onPlaylistClick) {
-                Icon(
-                    imageVector = Icons.Default.Menu,
-                    contentDescription = "Queue list",
-                    tint = TextMuted
-                )
-            }
+            // Indicator dot to denote HSL color matching
+            Box(
+                modifier = Modifier
+                    .size(24.dp)
+                    .clip(CircleShape)
+                    .background(palette.softAccent)
+            )
         }
     }
 }
@@ -505,6 +491,7 @@ fun PlaybackControls(
 @Composable
 fun PlaylistDrawerContent(
     viewModel: MainViewModel,
+    palette: HslColorPalette,
     onTrackSelected: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -515,8 +502,8 @@ fun PlaylistDrawerContent(
             .padding(20.dp)
     ) {
         Text(
-            text = "当前播放队列 (${viewModel.playlist.size} 首)",
-            color = TextMain,
+            text = "播放队列 (${viewModel.playlist.size} 首)",
+            color = palette.textMain,
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = 16.dp)
@@ -533,7 +520,7 @@ fun PlaylistDrawerContent(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(12.dp))
-                        .background(if (isActive) SoftMint else Color.Transparent)
+                        .background(if (isActive) palette.softAccent.copy(alpha = 0.35f) else Color.Transparent)
                         .clickable {
                             viewModel.selectTrack(index)
                             onTrackSelected()
@@ -544,7 +531,7 @@ fun PlaylistDrawerContent(
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = track.title,
-                            color = if (isActive) NeonMint else TextMain,
+                            color = if (isActive) palette.primary else palette.textMain,
                             fontWeight = if (isActive) FontWeight.Bold else FontWeight.Normal,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
@@ -552,7 +539,7 @@ fun PlaylistDrawerContent(
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
                             text = track.artist,
-                            color = TextMuted,
+                            color = if (isActive) palette.primary.copy(alpha = 0.7f) else palette.textMuted,
                             fontSize = 12.sp,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
@@ -562,7 +549,7 @@ fun PlaylistDrawerContent(
                         Icon(
                             imageVector = Icons.Default.PlayArrow,
                             contentDescription = "Playing",
-                            tint = NeonMint
+                            tint = palette.primary
                         )
                     }
                 }
