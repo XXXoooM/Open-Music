@@ -147,11 +147,11 @@ public class AudioPlayerPlugin extends Plugin {
             List<AudioService.Track> nativeList = new ArrayList<>();
             try {
                 for (int i = 0; i < playlistArray.length(); i++) {
-                    com.getcapacitor.JSObject obj = (com.getcapacitor.JSObject) playlistArray.get(i);
-                    String url = obj.getString("url");
-                    String title = obj.getString("title");
-                    String artist = obj.getString("artist");
-                    String cover = obj.getString("cover");
+                    org.json.JSONObject obj = playlistArray.getJSONObject(i);
+                    String url = obj.optString("url");
+                    String title = obj.optString("title");
+                    String artist = obj.optString("artist");
+                    String cover = obj.optString("cover");
                     nativeList.add(new AudioService.Track(url, title, artist, cover));
                 }
                 audioService.setPlaylist(nativeList, index);
