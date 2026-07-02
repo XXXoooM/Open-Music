@@ -117,6 +117,7 @@ class NativePlayer {
     this._duration = 0;
     this._isPlaying = false;
     this._volume = 1.0;
+    this._currentUrl = null;
     this._setupNativeListeners();
   }
 
@@ -193,11 +194,26 @@ class NativePlayer {
   play(url) {
     this._isPlaying = true;
     if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AudioPlayer) {
-      window.Capacitor.Plugins.AudioPlayer.play({ url });
+      if (url && url === this._currentUrl) {
+        window.Capacitor.Plugins.AudioPlayer.play({ url: null });
+      } else {
+        this._currentUrl = url;
+        window.Capacitor.Plugins.AudioPlayer.play({ url });
+      }
     } else if (window.__TAURI__) {
-      window.__TAURI__.invoke('play', { url });
+      if (url && url === this._currentUrl) {
+        window.__TAURI__.invoke('play', { url: null });
+      } else {
+        this._currentUrl = url;
+        window.__TAURI__.invoke('play', { url });
+      }
     } else if (window.ohosNative) {
-      window.ohosNative.play(url);
+      if (url && url === this._currentUrl) {
+        window.ohosNative.play(null);
+      } else {
+        this._currentUrl = url;
+        window.ohosNative.play(url);
+      }
     }
   }
 

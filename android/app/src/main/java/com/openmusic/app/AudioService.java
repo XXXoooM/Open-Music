@@ -180,6 +180,12 @@ public class AudioService extends Service {
 
     public void playUrl(final String url) {
         handler.post(() -> {
+            if (player != null && player.getCurrentMediaItem() != null && 
+                player.getCurrentMediaItem().localConfiguration != null && 
+                url != null && url.equals(player.getCurrentMediaItem().localConfiguration.uri.toString())) {
+                player.play();
+                return;
+            }
             MediaItem mediaItem = MediaItem.fromUri(Uri.parse(url));
             player.setMediaItem(mediaItem);
             player.prepare();
@@ -369,7 +375,7 @@ public class AudioService extends Service {
                     }
                     listener.onTimeUpdate(player.getCurrentPosition(), duration);
                 }
-                handler.postDelayed(this, 1000);
+                handler.postDelayed(this, 200);
             }
         }
     };

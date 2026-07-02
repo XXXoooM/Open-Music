@@ -570,11 +570,18 @@ function syncLyrics(forceScroll = false) {
             if (activeLine) {
                 activeLine.classList.add('active');
                 
-                // Center-align the active lyric line with container-only smooth scrolling
+                // Dynamically ensure wrapper padding matches active container height for perfect center alignment
                 const containerHeight = lyricsContainer.clientHeight;
+                const halfHeight = containerHeight / 2;
+                if (halfHeight > 0 && lyricsWrapper.style.paddingTop !== `${halfHeight - 20}px`) {
+                    lyricsWrapper.style.paddingTop = `${halfHeight - 20}px`;
+                    lyricsWrapper.style.paddingBottom = `${halfHeight - 20}px`;
+                }
+
+                // Center-align the active lyric line with container-only smooth scrolling
                 const lineTop = activeLine.offsetTop;
                 const lineHeight = activeLine.clientHeight;
-                lyricsContainer.scrollTop = lineTop - (containerHeight / 2) + (lineHeight / 2);
+                lyricsContainer.scrollTop = lineTop - halfHeight + (lineHeight / 2);
             }
         }
     }
