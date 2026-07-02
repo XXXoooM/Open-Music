@@ -570,11 +570,11 @@ function syncLyrics(forceScroll = false) {
             if (activeLine) {
                 activeLine.classList.add('active');
                 
-                // Center-align the active lyric line with scroll animation
-                activeLine.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'center'
-                });
+                // Center-align the active lyric line with container-only smooth scrolling
+                const containerHeight = lyricsContainer.clientHeight;
+                const lineTop = activeLine.offsetTop;
+                const lineHeight = activeLine.clientHeight;
+                lyricsContainer.scrollTop = lineTop - (containerHeight / 2) + (lineHeight / 2);
             }
         }
     }
