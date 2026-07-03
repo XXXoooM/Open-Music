@@ -113,70 +113,150 @@ fun PlayerScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.weight(0.1f))
+            if (showLyrics) {
+                // Immersive Lyrics Page Layout
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Card(
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier.size(54.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, Color.White.copy(0.12f))
+                    ) {
+                        if (track?.cover?.isNotEmpty() == true) {
+                            AsyncImage(
+                                model = track.cover,
+                                contentDescription = null,
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        } else {
+                            Box(
+                                modifier = Modifier.fillMaxSize().background(palette.surface),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(Icons.Default.PlayArrow, null, tint = palette.textInactive)
+                            }
+                        }
+                    }
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = track?.title ?: "未在播放",
+                            color = palette.textMain,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Text(
+                            text = track?.artist ?: "未知歌手",
+                            color = palette.textMuted,
+                            fontSize = 14.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
 
-            // Center Cover Art / Depth Lyrics Sheet
-            Box(
-                modifier = Modifier
-                    .weight(1.1f)
-                    .fillMaxWidth(),
-                contentAlignment = Alignment.Center
-            ) {
-                if (showLyrics) {
-                    LyricsPanel(viewModel = viewModel, palette = palette)
-                } else {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                ) {
+                    // Full-screen scrolling lyrics behind the floating controls
+                    LyricsPanel(
+                        viewModel = viewModel,
+                        palette = palette,
+                        modifier = Modifier.fillMaxSize()
+                    )
+
+                    // Floating Controls Container overlaid at the bottom
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .fillMaxWidth()
+                            .background(
+                                Brush.verticalGradient(
+                                    colors = listOf(
+                                        Color.Transparent,
+                                        palette.background.copy(alpha = 0.7f),
+                                        palette.background
+                                    )
+                                )
+                            )
+                            .padding(start = 24.dp, end = 24.dp, top = 32.dp, bottom = 20.dp)
+                    ) {
+                        PlaybackControls(
+                            viewModel = viewModel,
+                            palette = palette,
+                            onPlaylistClick = { showPlaylistDrawer = true }
+                        )
+                    }
+                }
+            } else {
+                // Standard Album Cover Page Layout
+                Spacer(modifier = Modifier.weight(0.1f))
+
+                Box(
+                    modifier = Modifier
+                        .weight(1.1f)
+                        .fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
                     FloatingAlbumArt(
                         coverUrl = track?.cover ?: "",
                         isPlaying = viewModel.isPlaying,
                         palette = palette
                     )
                 }
-            }
 
-            Spacer(modifier = Modifier.weight(0.1f))
+                Spacer(modifier = Modifier.weight(0.1f))
 
-            // Premium Frosted Controls Panel Card
-            Card(
-                colors = CardDefaults.cardColors(containerColor = palette.surface.copy(alpha = 0.45f)),
-                shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight()
-                    .border(1.dp, palette.textInactive.copy(alpha = 0.08f), RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp))
-            ) {
-                Column(
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = palette.surface.copy(alpha = 0.45f)),
+                    shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 24.dp, vertical = 28.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                        .wrapContentHeight()
+                        .border(1.dp, palette.textInactive.copy(alpha = 0.08f), RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp))
                 ) {
-                    // Track title & Artist
-                    Text(
-                        text = track?.title ?: "未在播放",
-                        color = palette.textMain,
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Bold,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        textAlign = TextAlign.Center
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Text(
-                        text = track?.artist ?: "未知歌手",
-                        color = palette.textMuted,
-                        fontSize = 15.sp,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        textAlign = TextAlign.Center
-                    )
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 24.dp, vertical = 28.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = track?.title ?: "未在播放",
+                            color = palette.textMain,
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            text = track?.artist ?: "未知歌手",
+                            color = palette.textMuted,
+                            fontSize = 15.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            textAlign = TextAlign.Center
+                        )
 
-                    Spacer(modifier = Modifier.height(24.dp))
+                        Spacer(modifier = Modifier.height(24.dp))
 
-                    PlaybackControls(
-                        viewModel = viewModel,
-                        palette = palette,
-                        onPlaylistClick = { showPlaylistDrawer = true }
-                    )
+                        PlaybackControls(
+                            viewModel = viewModel,
+                            palette = palette,
+                            onPlaylistClick = { showPlaylistDrawer = true }
+                        )
+                    }
                 }
             }
         }
@@ -388,9 +468,9 @@ fun LyricsPanel(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(80.dp)
+                .height(140.dp)
                 .align(Alignment.BottomCenter)
-                .background(Brush.verticalGradient(listOf(Color.Transparent, palette.background.copy(0.9f))))
+                .background(Brush.verticalGradient(listOf(Color.Transparent, palette.background.copy(0.95f))))
         )
     }
 }
@@ -469,10 +549,9 @@ fun PlaybackControls(
             Box(
                 modifier = Modifier
                     .size(68.dp)
-                    .clip(CircleShape)
-                    .background(palette.primary)
-                    .clickable { viewModel.togglePlayPause() }
-                    .shadow(12.dp, CircleShape, clip = false),
+                    .shadow(12.dp, CircleShape, clip = false)
+                    .background(palette.primary, CircleShape)
+                    .clickable { viewModel.togglePlayPause() },
                 contentAlignment = Alignment.Center
             ) {
                 if (viewModel.isPlaying) {
