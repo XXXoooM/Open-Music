@@ -11,11 +11,27 @@ data class HslColorPalette(
     val textMain: Color,
     val textMuted: Color,
     val textInactive: Color,
-    val softAccent: Color
+    val softAccent: Color,
+    val isHslEnabled: Boolean = true
 )
 
 @Composable
-fun rememberHslPalette(targetHue: Float): HslColorPalette {
+fun rememberHslPalette(targetHue: Float, isHslEnabled: Boolean): HslColorPalette {
+    if (!isHslEnabled) {
+        return remember {
+            HslColorPalette(
+                background = Color(0xFFF9FAFB), // Clean off-white background
+                primary = Color(0xFF1E88E5),    // Clean blue accent
+                surface = Color(0xFFFFFFFF),    // Clean white surface
+                textMain = Color(0xFF1F2937),   // Dark gray main text
+                textMuted = Color(0xFF4B5563),  // Muted gray text
+                textInactive = Color(0xFF9CA3AF),// Inactive gray text
+                softAccent = Color(0xFFE3F2FD), // Soft blue tint
+                isHslEnabled = false
+            )
+        }
+    }
+
     // Keep track of the last known hue to calculate the shortest path
     var lastHue by remember { mutableStateOf(targetHue) }
     var accumulatedHue by remember { mutableStateOf(targetHue) }
@@ -53,7 +69,8 @@ fun rememberHslPalette(targetHue: Float): HslColorPalette {
             textMain = Color.hsl(finalHue, 0.08f, 0.96f),
             textMuted = Color.hsl(finalHue, 0.06f, 0.62f),
             textInactive = Color.hsl(finalHue, 0.04f, 0.38f),
-            softAccent = Color.hsl(finalHue, 0.40f, 0.20f)
+            softAccent = Color.hsl(finalHue, 0.40f, 0.20f),
+            isHslEnabled = true
         )
     }
 }

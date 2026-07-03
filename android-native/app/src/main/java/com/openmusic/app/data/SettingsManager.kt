@@ -20,6 +20,7 @@ class SettingsManager(private val context: Context) {
         val KEY_CURRENT_TRACK_INDEX = intPreferencesKey("current_track_index")
         val KEY_SELECTED_ROUTE = stringPreferencesKey("selected_route")
         val KEY_PLAYLIST_ID = stringPreferencesKey("playlist_id")
+        val KEY_HSL_THEME_ENABLED = booleanPreferencesKey("hsl_theme_enabled")
     }
 
     // Read streams mapped directly to clean Kotlin data flows
@@ -44,7 +45,11 @@ class SettingsManager(private val context: Context) {
     }
 
     val playlistIdFlow: Flow<String> = context.dataStore.data.map { preferences ->
-        preferences[KEY_PLAYLIST_ID] ?: "17910751956"
+        preferences[KEY_PLAYLIST_ID] ?: "3778678"
+    }
+
+    val hslThemeEnabledFlow: Flow<Boolean> = context.dataStore.data.map { preferences ->
+        preferences[KEY_HSL_THEME_ENABLED] ?: true
     }
 
     // Write functions utilizing flow edits
@@ -70,6 +75,12 @@ class SettingsManager(private val context: Context) {
     suspend fun savePlaylistId(id: String) {
         context.dataStore.edit { preferences ->
             preferences[KEY_PLAYLIST_ID] = id
+        }
+    }
+
+    suspend fun saveHslThemeEnabled(enabled: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[KEY_HSL_THEME_ENABLED] = enabled
         }
     }
 }

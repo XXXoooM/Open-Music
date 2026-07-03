@@ -80,6 +80,9 @@ class MainViewModel : ViewModel() {
         private set
 
     var playlistIdInput by mutableStateOf("")
+
+    var isHslThemeEnabled by mutableStateOf(true)
+        private set
     
     // Coroutine Jobs
     private var progressJob: Job? = null
@@ -100,6 +103,11 @@ class MainViewModel : ViewModel() {
             playlistIdInput = manager.playlistIdFlow.first()
             playlist = manager.playlistFlow.first()
             currentTrackIndex = manager.currentTrackIndexFlow.first()
+            isHslThemeEnabled = manager.hslThemeEnabledFlow.first()
+
+            if (playlist.isEmpty() && playlistIdInput.isNotEmpty()) {
+                loadPlaylist(playlistIdInput)
+            }
 
             // Initialize Media3 Controller
             val sessionToken = SessionToken(context, ComponentName(context, PlaybackService::class.java))
@@ -302,6 +310,13 @@ class MainViewModel : ViewModel() {
         selectedRoute = route
         viewModelScope.launch {
             settingsManager?.saveSelectedRoute(route.name)
+        }
+    }
+
+    fun toggleHslTheme(enabled: Boolean) {
+        isHslThemeEnabled = enabled
+        viewModelScope.launch {
+            settingsManager?.saveHslThemeEnabled(enabled)
         }
     }
 

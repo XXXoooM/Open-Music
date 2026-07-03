@@ -54,7 +54,7 @@ class MainActivity : ComponentActivity() {
                 val track = viewModel.playlist.getOrNull(viewModel.currentTrackIndex)
                 val songHash = track?.title?.hashCode() ?: 0
                 val targetHue = remember(songHash) { (Math.abs(songHash) % 360).toFloat() }
-                val palette = rememberHslPalette(targetHue)
+                val palette = rememberHslPalette(targetHue, viewModel.isHslThemeEnabled)
 
                 var activeTab by remember { mutableStateOf("library") }
 

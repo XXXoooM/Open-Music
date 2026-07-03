@@ -63,27 +63,29 @@ fun PlayerScreen(
     val coroutineScope = rememberCoroutineScope()
 
     Box(modifier = modifier.fillMaxSize().background(palette.background)) {
-        // 1. Dynamic HSL Liquid Backdrop
-        LiquidBackdrop(
-            primaryColor = palette.primary,
-            secondaryColor = palette.softAccent,
-            modifier = Modifier.fillMaxSize()
-        )
-        
-        // Deep overlay wash
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            Color.Black.copy(alpha = 0.35f),
-                            palette.background.copy(alpha = 0.75f),
-                            palette.background
+        if (palette.isHslEnabled) {
+            // 1. Dynamic HSL Liquid Backdrop
+            LiquidBackdrop(
+                primaryColor = palette.primary,
+                secondaryColor = palette.softAccent,
+                modifier = Modifier.fillMaxSize()
+            )
+            
+            // Deep overlay wash
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Black.copy(alpha = 0.35f),
+                                palette.background.copy(alpha = 0.75f),
+                                palette.background
+                            )
                         )
                     )
-                )
-        )
+            )
+        }
 
         // 2. Swappable Pages
         HorizontalPager(
