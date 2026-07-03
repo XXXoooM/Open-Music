@@ -22,10 +22,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlin.OptIn
+import coil.annotation.ExperimentalCoilApi
 import com.openmusic.app.data.MetingRepository
 import com.openmusic.app.ui.MainViewModel
 import com.openmusic.app.ui.theme.HslColorPalette
+import coil.imageLoader
 
+@OptIn(ExperimentalCoilApi::class)
 @Composable
 fun SettingsScreen(
     viewModel: MainViewModel,
@@ -156,7 +160,14 @@ fun SettingsScreen(
                         subtitle = "释放本地图片和歌词缓存数据",
                         palette = palette,
                         onClick = {
-                            Toast.makeText(context, "缓存数据清理成功！", Toast.LENGTH_SHORT).show()
+                            try {
+                                context.imageLoader.diskCache?.clear()
+                                context.imageLoader.memoryCache?.clear()
+                                Toast.makeText(context, "缓存数据清理成功！", Toast.LENGTH_SHORT).show()
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                                Toast.makeText(context, "缓存清理失败，请重试", Toast.LENGTH_SHORT).show()
+                            }
                         }
                     )
                 }

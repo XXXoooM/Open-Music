@@ -36,6 +36,7 @@ import com.openmusic.app.ui.player.PlayerScreen
 import com.openmusic.app.ui.settings.SettingsScreen
 import com.openmusic.app.ui.theme.HslColorPalette
 import com.openmusic.app.ui.theme.OpenMusicTheme
+import androidx.activity.compose.BackHandler
 import com.openmusic.app.ui.theme.rememberHslPalette
 
 class MainActivity : ComponentActivity() {
@@ -48,13 +49,21 @@ class MainActivity : ComponentActivity() {
         // Initialize viewModel binding
         viewModel.initialize(applicationContext)
 
+        // Request POST_NOTIFICATIONS runtime permission on Android 13+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            requestPermissions(arrayOf(android.Manifest.permission.POST_NOTIFICATIONS), 101)
+        }
+
         setContent {
-            OpenMusicTheme {
-                // Dynamic HSL Theme calculations based on active track name
-                val track = viewModel.playlist.getOrNull(viewModel.currentTrackIndex)
-                val songHash = track?.title?.hashCode() ?: 0
-                val targetHue = remember(songHash) { (Math.abs(songHash) % 360).toFloat() }
-                val palette = rememberHslPalette(targetHue, viewModel.isHslThemeEnabled)
+            val track = viewModel.playlist.getOrNull(viewModel.currentTrackIndex)
+            val songHash = track?.title?.hashCode() ?: 0
+            val targetHue = remember(songHash) { (Math.abs(songHash) % 360).toFloat() }
+            val palette = rememberHslPalette(targetHue, viewModel.isHslThemeEnabled)
+
+            OpenMusicTheme(
+                statusBarColor = palette.background,
+                isLightStatusBars = !palette.isHslEnabled
+            ) {
 
                 var activeTab by remember { mutableStateOf("library") }
 
@@ -130,28 +139,6 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-/**
- * Handle hardware back button presses
- */
-@Composable
-fun BackHandler(onBack: () -> Unit) {
-    val currentOnBack by rememberUpdatedState(onBack)
-    val backCallback = remember {
-        object : androidx.activity.OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                currentOnBack()
-            }
-        }
-    }
-    
-    val dispatcher = androidx.activity.compose.LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
-    DisposableEffect(dispatcher) {
-        dispatcher?.addCallback(backCallback)
-        onDispose {
-            backCallback.remove()
-        }
-    }
-}
 
 @Composable
 fun MiniPlayer(

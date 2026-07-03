@@ -6,6 +6,7 @@ import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -45,11 +46,21 @@ fun LyricsPanel(
     viewModel: MainViewModel,
     palette: HslColorPalette,
     modifier: Modifier = Modifier,
-    useGlowEffect: Boolean = true
+    useGlowEffect: Boolean = true,
+    onBackgroundClick: (() -> Unit)? = null
 ) {
+    val clickableModifier = if (onBackgroundClick != null) {
+        Modifier.clickable(
+            interactionSource = remember { MutableInteractionSource() },
+            indication = null
+        ) {
+            onBackgroundClick()
+        }
+    } else Modifier
+
     if (viewModel.lyrics.isEmpty()) {
         Box(
-            modifier = modifier.fillMaxSize(),
+            modifier = modifier.fillMaxSize().then(clickableModifier),
             contentAlignment = Alignment.Center
         ) {
             Text(
@@ -72,7 +83,7 @@ fun LyricsPanel(
         }
     }
 
-    Box(modifier = modifier.fillMaxSize()) {
+    Box(modifier = modifier.fillMaxSize().then(clickableModifier)) {
         BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
             val density = LocalDensity.current
             val itemHeightPx = remember(density) { with(density) { 48.dp.toPx().toInt() } }

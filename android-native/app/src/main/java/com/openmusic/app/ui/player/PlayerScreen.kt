@@ -149,24 +149,27 @@ fun PlayerScreen(
                         )
                     }
 
-                    // Page Indicator Dots
+                    // Page Indicator Dots (Dynamic based on pagerState.currentPage)
                     Row(
                         horizontalArrangement = Arrangement.Center,
                         modifier = Modifier.padding(vertical = 12.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
+                        val activeDotColor = palette.primary
+                        val inactiveDotColor = palette.textInactive.copy(alpha = 0.4f)
+                        
                         Box(
                             modifier = Modifier
                                 .size(8.dp)
                                 .clip(ComponentStyles.iconButtonShape)
-                                .background(palette.primary)
+                                .background(if (pagerState.currentPage == 0) activeDotColor else inactiveDotColor)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Box(
                             modifier = Modifier
                                 .size(8.dp)
                                 .clip(ComponentStyles.iconButtonShape)
-                                .background(palette.textInactive.copy(alpha = 0.4f))
+                                .background(if (pagerState.currentPage == 1) activeDotColor else inactiveDotColor)
                         )
                     }
 
@@ -212,11 +215,6 @@ fun PlayerScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .clickable {
-                            coroutineScope.launch {
-                                pagerState.animateScrollToPage(0)
-                            }
-                        }
                         .systemBarsPadding(),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
@@ -230,7 +228,12 @@ fun PlayerScreen(
                             viewModel = viewModel,
                             palette = palette,
                             modifier = Modifier.fillMaxSize(),
-                            useGlowEffect = true
+                            useGlowEffect = true,
+                            onBackgroundClick = {
+                                coroutineScope.launch {
+                                    pagerState.animateScrollToPage(0)
+                                }
+                            }
                         )
                     }
                 }

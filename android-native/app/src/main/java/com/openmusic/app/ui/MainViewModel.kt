@@ -104,6 +104,11 @@ class MainViewModel : ViewModel() {
             playlist = manager.playlistFlow.first()
             currentTrackIndex = manager.currentTrackIndexFlow.first()
             isHslThemeEnabled = manager.hslThemeEnabledFlow.first()
+            playMode = try {
+                PlayMode.valueOf(manager.playModeFlow.first())
+            } catch (e: Exception) {
+                PlayMode.LIST_LOOP
+            }
 
             if (playlist.isEmpty() && playlistIdInput.isNotEmpty()) {
                 loadPlaylist(playlistIdInput)
@@ -258,6 +263,9 @@ class MainViewModel : ViewModel() {
         }
         playMode = nextMode
         applyPlayModeToController()
+        viewModelScope.launch {
+            settingsManager?.savePlayMode(nextMode.name)
+        }
     }
 
     fun applyPlayModeToController() {

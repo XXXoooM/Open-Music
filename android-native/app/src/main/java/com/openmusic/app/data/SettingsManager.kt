@@ -21,6 +21,7 @@ class SettingsManager(private val context: Context) {
         val KEY_SELECTED_ROUTE = stringPreferencesKey("selected_route")
         val KEY_PLAYLIST_ID = stringPreferencesKey("playlist_id")
         val KEY_HSL_THEME_ENABLED = booleanPreferencesKey("hsl_theme_enabled")
+        val KEY_PLAY_MODE = stringPreferencesKey("play_mode")
     }
 
     // Read streams mapped directly to clean Kotlin data flows
@@ -78,9 +79,19 @@ class SettingsManager(private val context: Context) {
         }
     }
 
+    val playModeFlow: Flow<String> = context.dataStore.data.map { preferences ->
+        preferences[KEY_PLAY_MODE] ?: "LIST_LOOP"
+    }
+
     suspend fun saveHslThemeEnabled(enabled: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[KEY_HSL_THEME_ENABLED] = enabled
+        }
+    }
+
+    suspend fun savePlayMode(mode: String) {
+        context.dataStore.edit { preferences ->
+            preferences[KEY_PLAY_MODE] = mode
         }
     }
 }
