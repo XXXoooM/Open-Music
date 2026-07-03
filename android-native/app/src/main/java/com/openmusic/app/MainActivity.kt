@@ -99,6 +99,7 @@ class MainActivity : ComponentActivity() {
                                 PlayerScreen(
                                     viewModel = viewModel,
                                     palette = palette,
+                                    onMinimize = { activeTab = "library" },
                                     modifier = Modifier.fillMaxSize()
                                 )
                                 // Handle back button from Player to go back to Library/Settings

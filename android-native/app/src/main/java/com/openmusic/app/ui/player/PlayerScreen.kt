@@ -10,6 +10,8 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -33,21 +35,24 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import kotlinx.coroutines.launch
 import com.openmusic.app.ui.MainViewModel
 import com.openmusic.app.ui.PlayMode
 import com.openmusic.app.ui.components.LiquidBackdrop
 import com.openmusic.app.ui.theme.HslColorPalette
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun PlayerScreen(
     viewModel: MainViewModel,
     palette: HslColorPalette,
+    onMinimize: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val track = viewModel.playlist.getOrNull(viewModel.currentTrackIndex)
-    var showLyrics by remember { mutableStateOf(false) }
-    var showPlaylistDrawer by remember { mutableStateOf(false) }
+    val showPlaylistDrawer = remember { mutableStateOf(false) }
+    val pagerState = rememberPagerState(pageCount = { 2 })
+    val coroutineScope = rememberCoroutineScope()
 
     Box(modifier = modifier.fillMaxSize().background(palette.background)) {
         // 1. Dynamic HSL Liquid Backdrop
@@ -79,7 +84,7 @@ fun PlayerScreen(
                 .systemBarsPadding(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Header Row (Now Playing text removed)
+            // Header Row (Minimize button on left, Lyrics toggle on right)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -88,183 +93,134 @@ fun PlayerScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(
-                    onClick = { showPlaylistDrawer = true },
+                    onClick = onMinimize,
                     modifier = Modifier.background(Color.Black.copy(0.2f), CircleShape)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Menu,
-                        contentDescription = "Queue list",
+                        imageVector = Icons.Default.KeyboardArrowDown,
+                        contentDescription = "Minimize Player",
                         tint = palette.textMain
                     )
                 }
 
+                val isLyricsActive = pagerState.currentPage == 1
                 IconButton(
-                    onClick = { showLyrics = !showLyrics },
+                    onClick = {
+                        coroutineScope.launch {
+                            pagerState.animateScrollToPage(if (isLyricsActive) 0 else 1)
+                        }
+                    },
                     modifier = Modifier.background(
-                        if (showLyrics) palette.primary else Color.Black.copy(0.2f),
+                        if (isLyricsActive) palette.primary else Color.Black.copy(0.2f),
                         CircleShape
                     )
                 ) {
                     Icon(
-                        imageVector = if (showLyrics) Icons.Default.List else Icons.Default.PlayArrow,
+                        imageVector = if (isLyricsActive) Icons.Default.List else Icons.Default.PlayArrow,
                         contentDescription = "Toggle Lyrics",
-                        tint = if (showLyrics) palette.background else palette.textMain
+                        tint = if (isLyricsActive) palette.background else palette.textMain
                     )
                 }
             }
 
-            if (showLyrics) {
-                // Immersive Lyrics Page Layout
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 24.dp, vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Card(
-                        shape = RoundedCornerShape(8.dp),
-                        modifier = Modifier.size(54.dp),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, Color.White.copy(0.12f))
+            // Swipeable Container for Album Art and Scrolling Lyrics
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+            ) { page ->
+                if (page == 0) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
                     ) {
-                        if (track?.cover?.isNotEmpty() == true) {
-                            AsyncImage(
-                                model = track.cover,
-                                contentDescription = null,
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier.fillMaxSize()
-                            )
-                        } else {
-                            Box(
-                                modifier = Modifier.fillMaxSize().background(palette.surface),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(Icons.Default.PlayArrow, null, tint = palette.textInactive)
-                            }
-                        }
-                    }
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = track?.title ?: "未在播放",
-                            color = palette.textMain,
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                        Text(
-                            text = track?.artist ?: "未知歌手",
-                            color = palette.textMuted,
-                            fontSize = 14.sp,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
+                        FloatingAlbumArt(
+                            coverUrl = track?.cover ?: "",
+                            isPlaying = viewModel.isPlaying,
+                            palette = palette
                         )
                     }
-                }
-
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth()
-                ) {
-                    // Full-screen scrolling lyrics behind the floating controls
+                } else {
                     LyricsPanel(
                         viewModel = viewModel,
                         palette = palette,
                         modifier = Modifier.fillMaxSize()
                     )
-
-                    // Floating Controls Container overlaid at the bottom
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.BottomCenter)
-                            .fillMaxWidth()
-                            .background(
-                                Brush.verticalGradient(
-                                    colors = listOf(
-                                        Color.Transparent,
-                                        palette.background.copy(alpha = 0.7f),
-                                        palette.background
-                                    )
-                                )
-                            )
-                            .padding(start = 24.dp, end = 24.dp, top = 32.dp, bottom = 20.dp)
-                    ) {
-                        PlaybackControls(
-                            viewModel = viewModel,
-                            palette = palette,
-                            onPlaylistClick = { showPlaylistDrawer = true }
-                        )
-                    }
                 }
-            } else {
-                // Standard Album Cover Page Layout
-                Spacer(modifier = Modifier.weight(0.1f))
+            }
 
+            // Simple Page Indicator Dots
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier.padding(vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Box(
                     modifier = Modifier
-                        .weight(1.1f)
-                        .fillMaxWidth(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    FloatingAlbumArt(
-                        coverUrl = track?.cover ?: "",
-                        isPlaying = viewModel.isPlaying,
-                        palette = palette
-                    )
-                }
+                        .size(8.dp)
+                        .clip(CircleShape)
+                        .background(if (pagerState.currentPage == 0) palette.primary else palette.textInactive.copy(alpha = 0.4f))
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Box(
+                    modifier = Modifier
+                        .size(8.dp)
+                        .clip(CircleShape)
+                        .background(if (pagerState.currentPage == 1) palette.primary else palette.textInactive.copy(alpha = 0.4f))
+                )
+            }
 
-                Spacer(modifier = Modifier.weight(0.1f))
-
-                Card(
-                    colors = CardDefaults.cardColors(containerColor = palette.surface.copy(alpha = 0.45f)),
-                    shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
+            // Frosted Controls Panel Card (Completely Static and Consistent)
+            Card(
+                colors = CardDefaults.cardColors(containerColor = palette.surface.copy(alpha = 0.45f)),
+                shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+                    .border(1.dp, palette.textInactive.copy(alpha = 0.08f), RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp))
+            ) {
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .wrapContentHeight()
-                        .border(1.dp, palette.textInactive.copy(alpha = 0.08f), RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp))
+                        .padding(horizontal = 24.dp, vertical = 28.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 24.dp, vertical = 28.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = track?.title ?: "未在播放",
-                            color = palette.textMain,
-                            fontSize = 22.sp,
-                            fontWeight = FontWeight.Bold,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            textAlign = TextAlign.Center
-                        )
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Text(
-                            text = track?.artist ?: "未知歌手",
-                            color = palette.textMuted,
-                            fontSize = 15.sp,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            textAlign = TextAlign.Center
-                        )
+                    // Track title & Artist
+                    Text(
+                        text = track?.title ?: "未在播放",
+                        color = palette.textMain,
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = track?.artist ?: "未知歌手",
+                        color = palette.textMuted,
+                        fontSize = 15.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        textAlign = TextAlign.Center
+                    )
 
-                        Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(24.dp))
 
-                        PlaybackControls(
-                            viewModel = viewModel,
-                            palette = palette,
-                            onPlaylistClick = { showPlaylistDrawer = true }
-                        )
-                    }
+                    PlaybackControls(
+                        viewModel = viewModel,
+                        palette = palette,
+                        onPlaylistClick = { showPlaylistDrawer.value = true }
+                    )
                 }
             }
         }
 
         // Playlist queue bottom sheet
-        if (showPlaylistDrawer) {
+        if (showPlaylistDrawer.value) {
             ModalBottomSheet(
-                onDismissRequest = { showPlaylistDrawer = false },
+                onDismissRequest = { showPlaylistDrawer.value = false },
                 containerColor = palette.background,
                 dragHandle = { BottomSheetDefaults.DragHandle(color = palette.textInactive) }
             ) {
@@ -272,7 +228,7 @@ fun PlayerScreen(
                     viewModel = viewModel,
                     palette = palette,
                     onTrackSelected = {
-                        showPlaylistDrawer = false
+                        showPlaylistDrawer.value = false
                     }
                 )
             }
@@ -475,7 +431,7 @@ fun LyricsPanel(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(140.dp)
+                .height(100.dp)
                 .align(Alignment.BottomCenter)
                 .background(Brush.verticalGradient(listOf(Color.Transparent, palette.background.copy(0.95f))))
         )
