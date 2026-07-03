@@ -127,7 +127,7 @@ fun PlayerScreen(
             HorizontalPager(
                 state = pagerState,
                 modifier = Modifier
-                    .weight(1f)
+                    .weight(1.2f)
                     .fillMaxWidth()
             ) { page ->
                 if (page == 0) {
@@ -171,49 +171,42 @@ fun PlayerScreen(
                 )
             }
 
-            // Frosted Controls Panel Card (Completely Static and Consistent)
-            Card(
-                colors = CardDefaults.cardColors(containerColor = palette.surface.copy(alpha = 0.45f)),
-                shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
+            // Immersive Floating Controls Area (No card boundaries!)
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .wrapContentHeight()
-                    .border(1.dp, palette.textInactive.copy(alpha = 0.08f), RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp))
+                    .padding(start = 24.dp, end = 24.dp, bottom = 28.dp, top = 8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 24.dp, vertical = 28.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    // Track title & Artist
-                    Text(
-                        text = track?.title ?: "未在播放",
-                        color = palette.textMain,
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Bold,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        textAlign = TextAlign.Center
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Text(
-                        text = track?.artist ?: "未知歌手",
-                        color = palette.textMuted,
-                        fontSize = 15.sp,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        textAlign = TextAlign.Center
-                    )
+                // Track title & Artist
+                Text(
+                    text = track?.title ?: "未在播放",
+                    color = palette.textMain,
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    textAlign = TextAlign.Center
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = track?.artist ?: "未知歌手",
+                    color = palette.textMuted,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    textAlign = TextAlign.Center
+                )
 
-                    Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
-                    PlaybackControls(
-                        viewModel = viewModel,
-                        palette = palette,
-                        onPlaylistClick = { showPlaylistDrawer.value = true }
-                    )
-                }
+                PlaybackControls(
+                    viewModel = viewModel,
+                    palette = palette,
+                    onPlaylistClick = { showPlaylistDrawer.value = true }
+                )
             }
         }
 
@@ -258,19 +251,19 @@ fun FloatingAlbumArt(
     )
 
     Card(
-        shape = RoundedCornerShape(28.dp),
+        shape = RoundedCornerShape(32.dp),
         modifier = modifier
-            .size(260.dp)
+            .size(290.dp)
             .graphicsLayer {
                 scaleX = scale
                 scaleY = scale
             }
             .shadow(
                 elevation = cardShadowElevation,
-                shape = RoundedCornerShape(28.dp),
+                shape = RoundedCornerShape(32.dp),
                 clip = false
             )
-            .border(1.dp, Color.White.copy(0.12f), RoundedCornerShape(28.dp)),
+            .border(1.dp, Color.White.copy(0.12f), RoundedCornerShape(32.dp)),
         colors = CardDefaults.cardColors(containerColor = palette.surface)
     ) {
         if (coverUrl.isNotEmpty()) {
@@ -431,7 +424,7 @@ fun LyricsPanel(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(100.dp)
+                .height(120.dp)
                 .align(Alignment.BottomCenter)
                 .background(Brush.verticalGradient(listOf(Color.Transparent, palette.background.copy(0.95f))))
         )
