@@ -22,6 +22,7 @@ import com.openmusic.app.data.LyricParser
 import com.openmusic.app.data.MetingRepository
 import com.openmusic.app.data.SettingsManager
 import com.openmusic.app.data.Track
+import com.openmusic.app.data.CollectedPlaylist
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
@@ -36,6 +37,11 @@ enum class PlayMode {
     SINGLE_LOOP
 }
 
+data class ImportedPlaylistInfo(
+    val id: String,
+    val firstTrackCover: String
+)
+
 class MainViewModel : ViewModel() {
 
     private val repository = MetingRepository()
@@ -46,6 +52,11 @@ class MainViewModel : ViewModel() {
     private var controller: MediaController? = null
 
     // UI States
+    var collectedPlaylists by mutableStateOf<List<CollectedPlaylist>>(emptyList())
+        private set
+
+    var lastImportedPlaylistInfo by mutableStateOf<ImportedPlaylistInfo?>(null)
+
     var playMode by mutableStateOf(PlayMode.LIST_LOOP)
         private set
 
@@ -109,6 +120,7 @@ class MainViewModel : ViewModel() {
             } catch (e: Exception) {
                 PlayMode.LIST_LOOP
             }
+            collectedPlaylists = manager.collectedPlaylistsFlow.first()
 
             if (playlist.isEmpty() && playlistIdInput.isNotEmpty()) {
                 loadPlaylist(playlistIdInput)
@@ -205,12 +217,37 @@ class MainViewModel : ViewModel() {
                     settingsManager?.saveCurrentTrackIndex(0)
                     
                     syncPlaylistToController(playImmediately = true)
+
+                    // Trigger playlist collection prompt if not already collected
+                    lastImportedPlaylistInfo = ImportedPlaylistInfo(
+                        id = playlistId,
+                        firstTrackCover = tracks.firstOrNull()?.cover ?: ""
+                    )
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
             } finally {
                 isLoading = false
             }
+        }
+    }
+
+    fun collectPlaylist(id: String, name: String, cover: String) {
+        val newPlaylist = CollectedPlaylist(id, name, cover)
+        if (collectedPlaylists.none { it.id == id }) {
+            val updated = collectedPlaylists + newPlaylist
+            collectedPlaylists = updated
+            viewModelScope.launch {
+                settingsManager?.saveCollectedPlaylists(updated)
+            }
+        }
+    }
+
+    fun removeCollectedPlaylist(id: String) {
+        val updated = collectedPlaylists.filterNot { it.id == id }
+        collectedPlaylists = updated
+        viewModelScope.launch {
+            settingsManager?.saveCollectedPlaylists(updated)
         }
     }
 

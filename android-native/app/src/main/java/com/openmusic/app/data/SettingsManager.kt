@@ -22,6 +22,7 @@ class SettingsManager(private val context: Context) {
         val KEY_PLAYLIST_ID = stringPreferencesKey("playlist_id")
         val KEY_HSL_THEME_ENABLED = booleanPreferencesKey("hsl_theme_enabled")
         val KEY_PLAY_MODE = stringPreferencesKey("play_mode")
+        val KEY_COLLECTED_PLAYLISTS_JSON = stringPreferencesKey("collected_playlists_json")
     }
 
     // Read streams mapped directly to clean Kotlin data flows
@@ -92,6 +93,24 @@ class SettingsManager(private val context: Context) {
     suspend fun savePlayMode(mode: String) {
         context.dataStore.edit { preferences ->
             preferences[KEY_PLAY_MODE] = mode
+        }
+    }
+
+    val collectedPlaylistsFlow: Flow<List<CollectedPlaylist>> = context.dataStore.data.map { preferences ->
+        val json = preferences[KEY_COLLECTED_PLAYLISTS_JSON] ?: ""
+        if (json.isEmpty()) emptyList() else {
+            try {
+                val type = object : com.google.gson.reflect.TypeToken<List<CollectedPlaylist>>() {}.type
+                gson.fromJson<List<CollectedPlaylist>>(json, type) ?: emptyList()
+            } catch (e: Exception) {
+                emptyList()
+            }
+        }
+    }
+
+    suspend fun saveCollectedPlaylists(playlists: List<CollectedPlaylist>) {
+        context.dataStore.edit { preferences ->
+            preferences[KEY_COLLECTED_PLAYLISTS_JSON] = gson.toJson(playlists)
         }
     }
 }

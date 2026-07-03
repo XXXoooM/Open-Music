@@ -10,3 +10,9 @@ data class Track(
     @SerializedName("pic") val cover: String = "",
     @SerializedName("lrc") val lrc: String = ""
 )
+
+data class CollectedPlaylist(
+    @SerializedName("id") val id: String = "",
+    @SerializedName("name") val name: String = "",
+    @SerializedName("cover") val cover: String = ""
+)

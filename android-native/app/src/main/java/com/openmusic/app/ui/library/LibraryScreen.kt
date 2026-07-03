@@ -4,9 +4,14 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -28,6 +33,7 @@ import com.openmusic.app.ui.MainViewModel
 import com.openmusic.app.ui.theme.HslColorPalette
 import coil.compose.AsyncImage
 import androidx.compose.ui.layout.ContentScale
+import com.openmusic.app.data.CollectedPlaylist
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -38,6 +44,16 @@ fun LibraryScreen(
 ) {
     var searchQuery by remember { mutableStateOf("") }
     var showImportDialog by remember { mutableStateOf(false) }
+    var showCustomCollectDialog by remember { mutableStateOf(false) }
+    var customPlaylistName by remember { mutableStateOf("") }
+
+    val importedInfo = viewModel.lastImportedPlaylistInfo
+
+    LaunchedEffect(importedInfo, viewModel.collectedPlaylists) {
+        if (importedInfo != null && viewModel.collectedPlaylists.any { it.id == importedInfo.id }) {
+            viewModel.lastImportedPlaylistInfo = null
+        }
+    }
     
     val filteredPlaylist = remember(viewModel.playlist, searchQuery) {
         viewModel.playlist.filter {
@@ -116,6 +132,32 @@ fun LibraryScreen(
                     .fillMaxWidth()
                     .padding(bottom = 16.dp)
             )
+
+            // Collected Playlists Section (Horizontal scroll list)
+            if (viewModel.collectedPlaylists.isNotEmpty()) {
+                Text(
+                    text = "收藏的歌单",
+                    color = palette.textMain,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+                
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    contentPadding = PaddingValues(bottom = 16.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    items(viewModel.collectedPlaylists) { playlist ->
+                        CollectedPlaylistCard(
+                            playlist = playlist,
+                            palette = palette,
+                            onSelect = { viewModel.loadPlaylist(playlist.id) },
+                            onDelete = { viewModel.removeCollectedPlaylist(playlist.id) }
+                        )
+                    }
+                }
+            }
 
             // Tracks List
             if (filteredPlaylist.isEmpty()) {
@@ -298,6 +340,155 @@ fun LibraryScreen(
                 }
             )
         }
+
+        // Dialog 1: Ask whether to collect this imported playlist
+        if (importedInfo != null && !showCustomCollectDialog) {
+            AlertDialog(
+                onDismissRequest = { viewModel.lastImportedPlaylistInfo = null },
+                containerColor = palette.surface,
+                title = {
+                    Text(
+                        text = "收藏歌单",
+                        color = palette.textMain,
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                text = {
+                    Text(
+                        text = "是否要将此导入的歌单加入收藏？",
+                        color = palette.textMuted,
+                        fontSize = 14.sp
+                    )
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            customPlaylistName = "新歌单 " + importedInfo.id
+                            showCustomCollectDialog = true
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = palette.primary)
+                    ) {
+                        Text("是", color = palette.background, fontWeight = FontWeight.Bold)
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = { viewModel.lastImportedPlaylistInfo = null }
+                    ) {
+                        Text("否", color = palette.textMuted)
+                    }
+                }
+            )
+        }
+
+        // Dialog 2: Custom details dialog for inputting playlist name and viewing ID & cover
+        if (importedInfo != null && showCustomCollectDialog) {
+            AlertDialog(
+                onDismissRequest = {
+                    showCustomCollectDialog = false
+                    viewModel.lastImportedPlaylistInfo = null
+                },
+                containerColor = palette.surface,
+                title = {
+                    Text(
+                        text = "新建收藏歌单",
+                        color = palette.textMain,
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                text = {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        // Display Cover Art and ID
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Card(
+                                shape = RoundedCornerShape(8.dp),
+                                modifier = Modifier.size(64.dp)
+                            ) {
+                                if (importedInfo.firstTrackCover.isNotEmpty()) {
+                                    AsyncImage(
+                                        model = importedInfo.firstTrackCover,
+                                        contentDescription = null,
+                                        contentScale = ContentScale.Crop,
+                                        modifier = Modifier.fillMaxSize()
+                                    )
+                                } else {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .background(palette.textInactive.copy(alpha = 0.3f))
+                                    )
+                                }
+                            }
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Column {
+                                Text(
+                                    text = "歌单 ID",
+                                    color = palette.textMuted,
+                                    fontSize = 12.sp
+                                )
+                                Text(
+                                    text = importedInfo.id,
+                                    color = palette.textMain,
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+
+                        // Input field for playlist name
+                        OutlinedTextField(
+                            value = customPlaylistName,
+                            onValueChange = { customPlaylistName = it },
+                            label = { Text("歌单名称", color = palette.textInactive) },
+                            singleLine = true,
+                            shape = RoundedCornerShape(10.dp),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedTextColor = palette.textMain,
+                                unfocusedTextColor = palette.textMain,
+                                focusedBorderColor = palette.primary,
+                                unfocusedBorderColor = palette.textInactive.copy(alpha = 0.2f)
+                            ),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            if (customPlaylistName.trim().isNotEmpty()) {
+                                viewModel.collectPlaylist(
+                                    id = importedInfo.id,
+                                    name = customPlaylistName.trim(),
+                                    cover = importedInfo.firstTrackCover
+                                )
+                            }
+                            showCustomCollectDialog = false
+                            viewModel.lastImportedPlaylistInfo = null
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = palette.primary)
+                    ) {
+                        Text("确定", color = palette.background, fontWeight = FontWeight.Bold)
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = {
+                            showCustomCollectDialog = false
+                            viewModel.lastImportedPlaylistInfo = null
+                        }
+                    ) {
+                        Text("取消", color = palette.textMuted)
+                    }
+                }
+            )
+        }
     }
 }
 
@@ -407,3 +598,96 @@ fun extractPlaylistId(input: String): String {
     }
     return trimmed
 }
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun CollectedPlaylistCard(
+    playlist: CollectedPlaylist,
+    palette: HslColorPalette,
+    onSelect: () -> Unit,
+    onDelete: () -> Unit
+) {
+    var showDeleteConfirm by remember { mutableStateOf(false) }
+    
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .width(80.dp)
+            .clip(RoundedCornerShape(8.dp))
+            .combinedClickable(
+                onClick = onSelect,
+                onLongClick = { showDeleteConfirm = true }
+            )
+    ) {
+        Card(
+            shape = RoundedCornerShape(12.dp),
+            modifier = Modifier.size(80.dp)
+        ) {
+            if (playlist.cover.isNotEmpty()) {
+                AsyncImage(
+                    model = playlist.cover,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+            } else {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(palette.textInactive.copy(alpha = 0.3f))
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = playlist.name,
+            color = palette.textMain,
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Medium,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 2.dp)
+        )
+    }
+
+    if (showDeleteConfirm) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirm = false },
+            containerColor = palette.surface,
+            title = {
+                Text(
+                    text = "取消收藏",
+                    color = palette.textMain,
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Text(
+                    text = "确定要取消收藏歌单“${playlist.name}”吗？",
+                    color = palette.textMuted,
+                    fontSize = 14.sp
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        onDelete()
+                        showDeleteConfirm = false
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = palette.primary)
+                ) {
+                    Text("确定", color = palette.background, fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showDeleteConfirm = false }
+                ) {
+                    Text("取消", color = palette.textMuted)
+                }
+            }
+        )
+    }
+}
+
