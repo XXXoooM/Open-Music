@@ -76,18 +76,20 @@ fun LyricsPanel(
         BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
             val density = LocalDensity.current
             val itemHeightPx = remember(density) { with(density) { 48.dp.toPx().toInt() } }
+            val spacingPx = remember(density) { with(density) { 24.dp.toPx().toInt() } }
+            val slotHeightPx = itemHeightPx + spacingPx
             val viewportHeightPx = remember(density, maxHeight) { with(density) { maxHeight.toPx().toInt() } }
 
-            // Smart spring scroll center alignment
+            // Smart spring scroll center alignment (Precisely calculated with slot height + spacing)
             LaunchedEffect(viewModel.currentLyricIndex) {
                 val currentTime = System.currentTimeMillis()
                 if (currentTime - lastUserInteractionTime > 3500) {
                     if (viewModel.currentLyricIndex in viewModel.lyrics.indices) {
                         val targetY = viewportHeightPx / 2 - itemHeightPx / 2
                         
-                        val k = targetY / itemHeightPx
+                        val k = targetY / slotHeightPx
                         val firstVisibleIndex = (viewModel.currentLyricIndex - k - 1).coerceAtLeast(0)
-                        val scrollOffset = ((viewModel.currentLyricIndex - firstVisibleIndex) * itemHeightPx - targetY).coerceAtLeast(0)
+                        val scrollOffset = ((viewModel.currentLyricIndex - firstVisibleIndex) * slotHeightPx - targetY).coerceAtLeast(0)
                         
                         lazyListState.animateScrollToItem(
                             index = firstVisibleIndex,
@@ -102,19 +104,19 @@ fun LyricsPanel(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(top = maxHeight / 2, bottom = maxHeight / 2),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(20.dp)
+                verticalArrangement = Arrangement.spacedBy(24.dp)
             ) {
                 itemsIndexed(viewModel.lyrics) { index, line ->
                     val isActive = index == viewModel.currentLyricIndex
                     
-                    // Smooth, animated properties for individual lyrics
+                    // Smooth, animated properties for individual lyrics (Upgraded contrast scale/alpha)
                     val lineScale by animateFloatAsState(
-                        targetValue = if (isActive) 1.15f else 0.90f,
+                        targetValue = if (isActive) 1.20f else 0.85f,
                         animationSpec = spring(stiffness = Spring.StiffnessLow),
                         label = "LyricScale"
                     )
                     val lineAlpha by animateFloatAsState(
-                        targetValue = if (isActive) 1.0f else 0.25f,
+                        targetValue = if (isActive) 1.0f else 0.30f,
                         animationSpec = tween(500),
                         label = "LyricAlpha"
                     )

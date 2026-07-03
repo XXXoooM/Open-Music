@@ -1,6 +1,7 @@
 package com.openmusic.app.ui.player
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -209,13 +210,15 @@ fun PlayerScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
+                        .clickable {
+                            coroutineScope.launch {
+                                pagerState.animateScrollToPage(0)
+                            }
+                        }
                         .systemBarsPadding(),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Top area: Let lyrics go all the way up, or just a tiny top-padding
-                    Spacer(modifier = Modifier.height(20.dp))
-
-                    // Lyrics Scrolling Panel (Glowing shadow active line)
+                    // Let lyrics fill the entire screen space
                     Box(
                         modifier = Modifier
                             .weight(1f)
@@ -226,25 +229,6 @@ fun PlayerScreen(
                             palette = palette,
                             modifier = Modifier.fillMaxSize(),
                             useGlowEffect = true
-                        )
-                    }
-
-                    // Controls Panel (Ultra-minimalist, no Card, no title, Volume & Lyrics footer)
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .wrapContentHeight()
-                            .padding(start = 24.dp, end = 24.dp, bottom = 20.dp, top = 8.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        LyricsPlaybackControls(
-                            viewModel = viewModel,
-                            onPlaylistClick = { showPlaylistDrawer.value = true },
-                            onLyricsIconClick = {
-                                coroutineScope.launch {
-                                    pagerState.animateScrollToPage(0)
-                                }
-                            }
                         )
                     }
                 }
