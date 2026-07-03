@@ -377,17 +377,24 @@ fun LyricsPanel(
 
     Box(modifier = modifier.fillMaxSize()) {
         BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-            val viewportHeightPx = with(LocalDensity.current) { maxHeight.toPx().toInt() }
-            val centerOffset = -viewportHeightPx / 2
+            val density = LocalDensity.current
+            val itemHeightPx = remember(density) { with(density) { 48.dp.toPx().toInt() } }
+            val viewportHeightPx = remember(density, maxHeight) { with(density) { maxHeight.toPx().toInt() } }
 
-            // Smart spring scroll center alignment
+            // Smart spring scroll center alignment (using mathematically positive offsets to center target item)
             LaunchedEffect(viewModel.currentLyricIndex) {
                 val currentTime = System.currentTimeMillis()
                 if (currentTime - lastUserInteractionTime > 3500) {
                     if (viewModel.currentLyricIndex in viewModel.lyrics.indices) {
+                        val targetY = viewportHeightPx / 2 - itemHeightPx / 2
+                        
+                        val k = targetY / itemHeightPx
+                        val firstVisibleIndex = (viewModel.currentLyricIndex - k - 1).coerceAtLeast(0)
+                        val scrollOffset = ((viewModel.currentLyricIndex - firstVisibleIndex) * itemHeightPx - targetY).coerceAtLeast(0)
+                        
                         lazyListState.animateScrollToItem(
-                            index = viewModel.currentLyricIndex,
-                            scrollOffset = centerOffset + 60
+                            index = firstVisibleIndex,
+                            scrollOffset = scrollOffset
                         )
                     }
                 }
