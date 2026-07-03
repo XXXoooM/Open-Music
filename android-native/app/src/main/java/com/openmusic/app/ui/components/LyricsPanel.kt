@@ -122,14 +122,14 @@ fun LyricsPanel(
                     
                     // Smooth, animated properties for individual lyrics (Upgraded contrast scale/alpha)
                     val lineScale by animateFloatAsState(
-                        targetValue = if (isActive) 1.20f else 0.85f,
-                        animationSpec = spring(stiffness = Spring.StiffnessLow),
-                        label = "LyricScale"
+                        targetValue = if (isActive) 1.12f else 0.90f,
+                        animationSpec = spring(dampingRatio = 0.8f, stiffness = Spring.StiffnessLow),
+                        label = "lyric_scale"
                     )
                     val lineAlpha by animateFloatAsState(
-                        targetValue = if (isActive) 1.0f else 0.30f,
-                        animationSpec = tween(500),
-                        label = "LyricAlpha"
+                        targetValue = if (isActive) 1.0f else 0.65f,
+                        animationSpec = tween(durationMillis = 300),
+                        label = "lyric_alpha"
                     )
                     val lineOffsetY by animateFloatAsState(
                         targetValue = if (isActive) 0f else 4f,
@@ -141,24 +141,18 @@ fun LyricsPanel(
                     val fontWeight = if (isActive) ComponentStyles.lyricActiveFontWeight else ComponentStyles.lyricInactiveFontWeight
                     
                     val textStyle = if (isActive) {
-                        if (useGlowEffect) {
-                            TextStyle(
-                                color = Color.White,
-                                shadow = Shadow(
-                                    color = Color.White.copy(alpha = 0.8f),
-                                    offset = Offset(0f, 0f),
-                                    blurRadius = 14f
-                                )
+                        TextStyle(
+                            color = Color.White,
+                            shadow = Shadow(
+                                color = Color.White.copy(alpha = 0.5f),
+                                offset = Offset(0f, 0f),
+                                blurRadius = 20f
                             )
-                        } else {
-                            TextStyle(
-                                brush = Brush.horizontalGradient(
-                                    colors = listOf(palette.primary, palette.textMain)
-                                )
-                            )
-                        }
+                        )
                     } else {
-                        TextStyle(color = palette.textInactive.copy(alpha = 0.6f))
+                        TextStyle(
+                            color = palette.textMain.copy(alpha = 0.6f)
+                        )
                     }
 
                     Text(

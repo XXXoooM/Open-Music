@@ -104,7 +104,7 @@ fun PlayerScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 20.dp, vertical = 12.dp),
+                            .padding(horizontal = 20.dp, vertical = 16.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -138,7 +138,7 @@ fun PlayerScreen(
                     // Album Cover area
                     Box(
                         modifier = Modifier
-                            .weight(1.2f)
+                            .weight(1.1f)
                             .fillMaxWidth(),
                         contentAlignment = Alignment.Center
                     ) {
@@ -178,7 +178,7 @@ fun PlayerScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .wrapContentHeight()
-                            .padding(start = 24.dp, end = 24.dp, bottom = 28.dp, top = 8.dp),
+                            .padding(start = 32.dp, end = 32.dp, bottom = 40.dp, top = 12.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(

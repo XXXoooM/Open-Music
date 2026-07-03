@@ -63,10 +63,12 @@ fun PlaybackControls(
             },
             colors = SliderDefaults.colors(
                 thumbColor = palette.primary,
-                activeTrackColor = palette.primary,
-                inactiveTrackColor = palette.textInactive.copy(alpha = 0.2f)
+                activeTrackColor = palette.primary.copy(alpha = 0.8f),
+                inactiveTrackColor = palette.textInactive.copy(alpha = 0.25f)
             ),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(24.dp)
         )
         
         // Time stamps
@@ -102,11 +104,9 @@ fun PlaybackControls(
             )
 
             IconButton(onClick = { viewModel.prevTrack() }) {
-                Icon(
-                    imageVector = Icons.Default.PlayArrow,
-                    contentDescription = "Previous",
-                    tint = palette.textMain,
-                    modifier = Modifier.size(ComponentStyles.controlButtonSize).rotate(180f)
+                SkipPreviousIcon(
+                    color = palette.textMain,
+                    modifier = Modifier.size(ComponentStyles.controlButtonSize)
                 )
             }
 
@@ -138,10 +138,8 @@ fun PlaybackControls(
             }
 
             IconButton(onClick = { viewModel.nextTrack() }) {
-                Icon(
-                    imageVector = Icons.Default.PlayArrow,
-                    contentDescription = "Next",
-                    tint = palette.textMain,
+                SkipNextIcon(
+                    color = palette.textMain,
                     modifier = Modifier.size(ComponentStyles.controlButtonSize)
                 )
             }
@@ -219,11 +217,9 @@ fun LyricsPlaybackControls(
             )
 
             IconButton(onClick = { viewModel.prevTrack() }) {
-                Icon(
-                    imageVector = Icons.Default.PlayArrow,
-                    contentDescription = "Previous",
-                    tint = Color.White.copy(0.7f),
-                    modifier = Modifier.size(ComponentStyles.controlButtonSize).rotate(180f)
+                SkipPreviousIcon(
+                    color = Color.White.copy(0.7f),
+                    modifier = Modifier.size(ComponentStyles.controlButtonSize)
                 )
             }
 
@@ -254,10 +250,8 @@ fun LyricsPlaybackControls(
             }
 
             IconButton(onClick = { viewModel.nextTrack() }) {
-                Icon(
-                    imageVector = Icons.Default.PlayArrow,
-                    contentDescription = "Next",
-                    tint = Color.White.copy(0.7f),
+                SkipNextIcon(
+                    color = Color.White.copy(0.7f),
                     modifier = Modifier.size(ComponentStyles.controlButtonSize)
                 )
             }
@@ -319,6 +313,56 @@ fun LyricsPlaybackControls(
                 )
             }
         }
+    }
+}
+
+@Composable
+fun SkipPreviousIcon(color: Color, modifier: Modifier = Modifier) {
+    Canvas(modifier = modifier) {
+        val w = size.width
+        val h = size.height
+        val barWidth = 2.dp.toPx()
+        
+        // Draw the vertical bar on the left
+        drawRect(
+            color = color,
+            topLeft = Offset(w * 0.22f, h * 0.25f),
+            size = Size(barWidth, h * 0.5f)
+        )
+        
+        // Draw the triangle pointing left
+        val trianglePath = Path().apply {
+            moveTo(w * 0.72f, h * 0.25f)
+            lineTo(w * 0.32f, h * 0.5f)
+            lineTo(w * 0.72f, h * 0.75f)
+            close()
+        }
+        drawPath(trianglePath, color)
+    }
+}
+
+@Composable
+fun SkipNextIcon(color: Color, modifier: Modifier = Modifier) {
+    Canvas(modifier = modifier) {
+        val w = size.width
+        val h = size.height
+        val barWidth = 2.dp.toPx()
+        
+        // Draw the triangle pointing right
+        val trianglePath = Path().apply {
+            moveTo(w * 0.28f, h * 0.25f)
+            lineTo(w * 0.68f, h * 0.5f)
+            lineTo(w * 0.28f, h * 0.75f)
+            close()
+        }
+        drawPath(trianglePath, color)
+        
+        // Draw the vertical bar on the right
+        drawRect(
+            color = color,
+            topLeft = Offset(w * 0.78f - barWidth, h * 0.25f),
+            size = Size(barWidth, h * 0.5f)
+        )
     }
 }
 

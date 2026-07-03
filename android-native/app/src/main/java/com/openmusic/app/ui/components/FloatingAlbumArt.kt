@@ -20,6 +20,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
@@ -61,29 +62,58 @@ fun FloatingAlbumArt(
                 elevation = cardShadowElevation,
                 shape = ComponentStyles.albumArtShape,
                 clip = false
-            )
-            .border(1.dp, Color.White.copy(0.12f), ComponentStyles.albumArtShape),
+            ),
         colors = CardDefaults.cardColors(containerColor = palette.surface)
     ) {
-        if (coverUrl.isNotEmpty()) {
-            AsyncImage(
-                model = coverUrl,
-                contentDescription = "Cover",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
-            )
-        } else {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Default.PlayArrow,
-                    contentDescription = null,
-                    tint = palette.textInactive,
-                    modifier = Modifier.size(48.dp)
+        Box(modifier = Modifier.fillMaxSize()) {
+            if (coverUrl.isNotEmpty()) {
+                AsyncImage(
+                    model = coverUrl,
+                    contentDescription = "Cover",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
                 )
+            } else {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.PlayArrow,
+                        contentDescription = null,
+                        tint = palette.textInactive,
+                        modifier = Modifier.size(48.dp)
+                    )
+                }
             }
+
+            // 3. Subtle vertical gradient overlay simulating physical vinyl gloss reflections
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Transparent,
+                                Color.Black.copy(alpha = 0.5f),
+                                Color.Transparent
+                            ),
+                            startY = 0.3f,
+                            endY = Float.POSITIVE_INFINITY
+                        )
+                    )
+            )
+
+            // 4. Subtle inner outline mimicking glass sheen
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .border(
+                        0.5.dp,
+                        Color.White.copy(alpha = 0.15f),
+                        ComponentStyles.albumArtShape
+                    )
+            )
         }
     }
 }

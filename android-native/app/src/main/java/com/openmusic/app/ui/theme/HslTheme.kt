@@ -63,9 +63,9 @@ fun rememberHslPalette(targetHue: Float, isHslEnabled: Boolean): HslColorPalette
 
     return remember(finalHue) {
         HslColorPalette(
-            background = Color.hsl(finalHue, 0.14f, 0.06f),
-            primary = Color.hsl(finalHue, 0.85f, 0.65f),
-            surface = Color.hsl(finalHue, 0.12f, 0.12f),
+            background = Color.hsl(finalHue, 0.18f, 0.04f),
+            primary = Color.hsl(finalHue, 0.92f, 0.68f),
+            surface = Color.hsl(finalHue, 0.15f, 0.10f),
             textMain = Color.hsl(finalHue, 0.08f, 0.96f),
             textMuted = Color.hsl(finalHue, 0.06f, 0.62f),
             textInactive = Color.hsl(finalHue, 0.04f, 0.38f),
