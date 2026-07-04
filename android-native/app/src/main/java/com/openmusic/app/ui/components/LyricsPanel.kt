@@ -1,6 +1,7 @@
 package com.openmusic.app.ui.components
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.interaction.DragInteraction
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
@@ -77,10 +78,20 @@ fun LyricsPanel(
     val lazyListState = rememberLazyListState()
     var lastUserInteractionTime by remember { mutableStateOf(0L) }
 
-    // Lock auto-scroll when user drags
-    LaunchedEffect(lazyListState.isScrollInProgress) {
-        if (lazyListState.isScrollInProgress) {
-            lastUserInteractionTime = System.currentTimeMillis()
+    // Only lock auto-scroll when the user actually drags the list (ignoring programmatic scroll animation)
+    LaunchedEffect(lazyListState.interactionSource) {
+        lazyListState.interactionSource.interactions.collect { interaction ->
+            when (interaction) {
+                is DragInteraction.Start -> {
+                    lastUserInteractionTime = System.currentTimeMillis()
+                }
+                is DragInteraction.Stop -> {
+                    lastUserInteractionTime = System.currentTimeMillis()
+                }
+                is DragInteraction.Cancel -> {
+                    lastUserInteractionTime = System.currentTimeMillis()
+                }
+            }
         }
     }
 
@@ -115,12 +126,12 @@ fun LyricsPanel(
                     
                     // Smooth, animated properties for individual lyrics using premium spring/tween specs
                     val lineScale by animateFloatAsState(
-                        targetValue = if (isActive) 1.12f else 0.90f,
+                        targetValue = if (isActive) 1.06f else 0.94f,
                         animationSpec = spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessLow),
                         label = "lyric_scale"
                     )
                     val lineAlpha by animateFloatAsState(
-                        targetValue = if (isActive) 1.0f else 0.65f,
+                        targetValue = if (isActive) 1.0f else 0.60f,
                         animationSpec = tween(durationMillis = 350),
                         label = "lyric_alpha"
                     )
@@ -130,14 +141,22 @@ fun LyricsPanel(
                         label = "lyric_offset_y"
                     )
                     
-                    // Smooth color and glow transitions
+                    // Smooth color and glow transitions (adaptive to HSL theme setting)
                     val textColor by animateColorAsState(
-                        targetValue = if (isActive) Color.White else palette.textMain.copy(alpha = 0.5f),
+                        targetValue = if (isActive) {
+                            palette.primary
+                        } else {
+                            palette.textMain.copy(alpha = 0.5f)
+                        },
                         animationSpec = tween(durationMillis = 350),
                         label = "lyric_color"
                     )
                     val shadowColor by animateColorAsState(
-                        targetValue = if (isActive && useGlowEffect) Color.White.copy(alpha = 0.40f) else Color.Transparent,
+                        targetValue = if (isActive && palette.isHslEnabled && useGlowEffect) {
+                            palette.primary.copy(alpha = 0.40f)
+                        } else {
+                            Color.Transparent
+                        },
                         animationSpec = tween(durationMillis = 350),
                         label = "lyric_shadow_color"
                     )

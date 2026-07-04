@@ -33,10 +33,10 @@ object ComponentStyles {
     val artistFontWeight = FontWeight.Medium
 
     // 5. Lyrics Screen Specific Typography
-    val lyricActiveFontSize = 26.sp
+    val lyricActiveFontSize = 24.sp
     val lyricActiveFontWeight = FontWeight.Bold
-    val lyricInactiveFontSize = 18.sp
-    val lyricInactiveFontWeight = FontWeight.Normal
+    val lyricInactiveFontSize = 20.sp
+    val lyricInactiveFontWeight = FontWeight.Medium
 
     // 6. Colors & Alphas
     val translucentBgColor = Color.Black.copy(alpha = 0.2f)
