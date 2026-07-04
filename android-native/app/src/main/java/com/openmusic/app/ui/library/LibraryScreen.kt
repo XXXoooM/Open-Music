@@ -169,59 +169,54 @@ fun LibraryScreen(
                                         viewModel.selectTrack(originalIndex)
                                     }
                                 }
-                                .padding(horizontal = 12.dp, vertical = 12.dp),
+                                .padding(horizontal = 12.dp, vertical = 10.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            // Left indicator: Cover Art Card with Equalizer Overlay
-                            Box(
-                                modifier = Modifier
-                                    .size(48.dp)
-                                    .padding(end = 4.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Card(
-                                    shape = RoundedCornerShape(8.dp),
-                                    modifier = Modifier.fillMaxSize(),
-                                    border = if (isActive) androidx.compose.foundation.BorderStroke(1.5.dp, palette.primary) else null
+                            // Left indicator: Equalizer Animation (Only shown when active)
+                            if (isActive) {
+                                Box(
+                                    modifier = Modifier.padding(end = 12.dp),
+                                    contentAlignment = Alignment.Center
                                 ) {
-                                    if (track.cover.isNotEmpty()) {
-                                        AsyncImage(
-                                            model = track.cover,
-                                            contentDescription = null,
-                                            contentScale = ContentScale.Crop,
-                                            modifier = Modifier.fillMaxSize()
-                                        )
+                                    if (viewModel.isPlaying) {
+                                        EqualizerAnimation(color = palette.primary)
                                     } else {
-                                        Box(
-                                            modifier = Modifier
-                                                .fillMaxSize()
-                                                .background(palette.textInactive.copy(alpha = 0.3f))
-                                        )
-                                    }
-                                }
-
-                                if (isActive) {
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxSize()
-                                            .clip(RoundedCornerShape(8.dp))
-                                            .background(Color.Black.copy(alpha = 0.55f)),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        if (viewModel.isPlaying) {
-                                            EqualizerAnimation(color = palette.primary)
-                                        } else {
-                                            Icon(
-                                                imageVector = Icons.Default.PlayArrow,
-                                                contentDescription = null,
-                                                tint = palette.primary,
-                                                modifier = Modifier.size(16.dp)
-                                            )
+                                        // Static 4-bar equalizer wave when paused
+                                        Row(
+                                            modifier = Modifier.width(20.dp).height(14.dp),
+                                            horizontalArrangement = Arrangement.spacedBy(2.dp),
+                                            verticalAlignment = Alignment.Bottom
+                                        ) {
+                                            Box(modifier = Modifier.weight(1f).fillMaxHeight(0.35f).background(palette.primary, RoundedCornerShape(1.dp)))
+                                            Box(modifier = Modifier.weight(1f).fillMaxHeight(0.75f).background(palette.primary, RoundedCornerShape(1.dp)))
+                                            Box(modifier = Modifier.weight(1f).fillMaxHeight(0.50f).background(palette.primary, RoundedCornerShape(1.dp)))
+                                            Box(modifier = Modifier.weight(1f).fillMaxHeight(0.20f).background(palette.primary, RoundedCornerShape(1.dp)))
                                         }
                                     }
                                 }
                             }
-                            Spacer(modifier = Modifier.width(8.dp))
+
+                            // Cover Art Card (Clean perfect square)
+                            Card(
+                                shape = RoundedCornerShape(8.dp),
+                                modifier = Modifier.size(44.dp)
+                            ) {
+                                if (track.cover.isNotEmpty()) {
+                                    AsyncImage(
+                                        model = track.cover,
+                                        contentDescription = null,
+                                        contentScale = ContentScale.Crop,
+                                        modifier = Modifier.fillMaxSize()
+                                    )
+                                } else {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .background(palette.textInactive.copy(alpha = 0.3f))
+                                    )
+                                }
+                            }
+                            Spacer(modifier = Modifier.width(12.dp))
 
                             // Title and Artist Column
                             Column(modifier = Modifier.weight(1f)) {
@@ -468,7 +463,7 @@ fun LibraryScreen(
 }
 
 /**
- * 3-bar animated HSL visual equalizer
+ * 4-bar animated HSL visual equalizer
  */
 @Composable
 fun EqualizerAnimation(
@@ -504,12 +499,21 @@ fun EqualizerAnimation(
         ),
         label = "Bar3"
     )
+    val height4 by transition.animateFloat(
+        initialValue = 0.25f,
+        targetValue = 0.90f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(550, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "Bar4"
+    )
 
     Row(
         modifier = modifier
-            .width(16.dp)
+            .width(20.dp)
             .height(14.dp),
-        horizontalArrangement = Arrangement.spacedBy(2.5.dp),
+        horizontalArrangement = Arrangement.spacedBy(2.dp),
         verticalAlignment = Alignment.Bottom
     ) {
         Box(
@@ -528,7 +532,13 @@ fun EqualizerAnimation(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxHeight(height3)
-                .background(color, RoundedCornerShape(1.5.dp))
+                .background(color, RoundedCornerShape(1.dp))
+        )
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxHeight(height4)
+                .background(color, RoundedCornerShape(1.dp))
         )
     }
 }
