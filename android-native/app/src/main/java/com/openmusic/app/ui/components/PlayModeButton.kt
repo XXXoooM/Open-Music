@@ -30,7 +30,7 @@ fun PlayModeButton(
     IconButton(onClick = onClick, modifier = modifier) {
         when (playMode) {
             PlayMode.LIST_LOOP -> {
-                Canvas(modifier = Modifier.size(20.dp)) {
+                Canvas(modifier = Modifier.size(ComponentStyles.subActionIconSize)) {
                     val w = size.width
                     val h = size.height
                     val stroke = 1.8f.dp.toPx()
@@ -79,7 +79,7 @@ fun PlayModeButton(
                 }
             }
             PlayMode.SINGLE_LOOP -> {
-                Box(contentAlignment = Alignment.Center, modifier = Modifier.size(20.dp)) {
+                Box(contentAlignment = Alignment.Center, modifier = Modifier.size(ComponentStyles.subActionIconSize)) {
                     Canvas(modifier = Modifier.fillMaxSize()) {
                         val w = size.width
                         val h = size.height
@@ -135,7 +135,7 @@ fun PlayModeButton(
                 }
             }
             PlayMode.SHUFFLE -> {
-                Canvas(modifier = Modifier.size(20.dp)) {
+                Canvas(modifier = Modifier.size(ComponentStyles.subActionIconSize)) {
                     val w = size.width
                     val h = size.height
                     val stroke = 1.8f.dp.toPx()

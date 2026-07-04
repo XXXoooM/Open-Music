@@ -20,7 +20,7 @@ object ComponentStyles {
     val lyricPlayButtonSize = 56.dp
     val controlButtonSize = 36.dp
     val actionIconSize = 24.dp
-    val subActionIconSize = 20.dp
+    val subActionIconSize = 24.dp
 
     // 3. Shared Shapes
     val iconButtonShape = CircleShape
