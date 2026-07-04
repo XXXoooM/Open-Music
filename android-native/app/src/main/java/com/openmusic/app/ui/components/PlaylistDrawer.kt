@@ -2,14 +2,7 @@ package com.openmusic.app.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -17,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.Card
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,6 +20,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import androidx.compose.ui.layout.ContentScale
 import com.openmusic.app.ui.MainViewModel
 import com.openmusic.app.ui.theme.HslColorPalette
 
@@ -66,9 +62,56 @@ fun PlaylistDrawerContent(
                             viewModel.selectTrack(index)
                             onTrackSelected()
                         }
-                        .padding(horizontal = 16.dp, vertical = 14.dp),
+                        .padding(horizontal = 12.dp, vertical = 10.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    // Left indicator: Equalizer Animation (Only shown when active)
+                    if (isActive) {
+                        Box(
+                            modifier = Modifier.padding(end = 12.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            if (viewModel.isPlaying) {
+                                EqualizerAnimation(color = palette.primary)
+                            } else {
+                                // Static 4-bar equalizer wave when paused
+                                Row(
+                                    modifier = Modifier.width(20.dp).height(14.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(2.dp),
+                                    verticalAlignment = Alignment.Bottom
+                                ) {
+                                    Box(modifier = Modifier.weight(1f).fillMaxHeight(0.35f).background(palette.primary, RoundedCornerShape(1.dp)))
+                                    Box(modifier = Modifier.weight(1f).fillMaxHeight(0.75f).background(palette.primary, RoundedCornerShape(1.dp)))
+                                    Box(modifier = Modifier.weight(1f).fillMaxHeight(0.50f).background(palette.primary, RoundedCornerShape(1.dp)))
+                                    Box(modifier = Modifier.weight(1f).fillMaxHeight(0.20f).background(palette.primary, RoundedCornerShape(1.dp)))
+                                }
+                            }
+                        }
+                    }
+
+                    // Cover Art Card (Clean perfect square)
+                    Card(
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier.size(44.dp)
+                    ) {
+                        if (track.cover.isNotEmpty()) {
+                            AsyncImage(
+                                model = track.cover,
+                                contentDescription = null,
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        } else {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(palette.textInactive.copy(alpha = 0.3f))
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.width(12.dp))
+
+                    // Title and Artist Column
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = track.title,
@@ -84,13 +127,6 @@ fun PlaylistDrawerContent(
                             fontSize = 12.sp,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
-                        )
-                    }
-                    if (isActive) {
-                        Icon(
-                            imageVector = Icons.Default.PlayArrow,
-                            contentDescription = "Playing",
-                            tint = palette.primary
                         )
                     }
                 }
