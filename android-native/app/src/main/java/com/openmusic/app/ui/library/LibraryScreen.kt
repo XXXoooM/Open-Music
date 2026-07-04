@@ -133,31 +133,6 @@ fun LibraryScreen(
                     .padding(bottom = 16.dp)
             )
 
-            // Collected Playlists Section (Horizontal scroll list)
-            if (viewModel.collectedPlaylists.isNotEmpty()) {
-                Text(
-                    text = "收藏的歌单",
-                    color = palette.textMain,
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-                
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    contentPadding = PaddingValues(bottom = 16.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    items(viewModel.collectedPlaylists) { playlist ->
-                        CollectedPlaylistCard(
-                            playlist = playlist,
-                            palette = palette,
-                            onSelect = { viewModel.loadPlaylist(playlist.id) },
-                            onDelete = { viewModel.removeCollectedPlaylist(playlist.id) }
-                        )
-                    }
-                }
-            }
 
             // Tracks List
             if (filteredPlaylist.isEmpty()) {
@@ -597,97 +572,5 @@ fun extractPlaylistId(input: String): String {
         }
     }
     return trimmed
-}
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-fun CollectedPlaylistCard(
-    playlist: CollectedPlaylist,
-    palette: HslColorPalette,
-    onSelect: () -> Unit,
-    onDelete: () -> Unit
-) {
-    var showDeleteConfirm by remember { mutableStateOf(false) }
-    
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .width(80.dp)
-            .clip(RoundedCornerShape(8.dp))
-            .combinedClickable(
-                onClick = onSelect,
-                onLongClick = { showDeleteConfirm = true }
-            )
-    ) {
-        Card(
-            shape = RoundedCornerShape(12.dp),
-            modifier = Modifier.size(80.dp)
-        ) {
-            if (playlist.cover.isNotEmpty()) {
-                AsyncImage(
-                    model = playlist.cover,
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
-                )
-            } else {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(palette.textInactive.copy(alpha = 0.3f))
-                )
-            }
-        }
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(
-            text = playlist.name,
-            color = palette.textMain,
-            fontSize = 11.sp,
-            fontWeight = FontWeight.Medium,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 2.dp)
-        )
-    }
-
-    if (showDeleteConfirm) {
-        AlertDialog(
-            onDismissRequest = { showDeleteConfirm = false },
-            containerColor = palette.surface,
-            title = {
-                Text(
-                    text = "取消收藏",
-                    color = palette.textMain,
-                    fontWeight = FontWeight.Bold
-                )
-            },
-            text = {
-                Text(
-                    text = "确定要取消收藏歌单“${playlist.name}”吗？",
-                    color = palette.textMuted,
-                    fontSize = 14.sp
-                )
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        onDelete()
-                        showDeleteConfirm = false
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = palette.primary)
-                ) {
-                    Text("确定", color = palette.background, fontWeight = FontWeight.Bold)
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = { showDeleteConfirm = false }
-                ) {
-                    Text("取消", color = palette.textMuted)
-                }
-            }
-        )
-    }
 }
 

@@ -218,11 +218,15 @@ class MainViewModel : ViewModel() {
                     
                     syncPlaylistToController(playImmediately = true)
 
-                    // Trigger playlist collection prompt if not already collected
-                    lastImportedPlaylistInfo = ImportedPlaylistInfo(
-                        id = playlistId,
-                        firstTrackCover = tracks.firstOrNull()?.cover ?: ""
-                    )
+                    // Trigger playlist collection prompt only if not already collected
+                    if (collectedPlaylists.none { it.id == playlistId }) {
+                        lastImportedPlaylistInfo = ImportedPlaylistInfo(
+                            id = playlistId,
+                            firstTrackCover = tracks.firstOrNull()?.cover ?: ""
+                        )
+                    } else {
+                        lastImportedPlaylistInfo = null
+                    }
                 }
             } catch (e: Exception) {
                 e.printStackTrace()

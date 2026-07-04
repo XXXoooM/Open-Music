@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.PlayArrow
@@ -32,6 +33,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.openmusic.app.ui.MainViewModel
 import com.openmusic.app.ui.library.LibraryScreen
+import com.openmusic.app.ui.favorites.FavoritesScreen
 import com.openmusic.app.ui.player.PlayerScreen
 import com.openmusic.app.ui.settings.SettingsScreen
 import com.openmusic.app.ui.theme.HslColorPalette
@@ -94,6 +96,14 @@ class MainActivity : ComponentActivity() {
                                 LibraryScreen(
                                     viewModel = viewModel,
                                     palette = palette,
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                            }
+                            "favorites" -> {
+                                FavoritesScreen(
+                                    viewModel = viewModel,
+                                    palette = palette,
+                                    onPlaylistSelected = { activeTab = "library" },
                                     modifier = Modifier.fillMaxSize()
                                 )
                             }
@@ -249,6 +259,20 @@ fun BottomNavBar(
             onClick = { onTabSelected("library") },
             icon = { Icon(Icons.Default.Menu, contentDescription = "Library") },
             label = { Text("音乐馆", fontSize = 11.sp, fontWeight = FontWeight.Bold) },
+            colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = palette.primary,
+                selectedTextColor = palette.primary,
+                indicatorColor = palette.softAccent.copy(alpha = 0.35f),
+                unselectedIconColor = palette.textInactive,
+                unselectedTextColor = palette.textInactive
+            )
+        )
+
+        NavigationBarItem(
+            selected = activeTab == "favorites",
+            onClick = { onTabSelected("favorites") },
+            icon = { Icon(Icons.Default.Favorite, contentDescription = "Favorites") },
+            label = { Text("收藏", fontSize = 11.sp, fontWeight = FontWeight.Bold) },
             colors = NavigationBarItemDefaults.colors(
                 selectedIconColor = palette.primary,
                 selectedTextColor = palette.primary,
