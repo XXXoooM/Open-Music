@@ -58,7 +58,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val track = viewModel.playlist.getOrNull(viewModel.currentTrackIndex)
-            val songHash = track?.title?.hashCode() ?: 0
+            val songHash = (track?.title.orEmpty() + track?.artist.orEmpty()).hashCode()
             val targetHue = remember(songHash) { (Math.abs(songHash) % 360).toFloat() }
             val palette = rememberHslPalette(targetHue, viewModel.isHslThemeEnabled)
 

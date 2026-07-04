@@ -33,6 +33,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -146,10 +147,9 @@ fun PlaybackControls(
 
             // 5. Drawer queue list trigger
             IconButton(onClick = onPlaylistClick) {
-                Icon(
-                    imageVector = Icons.Default.List,
-                    contentDescription = "Playlist",
-                    tint = palette.textMuted
+                QueueIcon(
+                    color = palette.textMuted,
+                    modifier = Modifier.size(ComponentStyles.subActionIconSize)
                 )
             }
         }
@@ -257,10 +257,9 @@ fun LyricsPlaybackControls(
             }
 
             IconButton(onClick = onPlaylistClick) {
-                Icon(
-                    imageVector = Icons.Default.List,
-                    contentDescription = "Playlist",
-                    tint = Color.White.copy(0.45f)
+                QueueIcon(
+                    color = Color.White.copy(0.45f),
+                    modifier = Modifier.size(ComponentStyles.subActionIconSize)
                 )
             }
         }
@@ -363,6 +362,31 @@ fun SkipNextIcon(color: Color, modifier: Modifier = Modifier) {
             topLeft = Offset(w * 0.78f - barWidth, h * 0.25f),
             size = Size(barWidth, h * 0.5f)
         )
+    }
+}
+
+@Composable
+fun QueueIcon(color: Color, modifier: Modifier = Modifier) {
+    Canvas(modifier = modifier) {
+        val w = size.width
+        val h = size.height
+        val stroke = 1.8.dp.toPx()
+        
+        // Line 1
+        drawLine(color, Offset(w * 0.2f, h * 0.3f), Offset(w * 0.8f, h * 0.3f), stroke, cap = StrokeCap.Round)
+        // Line 2
+        drawLine(color, Offset(w * 0.2f, h * 0.5f), Offset(w * 0.8f, h * 0.5f), stroke, cap = StrokeCap.Round)
+        // Line 3
+        drawLine(color, Offset(w * 0.2f, h * 0.7f), Offset(w * 0.55f, h * 0.7f), stroke, cap = StrokeCap.Round)
+        
+        // Play triangle
+        val trianglePath = Path().apply {
+            moveTo(w * 0.70f, h * 0.60f)
+            lineTo(w * 0.70f, h * 0.80f)
+            lineTo(w * 0.85f, h * 0.70f)
+            close()
+        }
+        drawPath(trianglePath, color)
     }
 }
 

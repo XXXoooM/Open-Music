@@ -50,7 +50,7 @@ fun rememberHslPalette(targetHue: Float, isHslEnabled: Boolean): HslColorPalette
     // Smoothly animate the accumulated hue value
     val animatedHue by animateFloatAsState(
         targetValue = accumulatedHue,
-        animationSpec = tween(1200, easing = FastOutSlowInEasing),
+        animationSpec = tween(2400, easing = LinearOutSlowInEasing),
         label = "HslHueAnimation"
     )
 
