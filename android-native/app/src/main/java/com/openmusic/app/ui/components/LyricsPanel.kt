@@ -1,5 +1,6 @@
 package com.openmusic.app.ui.components
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
@@ -86,25 +87,17 @@ fun LyricsPanel(
     Box(modifier = modifier.fillMaxSize().then(clickableModifier)) {
         BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
             val density = LocalDensity.current
-            val itemHeightPx = remember(density) { with(density) { 48.dp.toPx().toInt() } }
-            val spacingPx = remember(density) { with(density) { 24.dp.toPx().toInt() } }
-            val slotHeightPx = itemHeightPx + spacingPx
-            val viewportHeightPx = remember(density, maxHeight) { with(density) { maxHeight.toPx().toInt() } }
 
-            // Smart spring scroll center alignment (Precisely calculated with slot height + spacing)
+            // Center the active lyric line exactly in the middle of the screen
             LaunchedEffect(viewModel.currentLyricIndex) {
                 val currentTime = System.currentTimeMillis()
                 if (currentTime - lastUserInteractionTime > 3500) {
                     if (viewModel.currentLyricIndex in viewModel.lyrics.indices) {
-                        val targetY = viewportHeightPx / 2 - itemHeightPx / 2
-                        
-                        val k = targetY / slotHeightPx
-                        val firstVisibleIndex = (viewModel.currentLyricIndex - k - 1).coerceAtLeast(0)
-                        val scrollOffset = ((viewModel.currentLyricIndex - firstVisibleIndex) * slotHeightPx - targetY).coerceAtLeast(0)
-                        
+                        // 24.dp is approximately half of the active lyric line height, centering it perfectly
+                        val offsetPx = with(density) { 24.dp.toPx().toInt() }
                         lazyListState.animateScrollToItem(
-                            index = firstVisibleIndex,
-                            scrollOffset = scrollOffset
+                            index = viewModel.currentLyricIndex,
+                            scrollOffset = offsetPx
                         )
                     }
                 }
@@ -120,40 +113,46 @@ fun LyricsPanel(
                 itemsIndexed(viewModel.lyrics) { index, line ->
                     val isActive = index == viewModel.currentLyricIndex
                     
-                    // Smooth, animated properties for individual lyrics (Upgraded contrast scale/alpha)
+                    // Smooth, animated properties for individual lyrics using premium spring/tween specs
                     val lineScale by animateFloatAsState(
                         targetValue = if (isActive) 1.12f else 0.90f,
-                        animationSpec = spring(dampingRatio = 0.8f, stiffness = Spring.StiffnessLow),
+                        animationSpec = spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessLow),
                         label = "lyric_scale"
                     )
                     val lineAlpha by animateFloatAsState(
                         targetValue = if (isActive) 1.0f else 0.65f,
-                        animationSpec = tween(durationMillis = 300),
+                        animationSpec = tween(durationMillis = 350),
                         label = "lyric_alpha"
                     )
                     val lineOffsetY by animateFloatAsState(
                         targetValue = if (isActive) 0f else 4f,
-                        animationSpec = spring(stiffness = Spring.StiffnessLow),
-                        label = "LyricOffsetY"
+                        animationSpec = spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessLow),
+                        label = "lyric_offset_y"
+                    )
+                    
+                    // Smooth color and glow transitions
+                    val textColor by animateColorAsState(
+                        targetValue = if (isActive) Color.White else palette.textMain.copy(alpha = 0.5f),
+                        animationSpec = tween(durationMillis = 350),
+                        label = "lyric_color"
+                    )
+                    val shadowColor by animateColorAsState(
+                        targetValue = if (isActive && useGlowEffect) Color.White.copy(alpha = 0.40f) else Color.Transparent,
+                        animationSpec = tween(durationMillis = 350),
+                        label = "lyric_shadow_color"
                     )
 
                     val fontSize = if (isActive) ComponentStyles.lyricActiveFontSize else ComponentStyles.lyricInactiveFontSize
                     val fontWeight = if (isActive) ComponentStyles.lyricActiveFontWeight else ComponentStyles.lyricInactiveFontWeight
                     
-                    val textStyle = if (isActive) {
-                        TextStyle(
-                            color = Color.White,
-                            shadow = Shadow(
-                                color = Color.White.copy(alpha = 0.5f),
-                                offset = Offset(0f, 0f),
-                                blurRadius = 20f
-                            )
+                    val textStyle = TextStyle(
+                        color = textColor,
+                        shadow = Shadow(
+                            color = shadowColor,
+                            offset = Offset(0f, 0f),
+                            blurRadius = 20f
                         )
-                    } else {
-                        TextStyle(
-                            color = palette.textMain.copy(alpha = 0.6f)
-                        )
-                    }
+                    )
 
                     Text(
                         text = line.text,
