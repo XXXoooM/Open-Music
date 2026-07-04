@@ -1291,3 +1291,9 @@ window.player = {
     next: handleNextTrack,
     prev: handlePrevTrack
 };
+
+// Apply custom body class for Tauri desktop window effects compatibility
+if (window.__TAURI__) {
+    document.body.classList.add('is-tauri');
+}
+

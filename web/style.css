@@ -44,6 +44,10 @@ body {
     align-items: center;
 }
 
+body.is-tauri {
+    background-color: rgba(7, 8, 13, 0.82) !important;
+}
+
 /* Dynamic Ambient Background */
 .ambient-bg {
     position: fixed;

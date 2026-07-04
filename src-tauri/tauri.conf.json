@@ -19,7 +19,11 @@
         "minHeight": 600,
         "resizable": true,
         "fullscreen": false,
-        "shadow": true
+        "shadow": true,
+        "transparent": true,
+        "windowEffects": {
+          "effects": ["mica", "acrylic", "blur"]
+        }
       }
     ],
     "security": {
