@@ -65,12 +65,12 @@ fun PlaylistDrawerContent(
                         .padding(horizontal = 12.dp, vertical = 10.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Left indicator: Equalizer Animation (Only shown when active)
-                    if (isActive) {
-                        Box(
-                            modifier = Modifier.padding(end = 12.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
+                    // Left indicator column: Equalizer for active track, Index Number for inactive tracks
+                    Box(
+                        modifier = Modifier.width(28.dp).padding(end = 8.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (isActive) {
                             if (viewModel.isPlaying) {
                                 EqualizerAnimation(color = palette.primary)
                             } else {
@@ -86,6 +86,13 @@ fun PlaylistDrawerContent(
                                     Box(modifier = Modifier.weight(1f).fillMaxHeight(0.20f).background(palette.primary, RoundedCornerShape(1.dp)))
                                 }
                             }
+                        } else {
+                            Text(
+                                text = "${index + 1}",
+                                color = palette.textInactive,
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold
+                            )
                         }
                     }
 
