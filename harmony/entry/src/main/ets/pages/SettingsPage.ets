@@ -2,6 +2,7 @@ import { ApiClient } from '../network/ApiClient';
 import { PreferencesHelper } from '../utils/PreferencesHelper';
 import { PlaybackManager } from '../playback/PlaybackManager';
 import { hslToColor } from '../utils/ThemeHelper';
+import { Track } from '../model/Track';
 
 interface ThemePreset {
   name: string;
@@ -75,7 +76,7 @@ export struct SettingsPage {
       AppStorage.setOrCreate('themeHue', defaultHue);
     } else {
       // Recalculate based on current track if playing
-      const currentTrack = AppStorage.get<any>('currentTrack');
+      const currentTrack = AppStorage.get<Track>('currentTrack');
       if (currentTrack) {
         const hash = getSongHashColor(currentTrack.title, currentTrack.artist);
         AppStorage.setOrCreate('themeHue', hash);

@@ -94,14 +94,16 @@ export struct PlaylistPage {
     .backgroundColor('#0A0B10')
   }
 
+  private isCurrent(trackId: string): boolean {
+    return this.currentTrack !== null && this.currentTrack.id === trackId;
+  }
+
   @Builder
   buildTrackItem(track: Track, index: number) {
-    const isCurrent = this.currentTrack !== null && this.currentTrack.id === track.id;
-    
     Row() {
       // Left index or EQ bars
-      Stack() {
-        if (isCurrent) {
+      Stack({ alignContent: Alignment.Center }) {
+        if (this.isCurrent(track.id)) {
           Row({ space: 2 }) {
             ForEach(this.barHeights, (height: number) => {
               Rect()
@@ -121,7 +123,6 @@ export struct PlaylistPage {
         }
       }
       .width(36)
-      .justifyContent(FlexAlign.Center)
 
       // Cover Art
       Image(track.cover || $r('app.media.layered_image')) // Fallback to app icon
@@ -135,17 +136,17 @@ export struct PlaylistPage {
       Column() {
         Text(track.title)
           .fontSize(15)
-          .fontColor(isCurrent ? hslToColor(this.themeHue, 92, 68) : '#FFFFFF')
-          .fontWeight(isCurrent ? FontWeight.Medium : FontWeight.Normal)
+          .fontColor(this.isCurrent(track.id) ? hslToColor(this.themeHue, 92, 68) : '#FFFFFF')
+          .fontWeight(this.isCurrent(track.id) ? FontWeight.Medium : FontWeight.Normal)
           .maxLines(1)
-          .textOverflow(TextOverflow.Ellipsis)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
           .margin({ bottom: 4 })
 
         Text(track.artist)
           .fontSize(13)
-          .fontColor(isCurrent ? hslToColor(this.themeHue, 60, 60) : '#8F93A5')
+          .fontColor(this.isCurrent(track.id) ? hslToColor(this.themeHue, 60, 60) : '#8F93A5')
           .maxLines(1)
-          .textOverflow(TextOverflow.Ellipsis)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
       }
       .alignItems(HorizontalAlign.Start)
       .layoutWeight(1)
@@ -153,7 +154,7 @@ export struct PlaylistPage {
     }
     .width('100%')
     .padding({ left: 12, right: 16, top: 12, bottom: 12 })
-    .backgroundColor(isCurrent ? '#141622' : 'transparent')
+    .backgroundColor(this.isCurrent(track.id) ? '#141622' : 'transparent')
     .onClick(() => {
       const realIndex = this.playlist.findIndex(t => t.id === track.id);
       PlaybackManager.getInstance().setPlaylist(this.playlist, realIndex >= 0 ? realIndex : 0);

@@ -104,14 +104,14 @@ export struct PlayerPage {
           .fontWeight(FontWeight.Bold)
           .fontColor('#FFFFFF')
           .maxLines(1)
-          .textOverflow(TextOverflow.Ellipsis)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
           .margin({ bottom: 8 })
 
         Text(this.currentTrack ? this.currentTrack.artist : '未知歌手')
           .fontSize(16)
           .fontColor('#8F93A5')
           .maxLines(1)
-          .textOverflow(TextOverflow.Ellipsis)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
       }
       .width('90%')
       .alignItems(HorizontalAlign.Center)

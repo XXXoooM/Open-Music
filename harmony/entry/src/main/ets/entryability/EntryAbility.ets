@@ -1,5 +1,6 @@
 import { UIAbility, Want, AbilityConstant } from '@kit.AbilityKit';
 import { window } from '@kit.ArkUI';
+import { BusinessError } from '@kit.BasicServicesKit';
 import { PlaybackManager } from '../playback/PlaybackManager';
 
 export default class EntryAbility extends UIAbility {
@@ -19,21 +20,27 @@ export default class EntryAbility extends UIAbility {
     PlaybackManager.getInstance().init(this.context);
 
     // Set full-screen display layout
-    windowStage.getMainWindow().then((win) => {
+    windowStage.getMainWindow().then((win: window.Window) => {
       win.setWindowLayoutFullScreen(true).then(() => {
         win.setWindowSystemBarProperties({
           statusBarColor: '#00000000',
-          statusBarContentColor: window.SystemBarContentColor.LIGHT
+          isStatusBarLightIcon: true
+        }).catch((err: BusinessError) => {
+          console.error(`[EntryAbility] setWindowSystemBarProperties failed: ${err.code} - ${err.message}`);
         });
+      }).catch((err: BusinessError) => {
+        console.error(`[EntryAbility] setWindowLayoutFullScreen failed: ${err.code} - ${err.message}`);
       });
+    }).catch((err: BusinessError) => {
+      console.error(`[EntryAbility] getMainWindow failed: ${err.code} - ${err.message}`);
     });
 
-    windowStage.loadContent('pages/Index', (err, data) => {
+    windowStage.loadContent('pages/Index', (err: BusinessError) => {
       if (err.code) {
         console.error(`[EntryAbility] Failed to load content. Cause: ${JSON.stringify(err)}`);
         return;
       }
-      console.info(`[EntryAbility] Content loaded successfully. Data: ${JSON.stringify(data)}`);
+      console.info('[EntryAbility] Content loaded successfully.');
     });
   }
 
