@@ -40,6 +40,10 @@ dependencies {
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
     implementation project(':capacitor-cordova-android-plugins')
+
+    // Native audio playback & system controls support
+    implementation 'com.google.android.exoplayer:exoplayer:2.19.1'
+    implementation 'androidx.media:media:1.6.0'
 }
 
 apply from: 'capacitor.build.gradle'
