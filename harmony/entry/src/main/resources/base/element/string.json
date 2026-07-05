@@ -1,0 +1,28 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "Open Music Player entry module"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "Open Music Ability"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "Open Music"
+    },
+    {
+      "name": "reason_internet",
+      "value": "需要网络访问权限以播放流媒体音乐"
+    },
+    {
+      "name": "reason_background",
+      "value": "需要后台常驻以支持音乐在后台持续播放"
+    },
+    {
+      "name": "reason_continuous_task",
+      "value": "需要运行长时后台任务以维持音乐播放不被挂起"
+    }
+  ]
+}

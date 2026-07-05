@@ -1,0 +1,9 @@
+{
+  "name": "OpenMusic",
+  "version": "1.0.0",
+  "description": "Open Music Player Native HarmonyOS NEXT client",
+  "dependencies": {
+  },
+  "devDependencies": {
+  }
+}

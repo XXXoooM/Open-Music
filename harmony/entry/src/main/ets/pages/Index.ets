@@ -1,148 +1,84 @@
-import { webview } from '@kit.ArkWeb';
-import { window } from '@kit.ArkUI';
-import { avSession } from '@kit.AVSessionKit';
-import { abilityAccessCtrl, Permissions } from '@kit.AbilityKit';
-import { backgroundTaskManager } from '@kit.BackgroundTaskKit';
+import { PlaylistPage } from './PlaylistPage';
+import { PlayerPage } from './PlayerPage';
+import { SettingsPage } from './SettingsPage';
+import { ApiClient } from '../network/ApiClient';
+import { PlaybackManager } from '../playback/PlaybackManager';
+import { hslToColor } from '../utils/ThemeHelper';
 
 @Entry
 @Component
 struct Index {
-  private controller: webview.WebviewController = new webview.WebviewController();
-  private avSessionObj: avSession.AVSession | null = null;
-  private isPlaying: boolean = false;
+  @StorageLink('themeHue') themeHue: number = 180;
+  @State selectedIndex: number = 0;
 
-  aboutToAppear() {
-    this.initWindow();
-    this.requestPermissions();
-  }
+  private tabController: TabsController = new TabsController();
 
-  // Configure immersive status bar (clear background, light content colors)
-  private async initWindow() {
-    try {
-      const win = await window.getLastWindow(getContext(this));
-      await win.setWindowLayoutFullScreen(true);
-      await win.setWindowSystemBarProperties({
-        statusBarColor: '#00000000',
-        statusBarContentColor: window.SystemBarContentColor.LIGHT
-      });
-    } catch (e) {
-      console.error('Window initialization failed', e);
+  async aboutToAppear() {
+    // Load default playlist on startup if no cache exists in AppStorage
+    const playlist = AppStorage.get<any[]>('playlist') || [];
+    if (playlist.length === 0) {
+      try {
+        console.info('[Index] Loading default playlist cache...');
+        const cachedId = '17910751956'; // Default netease playlist ID
+        const tracks = await ApiClient.getInstance().fetchPlaylist(cachedId, 'qijieya');
+        if (tracks && tracks.length > 0) {
+          await PlaybackManager.getInstance().setPlaylist(tracks, 0);
+        }
+      } catch (e) {
+        console.error('[Index] Failed to auto-load default playlist', JSON.stringify(e));
+      }
     }
-  }
-
-  // Request continuous background running permission
-  private async requestPermissions() {
-    const permissions: Permissions[] = [
-      'ohos.permission.KEEP_BACKGROUND_RUNNING',
-      'ohos.permission.BACKGROUND_CONTINUOUS_TASK'
-    ];
-    const atManager = abilityAccessCtrl.createAtManager();
-    await atManager.requestPermissionsFromUser(getContext(this), permissions);
-    this.initAVSession();
-  }
-
-  // Initialize System Audio AVSession & Continuous Task
-  private async initAVSession() {
-    try {
-      this.avSessionObj = await avSession.createAVSession(getContext(this), 'music', 'OpenMusicSession');
-      await this.avSessionObj.activate();
-
-      // Listen to control actions from OS Lockscreen / Control Panel
-      this.avSessionObj.on('play', () => {
-        this.callWebMethod('window.player.play()');
-        this.isPlaying = true;
-        this.updatePlaybackState();
-      });
-
-      this.avSessionObj.on('pause', () => {
-        this.callWebMethod('window.player.pause()');
-        this.isPlaying = false;
-        this.updatePlaybackState();
-      });
-
-      this.avSessionObj.on('skipToNext', () => {
-        this.callWebMethod('window.player.next()');
-      });
-
-      this.avSessionObj.on('skipToPrevious', () => {
-        this.callWebMethod('window.player.prev()');
-      });
-
-      // Keep running in the background for continuous audio playback
-      await backgroundTaskManager.startBackgroundRunning(
-        getContext(this),
-        backgroundTaskManager.BackgroundMode.AUDIO_PLAYBACK,
-        '正在播放音乐'
-      );
-    } catch (e) {
-      console.error('AVSession initialization failed', e);
-    }
-  }
-
-  // Call JavaScript function inside WebView
-  private callWebMethod(jsCode: string) {
-    this.controller.runJavaScript(jsCode);
-  }
-
-  // Sync song information to AVSession
-  private updateMediaInfo(info: { title: string, artist: string, cover: string, duration: number }) {
-    if (!this.avSessionObj) return;
-    this.avSessionObj.setAVMetaData({
-      title: info.title,
-      artist: info.artist,
-      album: 'Open Music',
-      duration: info.duration
-    });
-  }
-
-  // Sync playback state to AVSession
-  private updatePlaybackState() {
-    if (!this.avSessionObj) return;
-    this.avSessionObj.setAVPlaybackState({
-      state: this.isPlaying ? avSession.PlaybackState.PLAYING : avSession.PlaybackState.PAUSED
-    });
-  }
-
-  aboutToDisappear() {
-    if (this.avSessionObj) {
-      this.avSessionObj.deactivate();
-      this.avSessionObj.destroy();
-    }
-    backgroundTaskManager.stopBackgroundRunning(getContext(this));
   }
 
   build() {
     Column() {
-      Web({ src: $rawfile('web/index.html'), controller: this.controller })
-        .javaScriptAccess(true)
-        .domStorageAccess(true)
-        .databaseAccess(true)
-        .mediaPlayGestureAccess(false) // Allow audio to play without user gestures
-        .backgroundColor('#121212')
-        .width('100%')
-        .height('100%')
-        // Expose JavaScript proxy object
-        .registerJavaScriptProxy({
-          object: {
-            updateMediaInfo: (infoStr: string) => {
-              try {
-                const info = JSON.parse(infoStr);
-                this.updateMediaInfo(info);
-              } catch (e) {
-                console.error('Failed to parse MediaInfo JSON', e);
-              }
-            },
-            updatePlayState: (playing: boolean) => {
-              this.isPlaying = playing;
-              this.updatePlaybackState();
-            }
-          },
-          name: 'ohosNative',
-          methodList: ['updateMediaInfo', 'updatePlayState']
-        })
+      Tabs({ barPosition: BarPosition.End, controller: this.tabController }) {
+        TabContent() {
+          PlaylistPage()
+        }
+        .tabBar(this.TabBuilder('音乐馆', 0, '🎵'))
+
+        TabContent() {
+          PlayerPage()
+        }
+        .tabBar(this.TabBuilder('播放器', 1, '💿'))
+
+        TabContent() {
+          SettingsPage()
+        }
+        .tabBar(this.TabBuilder('设置', 2, '⚙️'))
+      }
+      .width('100%')
+      .layoutWeight(1)
+      .backgroundColor('#0A0B10')
+      .barHeight(58)
+      .barWidth('100%')
+      .onChange((index: number) => {
+        this.selectedIndex = index;
+      })
     }
     .width('100%')
     .height('100%')
-    .backgroundColor('#121212')
+    .padding({ top: 38 }) // Immersive status bar height padding spacing offset
+    .backgroundColor('#0A0B10')
+  }
+
+  @Builder
+  TabBuilder(title: string, index: number, icon: string) {
+    Column() {
+      Text(icon)
+        .fontSize(20)
+        .margin({ bottom: 4 })
+        .fontColor(this.selectedIndex === index ? hslToColor(this.themeHue, 92, 68) : '#8F93A5')
+      
+      Text(title)
+        .fontSize(12)
+        .fontColor(this.selectedIndex === index ? hslToColor(this.themeHue, 92, 68) : '#8F93A5')
+        .fontWeight(this.selectedIndex === index ? FontWeight.Medium : FontWeight.Normal)
+    }
+    .width('100%')
+    .height('100%')
+    .justifyContent(FlexAlign.Center)
+    .backgroundColor('#0E0F18')
   }
 }
