@@ -126,6 +126,122 @@ const toggleLyricsBtn = document.getElementById('toggle-lyrics-mobile');
 const closeLyricsBtn = document.getElementById('close-lyrics-mobile');
 
 /* ==========================================================================
+   Aura Visualizer (Canvas Wave Spectrum & Particles)
+   ========================================================================== */
+class AuraVisualizer {
+    constructor(canvasId) {
+        this.canvas = document.getElementById(canvasId);
+        if (!this.canvas) return;
+        this.ctx = this.canvas.getContext('2d');
+        this.animationFrameId = null;
+        this.phase = 0;
+        this.particles = [];
+        this.initParticles();
+        this.resize();
+        window.addEventListener('resize', () => this.resize());
+    }
+
+    resize() {
+        const dpr = window.devicePixelRatio || 1;
+        this.canvas.width = 320 * dpr;
+        this.canvas.height = 320 * dpr;
+        this.ctx.scale(dpr, dpr);
+    }
+
+    initParticles() {
+        this.particles = [];
+        for (let i = 0; i < 40; i++) {
+            this.particles.push({
+                angle: Math.random() * Math.PI * 2,
+                radius: 125 + Math.random() * 20,
+                speed: 0.005 + Math.random() * 0.01,
+                size: 1 + Math.random() * 2,
+                opacity: 0.1 + Math.random() * 0.5
+            });
+        }
+    }
+
+    start() {
+        if (this.animationFrameId) return;
+        this.animate();
+    }
+
+    animate() {
+        this.animationFrameId = requestAnimationFrame(() => this.animate());
+        this.draw();
+    }
+
+    draw() {
+        const ctx = this.ctx;
+        const width = 320;
+        const height = 320;
+        const cx = width / 2;
+        const cy = height / 2;
+
+        ctx.clearRect(0, 0, width, height);
+
+        // Get dynamic theme color from CSS variables
+        const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim() || '#00e5ff';
+        const accentRgb = getComputedStyle(document.documentElement).getPropertyValue('--accent-color-rgb').trim() || '0, 229, 255';
+
+        // Draw glowing aura waves behind vinyl
+        this.phase += isPlaying ? 0.02 : 0.005;
+
+        // Draw multiple overlapping transparent waves
+        const waveCount = 3;
+        for (let w = 0; w < waveCount; w++) {
+            ctx.beginPath();
+            const points = 60;
+            const baseRadius = 126;
+            const amplitude = isPlaying ? (12 - w * 3) : (3 - w * 0.5);
+            const frequency = 3 + w;
+
+            for (let i = 0; i <= points; i++) {
+                const angle = (i / points) * Math.PI * 2;
+                const offset = Math.sin(angle * frequency + this.phase + w * 1.5) * amplitude;
+                const r = baseRadius + offset;
+                const x = cx + Math.cos(angle) * r;
+                const y = cy + Math.sin(angle) * r;
+
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            ctx.closePath();
+            ctx.strokeStyle = `rgba(${accentRgb}, ${0.15 - w * 0.04})`;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            ctx.fillStyle = `rgba(${accentRgb}, ${0.03 - w * 0.01})`;
+            ctx.fill();
+        }
+
+        // Draw floating audio particles
+        this.particles.forEach(p => {
+            if (isPlaying) {
+                p.angle += p.speed;
+                p.radius += Math.sin(this.phase + p.angle) * 0.05;
+            } else {
+                p.angle += p.speed * 0.2;
+            }
+
+            const x = cx + Math.cos(p.angle) * p.radius;
+            const y = cy + Math.sin(p.angle) * p.radius;
+
+            ctx.beginPath();
+            ctx.arc(x, y, p.size, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(${accentRgb}, ${p.opacity})`;
+            ctx.shadowBlur = 4;
+            ctx.shadowColor = `rgb(${accentRgb})`;
+            ctx.fill();
+            ctx.shadowBlur = 0;
+        });
+    }
+}
+
+/* ==========================================================================
    Initialization & API Fetching
    ========================================================================== */
 window.addEventListener('DOMContentLoaded', () => {
@@ -136,6 +252,12 @@ window.addEventListener('DOMContentLoaded', () => {
     loadSettings();
     initEventListeners();
     initKeyboardShortcuts();
+    
+    // Initialize Aura Visualizer
+    window.auraVisualizer = new AuraVisualizer('aura-visualizer');
+    if (window.auraVisualizer) {
+        window.auraVisualizer.start();
+    }
     
     if (playlist.length > 0) {
         if (window.playerEngine && typeof window.playerEngine.setPlaylist === 'function') {
@@ -1259,8 +1381,8 @@ function parsePlaylistId(input) {
     if (pathMatch) {
         return pathMatch[2];
     }
-    // 4. Fallback: match any sequence of 5 to 12 digits in the string
-    const fallbackMatch = input.match(/\b(\d{5,12})\b/);
+    // 4. Fallback: match any sequence of 5 to 15 digits in the string
+    const fallbackMatch = input.match(/\b(\d{5,15})\b/);
     if (fallbackMatch) {
         return fallbackMatch[1];
     }
