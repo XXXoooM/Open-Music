@@ -40,8 +40,42 @@ export struct SettingsPage {
     this.isHslEnabled = hsl;
   }
 
+  parsePlaylistId(input: string): string {
+    const trimmed = input.trim();
+    
+    // 1. Check if it's a raw numeric string
+    const numericRegex = /^\d+$/;
+    if (numericRegex.test(trimmed)) {
+      return trimmed;
+    }
+    
+    // 2. Matches id=xxxx query parameter
+    const queryRegex = /[?&]id=(\d+)/;
+    const queryMatch = trimmed.match(queryRegex);
+    if (queryMatch) {
+      return queryMatch[1];
+    }
+    
+    // 3. Matches /playlist/xxxx or /toplist/xxxx or /album/xxxx in path
+    const pathRegex = /\/(playlist|toplist|album)\/(\d+)/;
+    const pathMatch = trimmed.match(pathRegex);
+    if (pathMatch) {
+      return pathMatch[2];
+    }
+    
+    // 4. Fallback: match any sequence of 5 to 15 digits
+    const fallbackRegex = /\b(\d{5,15})\b/;
+    const fallbackMatch = trimmed.match(fallbackRegex);
+    if (fallbackMatch) {
+      return fallbackMatch[1];
+    }
+    
+    return trimmed;
+  }
+
   async loadPlaylistData() {
-    if (!this.playlistInputId.trim()) {
+    const parsedId = this.parsePlaylistId(this.playlistInputId);
+    if (!parsedId) {
       this.statusMsg = '请输入有效的歌单 ID！';
       return;
     }
@@ -49,11 +83,11 @@ export struct SettingsPage {
     this.statusMsg = '载入中，请稍候...';
     try {
       const tracks = await ApiClient.getInstance().fetchPlaylist(
-        this.playlistInputId,
+        parsedId,
         this.selectedApi
       );
       if (tracks && tracks.length > 0) {
-        await PreferencesHelper.getInstance().putString('om-playlistid', this.playlistInputId);
+        await PreferencesHelper.getInstance().putString('om-playlistid', parsedId);
         await PlaybackManager.getInstance().setPlaylist(tracks, 0);
         this.statusMsg = `成功载入 ${tracks.length} 首歌曲！`;
       } else {

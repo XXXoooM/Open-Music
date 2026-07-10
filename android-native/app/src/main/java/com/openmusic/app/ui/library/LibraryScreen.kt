@@ -478,38 +478,33 @@ fun LibraryScreen(
  */
 fun extractPlaylistId(input: String): String {
     val trimmed = input.trim()
-    if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
-        return try {
-            val uri = android.net.Uri.parse(trimmed)
-            
-            // Check fragment query parameters (e.g. /#/discover/toplist?id=3779629)
-            val fragment = uri.fragment
-            if (!fragment.isNullOrEmpty() && fragment.contains("id=")) {
-                val idParam = fragment.split("&", "?").find { it.startsWith("id=") || it.contains("?id=") }
-                if (idParam != null) {
-                    val cleanParam = if (idParam.contains("?")) idParam.split("?")[1] else idParam
-                    return cleanParam.split("=").getOrNull(1) ?: trimmed
-                }
-            }
-            
-            // Check standard query parameters (e.g. ?id=12345)
-            val queryId = uri.getQueryParameter("id")
-            if (!queryId.isNullOrEmpty()) {
-                return queryId
-            }
-            
-            // Check path-based ID (e.g. music.163.com/playlist/12345)
-            val pathSegments = uri.pathSegments
-            val playlistIndex = pathSegments.indexOf("playlist")
-            if (playlistIndex != -1 && playlistIndex + 1 < pathSegments.size) {
-                return pathSegments[playlistIndex + 1]
-            }
-            
-            trimmed
-        } catch (e: Exception) {
-            trimmed
-        }
+    
+    // 1. Check if it's a raw numeric string
+    if (trimmed.matches(Regex("^\\d+$"))) {
+        return trimmed
     }
+    
+    // 2. Matches id=xxxx query parameter (works for normal queries and hash parameters like toplist?id=xxxx)
+    val queryRegex = Regex("[?&]id=(\\d+)")
+    val queryMatch = queryRegex.find(trimmed)
+    if (queryMatch != null) {
+        return queryMatch.groupValues[1]
+    }
+    
+    // 3. Matches /playlist/xxxx or /toplist/xxxx or /album/xxxx in path
+    val pathRegex = Regex("/(playlist|toplist|album)/(\\d+)")
+    val pathMatch = pathRegex.find(trimmed)
+    if (pathMatch != null) {
+        return pathMatch.groupValues[2]
+    }
+    
+    // 4. Fallback: match any sequence of 5 to 15 digits in the string (Netease IDs are typically 9-11 digits)
+    val fallbackRegex = Regex("\\b(\\d{5,15})\\b")
+    val fallbackMatch = fallbackRegex.find(trimmed)
+    if (fallbackMatch != null) {
+        return fallbackMatch.groupValues[1]
+    }
+    
     return trimmed
 }
 
