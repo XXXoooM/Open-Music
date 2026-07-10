@@ -266,6 +266,8 @@ class MainViewModel : ViewModel() {
                         .setTitle(track.title)
                         .setArtist(track.artist)
                         .setArtworkUri(Uri.parse(track.cover))
+                        .setAlbumTitle("Open Music")
+                        .setMediaType(MediaMetadata.MEDIA_TYPE_MUSIC)
                         .build()
                 )
                 .build()
