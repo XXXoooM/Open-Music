@@ -5,6 +5,12 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.togetherWith
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
@@ -90,40 +96,74 @@ class MainActivity : ComponentActivity() {
                             .fillMaxSize()
                             .padding(bottom = if (activeTab != "player") innerPadding.calculateBottomPadding() else 0.dp)
                     ) {
-                        // Display Active screen
-                        when (activeTab) {
-                            "library" -> {
-                                LibraryScreen(
-                                    viewModel = viewModel,
-                                    palette = palette,
-                                    modifier = Modifier.fillMaxSize()
-                                )
-                            }
-                            "favorites" -> {
-                                FavoritesScreen(
-                                    viewModel = viewModel,
-                                    palette = palette,
-                                    onPlaylistSelected = { activeTab = "library" },
-                                    modifier = Modifier.fillMaxSize()
-                                )
-                            }
-                            "settings" -> {
-                                SettingsScreen(
-                                    viewModel = viewModel,
-                                    palette = palette,
-                                    modifier = Modifier.fillMaxSize()
-                                )
-                            }
-                            "player" -> {
-                                PlayerScreen(
-                                    viewModel = viewModel,
-                                    palette = palette,
-                                    onMinimize = { activeTab = "library" },
-                                    modifier = Modifier.fillMaxSize()
-                                )
-                                // Handle back button from Player to go back to Library/Settings
-                                BackHandler {
-                                    activeTab = "library"
+                        // Display Active screen with smooth AnimatedContent transitions
+                        AnimatedContent(
+                            targetState = activeTab,
+                            transitionSpec = {
+                                val from = initialState
+                                val to = targetState
+                                
+                                // Tab ordering index: library (0), favorites (1), settings (2), player (3)
+                                val tabOrder = mapOf("library" to 0, "favorites" to 1, "settings" to 2, "player" to 3)
+                                val fromOrder = tabOrder[from] ?: 0
+                                val toOrder = tabOrder[to] ?: 0
+                                
+                                if (to == "player") {
+                                    // Player slides up from bottom
+                                    slideInVertically(initialOffsetY = { it }) + fadeIn() togetherWith
+                                            fadeOut() // Keep background screens stable under sliding sheet
+                                } else if (from == "player") {
+                                    // Player slides down to bottom
+                                    fadeIn() togetherWith
+                                            slideOutVertically(targetOffsetY = { it }) + fadeOut()
+                                } else {
+                                    // Sliding horizontally between main tabs
+                                    if (toOrder > fromOrder) {
+                                        slideInHorizontally(initialOffsetX = { it }) + fadeIn() togetherWith
+                                                slideOutHorizontally(targetOffsetX = { -it / 2 }) + fadeOut()
+                                    } else {
+                                        slideInHorizontally(initialOffsetX = { -it }) + fadeIn() togetherWith
+                                                slideOutHorizontally(targetOffsetX = { it / 2 }) + fadeOut()
+                                    }
+                                }
+                            },
+                            modifier = Modifier.fillMaxSize(),
+                            label = "TabTransition"
+                        ) { targetTab ->
+                            when (targetTab) {
+                                "library" -> {
+                                    LibraryScreen(
+                                        viewModel = viewModel,
+                                        palette = palette,
+                                        modifier = Modifier.fillMaxSize()
+                                    )
+                                }
+                                "favorites" -> {
+                                    FavoritesScreen(
+                                        viewModel = viewModel,
+                                        palette = palette,
+                                        onPlaylistSelected = { activeTab = "library" },
+                                        modifier = Modifier.fillMaxSize()
+                                    )
+                                }
+                                "settings" -> {
+                                    SettingsScreen(
+                                        viewModel = viewModel,
+                                        palette = palette,
+                                        modifier = Modifier.fillMaxSize()
+                                    )
+                                }
+                                "player" -> {
+                                    PlayerScreen(
+                                        viewModel = viewModel,
+                                        palette = palette,
+                                        onMinimize = { activeTab = "library" },
+                                        modifier = Modifier.fillMaxSize()
+                                    )
+                                    // Handle back button from Player to go back to Library/Settings
+                                    BackHandler {
+                                        activeTab = "library"
+                                    }
                                 }
                             }
                         }
