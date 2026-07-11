@@ -9,10 +9,17 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.togetherWith
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -109,21 +116,58 @@ class MainActivity : ComponentActivity() {
                                 val toOrder = tabOrder[to] ?: 0
                                 
                                 if (to == "player") {
-                                    // Player slides up from bottom
-                                    slideInVertically(initialOffsetY = { it }) + fadeIn() togetherWith
-                                            fadeOut() // Keep background screens stable under sliding sheet
+                                    // macOS Style Pop/Scale up from MiniPlayer (bottom center)
+                                    scaleIn(
+                                        initialScale = 0.12f,
+                                        transformOrigin = TransformOrigin(0.5f, 0.96f),
+                                        animationSpec = tween(520, easing = FastOutSlowInEasing)
+                                    ) + slideInVertically(
+                                        initialOffsetY = { it / 3 },
+                                        animationSpec = tween(520, easing = FastOutSlowInEasing)
+                                    ) + fadeIn(
+                                        animationSpec = tween(400)
+                                    ) togetherWith fadeOut(animationSpec = tween(350))
                                 } else if (from == "player") {
-                                    // Player slides down to bottom
-                                    fadeIn() togetherWith
-                                            slideOutVertically(targetOffsetY = { it }) + fadeOut()
+                                    // macOS Style Minimize/Scale down into MiniPlayer (bottom center)
+                                    fadeIn(animationSpec = tween(350)) togetherWith
+                                    scaleOut(
+                                        targetScale = 0.12f,
+                                        transformOrigin = TransformOrigin(0.5f, 0.96f),
+                                        animationSpec = tween(520, easing = FastOutSlowInEasing)
+                                    ) + slideOutVertically(
+                                        targetOffsetY = { it / 3 },
+                                        animationSpec = tween(520, easing = FastOutSlowInEasing)
+                                    ) + fadeOut(
+                                        animationSpec = tween(400)
+                                    )
                                 } else {
-                                    // Sliding horizontally between main tabs
+                                    // Sliding horizontally between main tabs with premium Apple-style Spring physics
                                     if (toOrder > fromOrder) {
-                                        slideInHorizontally(initialOffsetX = { it }) + fadeIn() togetherWith
-                                                slideOutHorizontally(targetOffsetX = { -it / 2 }) + fadeOut()
+                                        slideInHorizontally(
+                                            initialOffsetX = { it },
+                                            animationSpec = spring(stiffness = Spring.StiffnessMediumLow)
+                                        ) + fadeIn(
+                                            animationSpec = tween(300)
+                                        ) togetherWith
+                                                slideOutHorizontally(
+                                                    targetOffsetX = { -it / 3 },
+                                                    animationSpec = spring(stiffness = Spring.StiffnessMediumLow)
+                                                ) + fadeOut(
+                                                    animationSpec = tween(300)
+                                                )
                                     } else {
-                                        slideInHorizontally(initialOffsetX = { -it }) + fadeIn() togetherWith
-                                                slideOutHorizontally(targetOffsetX = { it / 2 }) + fadeOut()
+                                        slideInHorizontally(
+                                            initialOffsetX = { -it },
+                                            animationSpec = spring(stiffness = Spring.StiffnessMediumLow)
+                                        ) + fadeIn(
+                                            animationSpec = tween(300)
+                                        ) togetherWith
+                                                slideOutHorizontally(
+                                                    targetOffsetX = { it / 3 },
+                                                    animationSpec = spring(stiffness = Spring.StiffnessMediumLow)
+                                                ) + fadeOut(
+                                                    animationSpec = tween(300)
+                                                )
                                     }
                                 }
                             },
