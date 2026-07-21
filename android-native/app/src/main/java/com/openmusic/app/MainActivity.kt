@@ -116,29 +116,41 @@ class MainActivity : ComponentActivity() {
                                 val toOrder = tabOrder[to] ?: 0
                                 
                                 if (to == "player") {
-                                    // macOS Style Pop/Scale up from MiniPlayer (snappy & fluid)
+                                    // macOS Genie Effect (神奇效果展开: 从 MiniPlayer 锚点水润弧形放大)
                                     scaleIn(
-                                        initialScale = 0.2f,
-                                        transformOrigin = TransformOrigin(0.5f, 0.96f),
-                                        animationSpec = tween(350, easing = FastOutSlowInEasing)
+                                        initialScale = 0.06f,
+                                        transformOrigin = TransformOrigin(0.5f, 0.98f),
+                                        animationSpec = spring(
+                                            stiffness = Spring.StiffnessMediumLow,
+                                            dampingRatio = 0.64f
+                                        )
                                     ) + slideInVertically(
-                                        initialOffsetY = { it / 3 },
-                                        animationSpec = tween(350, easing = FastOutSlowInEasing)
+                                        initialOffsetY = { it * 3 / 4 },
+                                        animationSpec = spring(
+                                            stiffness = Spring.StiffnessMediumLow,
+                                            dampingRatio = 0.64f
+                                        )
                                     ) + fadeIn(
-                                        animationSpec = tween(280)
-                                    ) togetherWith fadeOut(animationSpec = tween(250))
+                                        animationSpec = tween(200)
+                                    ) togetherWith fadeOut(animationSpec = tween(160))
                                 } else if (from == "player") {
-                                    // macOS Style Minimize/Scale down into MiniPlayer (snappy & fluid)
-                                    fadeIn(animationSpec = tween(250)) togetherWith
+                                    // macOS Genie Effect (神奇效果吸入: 呈弧形吮吸吸回 MiniPlayer 锚点)
+                                    fadeIn(animationSpec = tween(160)) togetherWith
                                     scaleOut(
-                                        targetScale = 0.2f,
-                                        transformOrigin = TransformOrigin(0.5f, 0.96f),
-                                        animationSpec = tween(350, easing = FastOutSlowInEasing)
+                                        targetScale = 0.06f,
+                                        transformOrigin = TransformOrigin(0.5f, 0.98f),
+                                        animationSpec = spring(
+                                            stiffness = Spring.StiffnessMedium,
+                                            dampingRatio = 0.72f
+                                        )
                                     ) + slideOutVertically(
-                                        targetOffsetY = { it / 3 },
-                                        animationSpec = tween(350, easing = FastOutSlowInEasing)
+                                        targetOffsetY = { it * 3 / 4 },
+                                        animationSpec = spring(
+                                            stiffness = Spring.StiffnessMedium,
+                                            dampingRatio = 0.72f
+                                        )
                                     ) + fadeOut(
-                                        animationSpec = tween(280)
+                                        animationSpec = tween(220)
                                     )
                                 } else {
                                     // Sliding horizontally between main tabs with premium Apple-style Spring physics
@@ -212,19 +224,38 @@ class MainActivity : ComponentActivity() {
                             }
                         }
 
-                        // Floating MiniPlayer bar shown when Player page is folded
-                        if (activeTab != "player" && track != null) {
-                            Box(
-                                modifier = Modifier
-                                    .align(Alignment.BottomCenter)
-                                    .padding(bottom = 8.dp)
-                            ) {
-                                MiniPlayer(
-                                    viewModel = viewModel,
-                                    palette = palette,
-                                    onClick = { activeTab = "player" }
+                        // Floating MiniPlayer bar shown when Player page is folded with elastic spring response
+                        androidx.compose.animation.AnimatedVisibility(
+                            visible = activeTab != "player" && track != null,
+                            enter = slideInVertically(
+                                initialOffsetY = { it },
+                                animationSpec = spring(
+                                    stiffness = Spring.StiffnessMediumLow,
+                                    dampingRatio = 0.65f
                                 )
-                            }
+                            ) + scaleIn(
+                                initialScale = 0.85f,
+                                animationSpec = spring(
+                                    stiffness = Spring.StiffnessMediumLow,
+                                    dampingRatio = 0.65f
+                                )
+                            ) + fadeIn(animationSpec = tween(200)),
+                            exit = slideOutVertically(
+                                targetOffsetY = { it },
+                                animationSpec = spring(stiffness = Spring.StiffnessMedium)
+                            ) + scaleOut(
+                                targetScale = 0.85f,
+                                animationSpec = spring(stiffness = Spring.StiffnessMedium)
+                            ) + fadeOut(animationSpec = tween(150)),
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter)
+                                .padding(bottom = 8.dp)
+                        ) {
+                            MiniPlayer(
+                                viewModel = viewModel,
+                                palette = palette,
+                                onClick = { activeTab = "player" }
+                            )
                         }
                     }
                 }
