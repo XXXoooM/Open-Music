@@ -1,13 +1,13 @@
-name: Auto Build & Release
+name: Auto Build & Release (Signed APK)
 
 on:
   push:
     tags:
-      - 'v*' # Triggers workflow automatically when pushing tags like v1.0.1, v1.0.2
+      - 'v*'
 
 jobs:
   build-and-release:
-    name: Build Android APK & Publish Release
+    name: Build Signed Android APK & Publish Release
     runs-on: ubuntu-latest
 
     steps:
@@ -29,18 +29,34 @@ jobs:
           cd android-native
           ./gradlew assembleRelease
 
-      - name: Prepare Release Artifacts
+      - name: Locate Unsigned APK
+        id: find_apk
         run: |
           TAG_NAME=${GITHUB_REF#refs/tags/}
-          echo "Building for Tag: $TAG_NAME"
-          
-          # Find generated APK and copy with standard name
           APK_PATH=$(find android-native/app/build/outputs/apk/release/ -name "*.apk" | head -n 1)
-          if [ -f "$APK_PATH" ]; then
-            cp "$APK_PATH" "open-music-${TAG_NAME}.apk"
-            echo "Successfully generated open-music-${TAG_NAME}.apk"
+          echo "FOUND_APK=$APK_PATH" >> $GITHUB_ENV
+          echo "TAG_NAME=$TAG_NAME" >> $GITHUB_ENV
+
+      # Automatically Sign APK if GitHub Secrets are provided
+      - name: Sign Release APK
+        id: sign_app
+        uses: r0adkll/sign-android-release@v1
+        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
+        with:
+          releaseDirectory: android-native/app/build/outputs/apk/release
+          signingKeyBase64: ${{ secrets.KEYSTORE_BASE64 }}
+          alias: ${{ secrets.KEY_ALIAS }}
+          keyStorePassword: ${{ secrets.KEYSTORE_PASSWORD }}
+          keyPassword: ${{ secrets.KEY_PASSWORD }}
+
+      - name: Prepare Final Release APK
+        run: |
+          if [ -f "${{ steps.sign_app.outputs.signedReleaseFile }}" ]; then
+            cp "${{ steps.sign_app.outputs.signedReleaseFile }}" "open-music-${TAG_NAME}-signed.apk"
+            echo "Successfully generated signed APK: open-music-${TAG_NAME}-signed.apk"
           else
-            echo "APK output not found!" && exit 1
+            cp "$FOUND_APK" "open-music-${TAG_NAME}.apk"
+            echo "Keystore secret not set, using default release APK."
           fi
 
       - name: Create GitHub Release & Upload APK Asset
