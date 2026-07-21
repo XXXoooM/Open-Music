@@ -20,13 +20,13 @@ fun rememberHslPalette(targetHue: Float, isHslEnabled: Boolean): HslColorPalette
     return remember(targetHue, isHslEnabled) {
         if (!isHslEnabled) {
             HslColorPalette(
-                background = Color(0xFFFAF6EE),      // 象牙白 (Ivory White)
-                primary = Color(0xFF1B4D3E),          // 森林绿 (Forest Green)
-                surface = Color(0xFFF3ECE0),          // 温暖卡其象牙色作卡片表面层
-                textMain = Color(0xFF1A261F),         // 深灰绿主文本，保证对比度极佳
-                textMuted = Color(0xFF5A665D),         // 次要文本
-                textInactive = Color(0xFF909C93),      // 禁用/未选中状态
-                softAccent = Color(0xFFE6F2EA),       // 浅森林绿淡色调作按钮和背景指示器
+                background = Color(0xFF0F0E17),      // 曜石深黑 (Obsidian Dark)
+                primary = Color(0xFF8B5CF6),          // 电光紫/极光紫 (Electric Cyber Violet)
+                surface = Color(0xFF1A1926),          // 曜石深灰表面层
+                textMain = Color(0xFFF5F5FA),         // 纯净高亮白主文本
+                textMuted = Color(0xFFA0A0B2),         // 冷石灰次要文本
+                textInactive = Color(0xFF555468),      // 禁用/未选中状态
+                softAccent = Color(0xFF2C224E),       // 紫罗兰深色调作按钮和背景指示器
                 isHslEnabled = false
             )
         } else {
