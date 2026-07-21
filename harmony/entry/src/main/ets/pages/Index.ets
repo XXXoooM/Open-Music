@@ -4,6 +4,7 @@ import { SettingsPage } from './SettingsPage';
 import { ApiClient } from '../network/ApiClient';
 import { PlaybackManager } from '../playback/PlaybackManager';
 import { hslToColor } from '../utils/ThemeHelper';
+import { Track } from '../model/Track';
 
 @Entry
 @Component
@@ -15,7 +16,7 @@ struct Index {
 
   async aboutToAppear() {
     // Load default playlist on startup if no cache exists in AppStorage
-    const playlist = AppStorage.get<any[]>('playlist') || [];
+    const playlist = AppStorage.get<Track[]>('playlist') || [];
     if (playlist.length === 0) {
       try {
         console.info('[Index] Loading default playlist cache...');

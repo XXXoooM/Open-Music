@@ -134,7 +134,7 @@ fun SettingsScreen(
                                 fontWeight = FontWeight.SemiBold
                             )
                             Text(
-                                text = if (viewModel.isHslThemeEnabled) "界面色调跟随播放曲目自动流动" else "已切换为极简干净白主题",
+                                text = if (viewModel.isHslThemeEnabled) "界面色调跟随播放曲目自动流动" else "已切换为极简纯白与皇家蓝主题",
                                 color = palette.textMuted,
                                 fontSize = 12.sp
                             )
@@ -172,9 +172,19 @@ fun SettingsScreen(
                     )
                 }
 
-                // Section 4: About & Disclaimers (关于与免责声明)
+                // Section 4: About & Disclaimers (关于与更新)
                 SettingsGroup(title = "关于 Open Music", palette = palette) {
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        SettingsRow(
+                            icon = Icons.Default.Refresh,
+                            title = "检查应用新版本",
+                            subtitle = if (viewModel.isCheckingUpdate) "正在检查更新中..." else "检测是否有新的 Native 或 OTA 资源包",
+                            palette = palette,
+                            onClick = {
+                                viewModel.checkForUpdates(context, isManual = true)
+                            }
+                        )
+
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween

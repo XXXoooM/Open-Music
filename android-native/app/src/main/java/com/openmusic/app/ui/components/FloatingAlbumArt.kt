@@ -5,7 +5,6 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,8 +19,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
@@ -36,84 +33,76 @@ fun FloatingAlbumArt(
     palette: HslColorPalette,
     modifier: Modifier = Modifier
 ) {
-    val scale by animateFloatAsState(
-        targetValue = if (isPlaying) 1.0f else 0.88f,
+    // Smooth, responsive spring scaling between playing (1.0) and paused (0.88)
+    val targetScale = if (isPlaying) 1.0f else 0.88f
+    val animatedScale by animateFloatAsState(
+        targetValue = targetScale,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessLow
+            stiffness = Spring.StiffnessMediumLow
         ),
         label = "AlbumArtScale"
     )
+    
     val cardShadowElevation by animateDpAsState(
-        targetValue = if (isPlaying) 28.dp else 12.dp,
-        animationSpec = tween(500),
+        targetValue = if (isPlaying) 28.dp else 10.dp,
+        animationSpec = tween(300),
         label = "CardShadow"
     )
 
-    Card(
-        shape = ComponentStyles.albumArtShape,
-        modifier = modifier
-            .size(ComponentStyles.albumArtSize)
-            .graphicsLayer {
-                scaleX = scale
-                scaleY = scale
-            }
-            .shadow(
-                elevation = cardShadowElevation,
-                shape = ComponentStyles.albumArtShape,
-                clip = false
-            ),
-        colors = CardDefaults.cardColors(containerColor = palette.surface)
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = modifier.size(ComponentStyles.albumArtSize + 20.dp)
     ) {
-        Box(modifier = Modifier.fillMaxSize()) {
-            if (coverUrl.isNotEmpty()) {
-                AsyncImage(
-                    model = coverUrl,
-                    contentDescription = "Cover",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
-                )
-            } else {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.PlayArrow,
-                        contentDescription = null,
-                        tint = palette.textInactive,
-                        modifier = Modifier.size(48.dp)
-                    )
+        // Main Album Art Card
+        Card(
+            shape = ComponentStyles.albumArtShape,
+            modifier = Modifier
+                .size(ComponentStyles.albumArtSize)
+                .graphicsLayer {
+                    scaleX = animatedScale
+                    scaleY = animatedScale
                 }
-            }
-
-            // 3. Subtle vertical gradient overlay simulating physical vinyl gloss reflections
-            Box(
-                modifier = Modifier
-                    .matchParentSize()
-                    .background(
-                        Brush.verticalGradient(
-                            colors = listOf(
-                                Color.Transparent,
-                                Color.Black.copy(alpha = 0.5f),
-                                Color.Transparent
-                            ),
-                            startY = 0.3f,
-                            endY = Float.POSITIVE_INFINITY
+                .shadow(
+                    elevation = cardShadowElevation,
+                    shape = ComponentStyles.albumArtShape,
+                    clip = false
+                ),
+            colors = CardDefaults.cardColors(containerColor = palette.surface)
+        ) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                if (coverUrl.isNotEmpty()) {
+                    AsyncImage(
+                        model = coverUrl,
+                        contentDescription = "Cover",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.PlayArrow,
+                            contentDescription = null,
+                            tint = palette.textInactive,
+                            modifier = Modifier.size(48.dp)
                         )
-                    )
-            )
+                    }
+                }
 
-            // 4. Subtle inner outline mimicking glass sheen
-            Box(
-                modifier = Modifier
-                    .matchParentSize()
-                    .border(
-                        0.5.dp,
-                        Color.White.copy(alpha = 0.15f),
-                        ComponentStyles.albumArtShape
-                    )
-            )
+                // Subtle inner outline mimicking glass sheen (Adaptive to theme)
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .border(
+                            0.5.dp,
+                            palette.textMain.copy(alpha = 0.12f),
+                            ComponentStyles.albumArtShape
+                        )
+                )
+            }
         }
     }
 }

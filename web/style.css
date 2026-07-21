@@ -2,6 +2,18 @@
    Open Music - Design System & Styling
    ========================================================================== */
 
+@property --accent-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #00e5ff;
+}
+
+@property --accent-color-rgb {
+    syntax: '*';
+    inherits: true;
+    initial-value: 0, 229, 255;
+}
+
 /* Variables */
 :root {
     --bg-dark: #07080d;
@@ -194,6 +206,17 @@ body.is-tauri {
     align-items: center;
 }
 
+.aura-visualizer {
+    position: absolute;
+    width: 320px;
+    height: 320px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 1;
+}
+
 /* Tonearm (Stylus) */
 .tonearm {
     position: absolute;
@@ -224,6 +247,7 @@ body.is-tauri {
     border-radius: 50%;
     background: #09090b;
     position: relative;
+    z-index: 2;
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6),
                 inset 0 0 0 2px rgba(255, 255, 255, 0.05);
     display: flex;

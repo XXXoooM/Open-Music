@@ -85,7 +85,7 @@ export class PlaybackManager {
 
   private setupPlayerEvents(): void {
     // 1. Play state changes
-    this.audioPlayer.on('stateChanged', async (isPlaying: boolean) => {
+    this.audioPlayer.onStateChanged(async (isPlaying: boolean) => {
       AppStorage.setOrCreate('isPlaying', isPlaying);
       if (isPlaying) {
         await this.startBackgroundTask();
@@ -96,13 +96,13 @@ export class PlaybackManager {
     });
 
     // 2. Play progress changes
-    this.audioPlayer.on('timeUpdate', (timeInSeconds: number) => {
+    this.audioPlayer.onTimeUpdate((timeInSeconds: number) => {
       AppStorage.setOrCreate('currentTime', timeInSeconds);
       this.updateAVSessionPosition(timeInSeconds * 1000);
     });
 
     // 3. Audio duration updates
-    this.audioPlayer.on('durationUpdate', (durationInSeconds: number) => {
+    this.audioPlayer.onDurationUpdate((durationInSeconds: number) => {
       AppStorage.setOrCreate('duration', durationInSeconds);
       
       const track = AppStorage.get<Track>('currentTrack');
@@ -114,7 +114,7 @@ export class PlaybackManager {
     });
 
     // 4. Playback auto-completed -> next song
-    this.audioPlayer.on('playbackCompleted', () => {
+    this.audioPlayer.onPlaybackCompleted(() => {
       console.info('[PlaybackManager] Track completed, auto skipping...');
       const mode = AppStorage.get<string>('playMode') || 'list';
       if (mode === 'single') {

@@ -50,17 +50,7 @@
         "reason": "$string:reason_background",
         "usedScene": {
           "abilities": [
-            "EntryAbility"
-          ],
-          "when": "always"
-        }
-      },
-      {
-        "name": "ohos.permission.BACKGROUND_CONTINUOUS_TASK",
-        "reason": "$string:reason_continuous_task",
-        "usedScene": {
-          "abilities": [
-            "EntryAbility"
+            "AudioPlaybackService"
           ],
           "when": "always"
         }

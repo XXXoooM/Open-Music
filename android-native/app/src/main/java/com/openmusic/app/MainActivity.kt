@@ -5,8 +5,21 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.togetherWith
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -57,6 +70,7 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
+            val context = androidx.compose.ui.platform.LocalContext.current
             val track = viewModel.playlist.getOrNull(viewModel.currentTrackIndex)
             val songHash = (track?.title.orEmpty() + track?.artist.orEmpty()).hashCode()
             val targetHue = remember(songHash) { (Math.abs(songHash) % 360).toFloat() }
@@ -68,6 +82,33 @@ class MainActivity : ComponentActivity() {
             ) {
 
                 var activeTab by remember { mutableStateOf("library") }
+
+                // Auto-check for updates in background on app launch
+                LaunchedEffect(Unit) {
+                    viewModel.checkForUpdates(context, isManual = false)
+                }
+
+                // Render UpdateDialog if an update is available
+                val updateInfo = viewModel.updateInfo
+                if (viewModel.showUpdateDialog && updateInfo != null) {
+                    com.openmusic.app.ui.components.UpdateDialog(
+                        updateInfo = updateInfo,
+                        downloadState = viewModel.downloadState,
+                        palette = palette,
+                        onDismiss = { viewModel.dismissUpdateDialog() },
+                        onStartDownload = {
+                            if (com.openmusic.app.util.ApkInstaller.canInstallPackages(context)) {
+                                viewModel.startApkDownload(context)
+                            } else {
+                                com.openmusic.app.util.ApkInstaller.requestInstallPermission(context)
+                                viewModel.startApkDownload(context)
+                            }
+                        },
+                        onInstall = { apkFile ->
+                            com.openmusic.app.util.ApkInstaller.installApk(context, apkFile)
+                        }
+                    )
+                }
 
                 Scaffold(
                     bottomBar = {
@@ -90,57 +131,144 @@ class MainActivity : ComponentActivity() {
                             .fillMaxSize()
                             .padding(bottom = if (activeTab != "player") innerPadding.calculateBottomPadding() else 0.dp)
                     ) {
-                        // Display Active screen
-                        when (activeTab) {
-                            "library" -> {
-                                LibraryScreen(
-                                    viewModel = viewModel,
-                                    palette = palette,
-                                    modifier = Modifier.fillMaxSize()
-                                )
-                            }
-                            "favorites" -> {
-                                FavoritesScreen(
-                                    viewModel = viewModel,
-                                    palette = palette,
-                                    onPlaylistSelected = { activeTab = "library" },
-                                    modifier = Modifier.fillMaxSize()
-                                )
-                            }
-                            "settings" -> {
-                                SettingsScreen(
-                                    viewModel = viewModel,
-                                    palette = palette,
-                                    modifier = Modifier.fillMaxSize()
-                                )
-                            }
-                            "player" -> {
-                                PlayerScreen(
-                                    viewModel = viewModel,
-                                    palette = palette,
-                                    onMinimize = { activeTab = "library" },
-                                    modifier = Modifier.fillMaxSize()
-                                )
-                                // Handle back button from Player to go back to Library/Settings
-                                BackHandler {
-                                    activeTab = "library"
+                        // Display Active screen with smooth AnimatedContent transitions
+                        AnimatedContent(
+                            targetState = activeTab,
+                            transitionSpec = {
+                                val from = initialState
+                                val to = targetState
+                                
+                                // Tab ordering index: library (0), favorites (1), settings (2), player (3)
+                                val tabOrder = mapOf("library" to 0, "favorites" to 1, "settings" to 2, "player" to 3)
+                                val fromOrder = tabOrder[from] ?: 0
+                                val toOrder = tabOrder[to] ?: 0
+                                
+                                if (to == "player") {
+                                    // 展开播放器：从 MiniPlayer 奇点极小锚点 (0.02f) 舒缓平滑绽放释放 (450ms 无软弹回定)
+                                    scaleIn(
+                                        initialScale = 0.02f,
+                                        transformOrigin = TransformOrigin(0.5f, 0.98f),
+                                        animationSpec = tween(450, easing = FastOutSlowInEasing)
+                                    ) + fadeIn(
+                                        animationSpec = tween(350)
+                                    ) togetherWith fadeOut(animationSpec = tween(300))
+                                } else if (from == "player") {
+                                    // 折叠播放器：保留 macOS 经典 Genie Suction (神奇效果吮吸吸回 MiniPlayer 锚点，时长延长至 450ms 舒缓平滑)
+                                    fadeIn(animationSpec = tween(300)) togetherWith
+                                    scaleOut(
+                                        targetScale = 0.08f,
+                                        transformOrigin = TransformOrigin(0.5f, 0.98f),
+                                        animationSpec = tween(450, easing = FastOutSlowInEasing)
+                                    ) + slideOutVertically(
+                                        targetOffsetY = { it * 2 / 3 },
+                                        animationSpec = tween(450, easing = FastOutSlowInEasing)
+                                    ) + fadeOut(
+                                        animationSpec = tween(380)
+                                    )
+                                } else {
+                                    // Sliding horizontally between main tabs with premium Apple-style Spring physics
+                                    if (toOrder > fromOrder) {
+                                        slideInHorizontally(
+                                            initialOffsetX = { it },
+                                            animationSpec = spring(stiffness = Spring.StiffnessMediumLow)
+                                        ) + fadeIn(
+                                            animationSpec = tween(300)
+                                        ) togetherWith
+                                                slideOutHorizontally(
+                                                    targetOffsetX = { -it / 3 },
+                                                    animationSpec = spring(stiffness = Spring.StiffnessMediumLow)
+                                                ) + fadeOut(
+                                                    animationSpec = tween(300)
+                                                )
+                                    } else {
+                                        slideInHorizontally(
+                                            initialOffsetX = { -it },
+                                            animationSpec = spring(stiffness = Spring.StiffnessMediumLow)
+                                        ) + fadeIn(
+                                            animationSpec = tween(300)
+                                        ) togetherWith
+                                                slideOutHorizontally(
+                                                    targetOffsetX = { it / 3 },
+                                                    animationSpec = spring(stiffness = Spring.StiffnessMediumLow)
+                                                ) + fadeOut(
+                                                    animationSpec = tween(300)
+                                                )
+                                    }
+                                }
+                            },
+                            modifier = Modifier.fillMaxSize(),
+                            label = "TabTransition"
+                        ) { targetTab ->
+                            when (targetTab) {
+                                "library" -> {
+                                    LibraryScreen(
+                                        viewModel = viewModel,
+                                        palette = palette,
+                                        modifier = Modifier.fillMaxSize()
+                                    )
+                                }
+                                "favorites" -> {
+                                    FavoritesScreen(
+                                        viewModel = viewModel,
+                                        palette = palette,
+                                        onPlaylistSelected = { activeTab = "library" },
+                                        modifier = Modifier.fillMaxSize()
+                                    )
+                                }
+                                "settings" -> {
+                                    SettingsScreen(
+                                        viewModel = viewModel,
+                                        palette = palette,
+                                        modifier = Modifier.fillMaxSize()
+                                    )
+                                }
+                                "player" -> {
+                                    PlayerScreen(
+                                        viewModel = viewModel,
+                                        palette = palette,
+                                        onMinimize = { activeTab = "library" },
+                                        modifier = Modifier.fillMaxSize()
+                                    )
+                                    // Handle back button from Player to go back to Library/Settings
+                                    BackHandler {
+                                        activeTab = "library"
+                                    }
                                 }
                             }
                         }
 
-                        // Floating MiniPlayer bar shown when Player page is folded
-                        if (activeTab != "player" && track != null) {
-                            Box(
-                                modifier = Modifier
-                                    .align(Alignment.BottomCenter)
-                                    .padding(bottom = 8.dp)
-                            ) {
-                                MiniPlayer(
-                                    viewModel = viewModel,
-                                    palette = palette,
-                                    onClick = { activeTab = "player" }
+                        // Floating MiniPlayer bar shown when Player page is folded with elastic spring response
+                        androidx.compose.animation.AnimatedVisibility(
+                            visible = activeTab != "player" && track != null,
+                            enter = slideInVertically(
+                                initialOffsetY = { it },
+                                animationSpec = spring(
+                                    stiffness = Spring.StiffnessLow,
+                                    dampingRatio = 0.75f
                                 )
-                            }
+                            ) + scaleIn(
+                                initialScale = 0.88f,
+                                animationSpec = spring(
+                                    stiffness = Spring.StiffnessLow,
+                                    dampingRatio = 0.75f
+                                )
+                            ) + fadeIn(animationSpec = tween(350)),
+                            exit = slideOutVertically(
+                                targetOffsetY = { it },
+                                animationSpec = spring(stiffness = Spring.StiffnessMediumLow)
+                            ) + scaleOut(
+                                targetScale = 0.88f,
+                                animationSpec = spring(stiffness = Spring.StiffnessMediumLow)
+                            ) + fadeOut(animationSpec = tween(280)),
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter)
+                                .padding(bottom = 8.dp)
+                        ) {
+                            MiniPlayer(
+                                viewModel = viewModel,
+                                palette = palette,
+                                onClick = { activeTab = "player" }
+                            )
                         }
                     }
                 }

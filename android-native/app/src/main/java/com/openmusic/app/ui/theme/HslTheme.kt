@@ -17,33 +17,30 @@ data class HslColorPalette(
 
 @Composable
 fun rememberHslPalette(targetHue: Float, isHslEnabled: Boolean): HslColorPalette {
-    if (!isHslEnabled) {
-        return remember {
+    return remember(targetHue, isHslEnabled) {
+        if (!isHslEnabled) {
             HslColorPalette(
-                background = Color(0xFF0A0B10),      // 固定深色背景
-                primary = Color(0xFF00E5FF),          // 固定青色强调
-                surface = Color(0xFF1A1C28),
-                textMain = Color(0xFFFFFFFF),
-                textMuted = Color(0xFFB0B0B0),
-                textInactive = Color(0xFF606060),
-                softAccent = Color(0xFF1A2A3A),
+                background = Color(0xFFFAFAFC),      // 极简纯白 (Pure Crisp Snow White)
+                primary = Color(0xFF2563EB),          // 宝蓝色 (Royal Sapphire Blue)
+                surface = Color(0xFFF1F5F9),          // 浅蓝灰明亮表面层
+                textMain = Color(0xFF0F172A),         // 深石墨黑主文本，对比度极佳
+                textMuted = Color(0xFF64748B),         // 灰蓝色次要文本
+                textInactive = Color(0xFF94A3B8),      // 未选中/禁用状态
+                softAccent = Color(0xFFEFF6FF),       // 淡蓝高亮底色作按钮和背景指示器
                 isHslEnabled = false
             )
+        } else {
+            val hue = targetHue.coerceIn(0f, 360f)
+            HslColorPalette(
+                background = Color.hsl(hue, 0.18f, 0.04f),
+                primary = Color.hsl(hue, 0.92f, 0.68f),
+                surface = Color.hsl(hue, 0.15f, 0.10f),
+                textMain = Color.hsl(hue, 0.08f, 0.96f),
+                textMuted = Color.hsl(hue, 0.06f, 0.62f),
+                textInactive = Color.hsl(hue, 0.04f, 0.38f),
+                softAccent = Color.hsl(hue, 0.40f, 0.20f),
+                isHslEnabled = true
+            )
         }
-    }
-
-    // 直接使用 targetHue，无动画、无累加、无最短路径
-    return remember(targetHue) {
-        val hue = targetHue.coerceIn(0f, 360f)
-        HslColorPalette(
-            background = Color.hsl(hue, 0.18f, 0.04f),
-            primary = Color.hsl(hue, 0.92f, 0.68f),
-            surface = Color.hsl(hue, 0.15f, 0.10f),
-            textMain = Color.hsl(hue, 0.08f, 0.96f),
-            textMuted = Color.hsl(hue, 0.06f, 0.62f),
-            textInactive = Color.hsl(hue, 0.04f, 0.38f),
-            softAccent = Color.hsl(hue, 0.40f, 0.20f),
-            isHslEnabled = true
-        )
     }
 }

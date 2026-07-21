@@ -4,8 +4,14 @@ import { BusinessError } from '@kit.BasicServicesKit';
 
 export class AudioPlayer {
   private avPlayer: media.AVPlayer | null = null;
-  private listeners: Map<string, Function[]> = new Map();
   private currentUrl: string = '';
+
+  // Explicit type-safe callback fields
+  private onStateChangedCallback: ((isPlaying: boolean) => void) | null = null;
+  private onTimeUpdateCallback: ((timeInSeconds: number) => void) | null = null;
+  private onDurationUpdateCallback: ((durationInSeconds: number) => void) | null = null;
+  private onPlaybackCompletedCallback: (() => void) | null = null;
+  private onErrorCallback: ((err: BusinessError) => void) | null = null;
 
   async create(): Promise<void> {
     if (this.avPlayer) return;
@@ -20,24 +26,28 @@ export class AudioPlayer {
       console.info(`[AVPlayer] stateChange -> ${state}`);
       switch (state) {
         case 'initialized':
-          // prepare must be called in initialized state
           await this.avPlayer?.prepare();
           break;
         case 'prepared':
-          // Set interruption mode for background audio sharing
           if (this.avPlayer) {
             this.avPlayer.audioInterruptMode = audio.InterruptMode.SHARE_MODE;
           }
           await this.avPlayer?.play();
           break;
         case 'playing':
-          this.emit('stateChanged', true);
+          if (this.onStateChangedCallback) {
+            this.onStateChangedCallback(true);
+          }
           break;
         case 'paused':
-          this.emit('stateChanged', false);
+          if (this.onStateChangedCallback) {
+            this.onStateChangedCallback(false);
+          }
           break;
         case 'completed':
-          this.emit('playbackCompleted');
+          if (this.onPlaybackCompletedCallback) {
+            this.onPlaybackCompletedCallback();
+          }
           break;
         case 'stopped':
           await this.avPlayer?.reset();
@@ -52,16 +62,21 @@ export class AudioPlayer {
     this.avPlayer.on('error', (err: BusinessError) => {
       console.error(`[AVPlayer] Error: ${err.code} - ${err.message}`);
       this.avPlayer?.reset();
-      this.emit('error', err);
+      if (this.onErrorCallback) {
+        this.onErrorCallback(err);
+      }
     });
 
-    // Time values in AVPlayer are in milliseconds; convert to seconds for consistent UI binding
     this.avPlayer.on('timeUpdate', (time: number) => {
-      this.emit('timeUpdate', Math.floor(time / 1000));
+      if (this.onTimeUpdateCallback) {
+        this.onTimeUpdateCallback(Math.floor(time / 1000));
+      }
     });
 
     this.avPlayer.on('durationUpdate', (duration: number) => {
-      this.emit('durationUpdate', Math.floor(duration / 1000));
+      if (this.onDurationUpdateCallback) {
+        this.onDurationUpdateCallback(Math.floor(duration / 1000));
+      }
     });
   }
 
@@ -75,7 +90,7 @@ export class AudioPlayer {
       if (state !== 'idle') {
         await this.avPlayer.reset();
       }
-      this.avPlayer.url = url; // Setting URL triggers initialized state change
+      this.avPlayer.url = url;
     }
   }
 
@@ -121,16 +136,25 @@ export class AudioPlayer {
     return this.avPlayer ? this.avPlayer.state : 'idle';
   }
 
-  on(event: string, callback: Function): void {
-    if (!this.listeners.has(event)) {
-      this.listeners.set(event, []);
-    }
-    this.listeners.get(event)!.push(callback);
+  // Strong-typed callback registrations
+  onStateChanged(callback: (isPlaying: boolean) => void): void {
+    this.onStateChangedCallback = callback;
   }
 
-  emit(event: string, data?: any): void {
-    const callbacks = this.listeners.get(event) || [];
-    callbacks.forEach(cb => cb(data));
+  onTimeUpdate(callback: (timeInSeconds: number) => void): void {
+    this.onTimeUpdateCallback = callback;
+  }
+
+  onDurationUpdate(callback: (durationInSeconds: number) => void): void {
+    this.onDurationUpdateCallback = callback;
+  }
+
+  onPlaybackCompleted(callback: () => void): void {
+    this.onPlaybackCompletedCallback = callback;
+  }
+
+  onError(callback: (err: BusinessError) => void): void {
+    this.onErrorCallback = callback;
   }
 
   release(): void {
@@ -142,6 +166,10 @@ export class AudioPlayer {
       this.avPlayer.release();
       this.avPlayer = null;
     }
-    this.listeners.clear();
+    this.onStateChangedCallback = null;
+    this.onTimeUpdateCallback = null;
+    this.onDurationUpdateCallback = null;
+    this.onPlaybackCompletedCallback = null;
+    this.onErrorCallback = null;
   }
 }

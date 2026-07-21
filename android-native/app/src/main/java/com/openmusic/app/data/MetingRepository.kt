@@ -35,8 +35,15 @@ class MetingRepository {
 
     private fun normalizeUrl(baseUrl: String, path: String?): String {
         if (path.isNullOrEmpty()) return ""
-        if (path.startsWith("http://") || path.startsWith("https://")) {
-            return path
+        
+        // Force upgrade HTTP to HTTPS for secure audio/image delivery
+        var normalized = path
+        if (normalized.startsWith("http://")) {
+            normalized = "https://" + normalized.substring(7)
+        }
+        
+        if (normalized.startsWith("https://")) {
+            return normalized
         }
         return try {
             val apiUri = URL(baseUrl)

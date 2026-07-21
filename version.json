@@ -1,0 +1,10 @@
+{
+  "versionCode": 101,
+  "versionName": "1.0.1",
+  "releaseDate": "2026-07-22",
+  "releaseNotes": "• 升级双层热更新与应用内自动升级系统\n• 优化 macOS 风格奇点释放与动画流畅度\n• 适配高对比度极简纯白与皇家宝蓝视觉主题\n• 提升音乐库与播放器加载响应速度",
+  "apkUrl": "https://github.com/XXXoooM/Open-Music/releases/download/v1.0.1/open-music-v1.0.1.apk",
+  "webBundleUrl": "https://github.com/XXXoooM/Open-Music/releases/download/v1.0.1/web_bundle.zip",
+  "isForceUpdate": false,
+  "minSupportedVersion": 100
+}
