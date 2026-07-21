@@ -134,7 +134,7 @@ fun SettingsScreen(
                                 fontWeight = FontWeight.SemiBold
                             )
                             Text(
-                                text = if (viewModel.isHslThemeEnabled) "界面色调跟随播放曲目自动流动" else "已切换为曜石黑与极光紫极简主题",
+                                text = if (viewModel.isHslThemeEnabled) "界面色调跟随播放曲目自动流动" else "已切换为极简纯白与皇家蓝主题",
                                 color = palette.textMuted,
                                 fontSize = 12.sp
                             )
