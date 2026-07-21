@@ -78,7 +78,7 @@ fun PlayerScreen(
                     .background(
                         Brush.verticalGradient(
                             colors = listOf(
-                                Color.Black.copy(alpha = 0.35f),
+                                palette.background.copy(alpha = 0.3f),
                                 palette.background.copy(alpha = 0.75f),
                                 palette.background
                             )

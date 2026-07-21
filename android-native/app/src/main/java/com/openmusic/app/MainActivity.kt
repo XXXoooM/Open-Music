@@ -116,29 +116,29 @@ class MainActivity : ComponentActivity() {
                                 val toOrder = tabOrder[to] ?: 0
                                 
                                 if (to == "player") {
-                                    // macOS Style Pop/Scale up from MiniPlayer (bottom center)
+                                    // macOS Style Pop/Scale up from MiniPlayer (snappy & fluid)
                                     scaleIn(
-                                        initialScale = 0.12f,
+                                        initialScale = 0.2f,
                                         transformOrigin = TransformOrigin(0.5f, 0.96f),
-                                        animationSpec = tween(520, easing = FastOutSlowInEasing)
+                                        animationSpec = tween(350, easing = FastOutSlowInEasing)
                                     ) + slideInVertically(
                                         initialOffsetY = { it / 3 },
-                                        animationSpec = tween(520, easing = FastOutSlowInEasing)
+                                        animationSpec = tween(350, easing = FastOutSlowInEasing)
                                     ) + fadeIn(
-                                        animationSpec = tween(400)
-                                    ) togetherWith fadeOut(animationSpec = tween(350))
+                                        animationSpec = tween(280)
+                                    ) togetherWith fadeOut(animationSpec = tween(250))
                                 } else if (from == "player") {
-                                    // macOS Style Minimize/Scale down into MiniPlayer (bottom center)
-                                    fadeIn(animationSpec = tween(350)) togetherWith
+                                    // macOS Style Minimize/Scale down into MiniPlayer (snappy & fluid)
+                                    fadeIn(animationSpec = tween(250)) togetherWith
                                     scaleOut(
-                                        targetScale = 0.12f,
+                                        targetScale = 0.2f,
                                         transformOrigin = TransformOrigin(0.5f, 0.96f),
-                                        animationSpec = tween(520, easing = FastOutSlowInEasing)
+                                        animationSpec = tween(350, easing = FastOutSlowInEasing)
                                     ) + slideOutVertically(
                                         targetOffsetY = { it / 3 },
-                                        animationSpec = tween(520, easing = FastOutSlowInEasing)
+                                        animationSpec = tween(350, easing = FastOutSlowInEasing)
                                     ) + fadeOut(
-                                        animationSpec = tween(400)
+                                        animationSpec = tween(280)
                                     )
                                 } else {
                                     // Sliding horizontally between main tabs with premium Apple-style Spring physics
