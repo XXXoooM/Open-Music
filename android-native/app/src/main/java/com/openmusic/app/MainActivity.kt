@@ -70,6 +70,7 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
+            val context = androidx.compose.ui.platform.LocalContext.current
             val track = viewModel.playlist.getOrNull(viewModel.currentTrackIndex)
             val songHash = (track?.title.orEmpty() + track?.artist.orEmpty()).hashCode()
             val targetHue = remember(songHash) { (Math.abs(songHash) % 360).toFloat() }
@@ -81,6 +82,33 @@ class MainActivity : ComponentActivity() {
             ) {
 
                 var activeTab by remember { mutableStateOf("library") }
+
+                // Auto-check for updates in background on app launch
+                LaunchedEffect(Unit) {
+                    viewModel.checkForUpdates(context, isManual = false)
+                }
+
+                // Render UpdateDialog if an update is available
+                val updateInfo = viewModel.updateInfo
+                if (viewModel.showUpdateDialog && updateInfo != null) {
+                    com.openmusic.app.ui.components.UpdateDialog(
+                        updateInfo = updateInfo,
+                        downloadState = viewModel.downloadState,
+                        palette = palette,
+                        onDismiss = { viewModel.dismissUpdateDialog() },
+                        onStartDownload = {
+                            if (com.openmusic.app.util.ApkInstaller.canInstallPackages(context)) {
+                                viewModel.startApkDownload(context)
+                            } else {
+                                com.openmusic.app.util.ApkInstaller.requestInstallPermission(context)
+                                viewModel.startApkDownload(context)
+                            }
+                        },
+                        onInstall = { apkFile ->
+                            com.openmusic.app.util.ApkInstaller.installApk(context, apkFile)
+                        }
+                    )
+                }
 
                 Scaffold(
                     bottomBar = {

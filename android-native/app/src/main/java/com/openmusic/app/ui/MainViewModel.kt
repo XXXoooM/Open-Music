@@ -45,11 +45,22 @@ data class ImportedPlaylistInfo(
 class MainViewModel : ViewModel() {
 
     private val repository = MetingRepository()
+    private val updateRepository = com.openmusic.app.data.UpdateRepository()
     private var settingsManager: SettingsManager? = null
 
     // Controller future reference
     private var controllerFuture: ListenableFuture<MediaController>? = null
     private var controller: MediaController? = null
+
+    // Update System States
+    var updateInfo by mutableStateOf<com.openmusic.app.data.UpdateInfo?>(null)
+        private set
+    var downloadState by mutableStateOf<com.openmusic.app.data.DownloadState>(com.openmusic.app.data.DownloadState.Idle)
+        private set
+    var showUpdateDialog by mutableStateOf(false)
+        private set
+    var isCheckingUpdate by mutableStateOf(false)
+        private set
 
     // UI States
     var collectedPlaylists by mutableStateOf<List<CollectedPlaylist>>(emptyList())
@@ -436,6 +447,59 @@ class MainViewModel : ViewModel() {
                 response.body?.string() ?: ""
             }
         }
+    }
+
+    /**
+     * Checks remote version manifest for new updates
+     */
+    fun checkForUpdates(context: Context, isManual: Boolean = false) {
+        if (isCheckingUpdate) return
+        isCheckingUpdate = true
+
+        viewModelScope.launch {
+            try {
+                val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+                val currentVersionCode = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+                    packageInfo.longVersionCode.toInt()
+                } else {
+                    @Suppress("DEPRECATION")
+                    packageInfo.versionCode
+                }
+
+                val remoteInfo = updateRepository.checkUpdate()
+                if (remoteInfo != null && remoteInfo.versionCode > currentVersionCode) {
+                    updateInfo = remoteInfo
+                    showUpdateDialog = true
+                } else if (isManual) {
+                    android.widget.Toast.makeText(context, "当前已是最新版本 (v${packageInfo.versionName})", android.widget.Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                if (isManual) {
+                    android.widget.Toast.makeText(context, "检查更新失败，请检查网络", android.widget.Toast.LENGTH_SHORT).show()
+                }
+            } finally {
+                isCheckingUpdate = false
+            }
+        }
+    }
+
+    /**
+     * Starts background APK streaming download
+     */
+    fun startApkDownload(context: Context) {
+        val info = updateInfo ?: return
+        if (info.apkUrl.isBlank()) return
+
+        viewModelScope.launch {
+            updateRepository.downloadApk(context, info.apkUrl).collect { state ->
+                downloadState = state
+            }
+        }
+    }
+
+    fun dismissUpdateDialog() {
+        showUpdateDialog = false
     }
 
     override fun onCleared() {
