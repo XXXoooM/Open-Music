@@ -116,17 +116,14 @@ class MainActivity : ComponentActivity() {
                                 val toOrder = tabOrder[to] ?: 0
                                 
                                 if (to == "player") {
-                                    // 展开播放器：从 MiniPlayer 奇点极小锚点 (0.02f) 弹现爆发释放 (Singularity Burst Pop-Out)
+                                    // 展开播放器：从 MiniPlayer 奇点极小锚点 (0.02f) 舒缓平滑绽放释放 (450ms 无软弹回定)
                                     scaleIn(
                                         initialScale = 0.02f,
                                         transformOrigin = TransformOrigin(0.5f, 0.98f),
-                                        animationSpec = spring(
-                                            stiffness = Spring.StiffnessMediumLow,
-                                            dampingRatio = 0.56f
-                                        )
+                                        animationSpec = tween(450, easing = FastOutSlowInEasing)
                                     ) + fadeIn(
-                                        animationSpec = tween(180)
-                                    ) togetherWith fadeOut(animationSpec = tween(220))
+                                        animationSpec = tween(350)
+                                    ) togetherWith fadeOut(animationSpec = tween(300))
                                 } else if (from == "player") {
                                     // 折叠播放器：保留 macOS 经典 Genie Suction (神奇效果吮吸吸回 MiniPlayer 锚点，时长延长至 450ms 舒缓平滑)
                                     fadeIn(animationSpec = tween(300)) togetherWith
