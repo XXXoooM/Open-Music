@@ -116,41 +116,26 @@ class MainActivity : ComponentActivity() {
                                 val toOrder = tabOrder[to] ?: 0
                                 
                                 if (to == "player") {
-                                    // macOS Genie Effect (神奇效果展开: 从 MiniPlayer 锚点水润弧形放大)
-                                    scaleIn(
-                                        initialScale = 0.06f,
+                                    // 展开播放器：平滑高雅淡入与舒缓微扩，完全取消向上弧形膨胀变形
+                                    fadeIn(
+                                        animationSpec = tween(380)
+                                    ) + scaleIn(
+                                        initialScale = 0.92f,
                                         transformOrigin = TransformOrigin(0.5f, 0.98f),
-                                        animationSpec = spring(
-                                            stiffness = Spring.StiffnessMediumLow,
-                                            dampingRatio = 0.64f
-                                        )
-                                    ) + slideInVertically(
-                                        initialOffsetY = { it * 3 / 4 },
-                                        animationSpec = spring(
-                                            stiffness = Spring.StiffnessMediumLow,
-                                            dampingRatio = 0.64f
-                                        )
-                                    ) + fadeIn(
-                                        animationSpec = tween(200)
-                                    ) togetherWith fadeOut(animationSpec = tween(160))
+                                        animationSpec = tween(400, easing = FastOutSlowInEasing)
+                                    ) togetherWith fadeOut(animationSpec = tween(300))
                                 } else if (from == "player") {
-                                    // macOS Genie Effect (神奇效果吸入: 呈弧形吮吸吸回 MiniPlayer 锚点)
-                                    fadeIn(animationSpec = tween(160)) togetherWith
+                                    // 折叠播放器：保留 macOS 经典 Genie Suction (神奇效果吮吸吸回 MiniPlayer 锚点，时长延长至 450ms 舒缓平滑)
+                                    fadeIn(animationSpec = tween(300)) togetherWith
                                     scaleOut(
-                                        targetScale = 0.06f,
+                                        targetScale = 0.08f,
                                         transformOrigin = TransformOrigin(0.5f, 0.98f),
-                                        animationSpec = spring(
-                                            stiffness = Spring.StiffnessMedium,
-                                            dampingRatio = 0.72f
-                                        )
+                                        animationSpec = tween(450, easing = FastOutSlowInEasing)
                                     ) + slideOutVertically(
-                                        targetOffsetY = { it * 3 / 4 },
-                                        animationSpec = spring(
-                                            stiffness = Spring.StiffnessMedium,
-                                            dampingRatio = 0.72f
-                                        )
+                                        targetOffsetY = { it * 2 / 3 },
+                                        animationSpec = tween(450, easing = FastOutSlowInEasing)
                                     ) + fadeOut(
-                                        animationSpec = tween(220)
+                                        animationSpec = tween(380)
                                     )
                                 } else {
                                     // Sliding horizontally between main tabs with premium Apple-style Spring physics
@@ -230,23 +215,23 @@ class MainActivity : ComponentActivity() {
                             enter = slideInVertically(
                                 initialOffsetY = { it },
                                 animationSpec = spring(
-                                    stiffness = Spring.StiffnessMediumLow,
-                                    dampingRatio = 0.65f
+                                    stiffness = Spring.StiffnessLow,
+                                    dampingRatio = 0.75f
                                 )
                             ) + scaleIn(
-                                initialScale = 0.85f,
+                                initialScale = 0.88f,
                                 animationSpec = spring(
-                                    stiffness = Spring.StiffnessMediumLow,
-                                    dampingRatio = 0.65f
+                                    stiffness = Spring.StiffnessLow,
+                                    dampingRatio = 0.75f
                                 )
-                            ) + fadeIn(animationSpec = tween(200)),
+                            ) + fadeIn(animationSpec = tween(350)),
                             exit = slideOutVertically(
                                 targetOffsetY = { it },
-                                animationSpec = spring(stiffness = Spring.StiffnessMedium)
+                                animationSpec = spring(stiffness = Spring.StiffnessMediumLow)
                             ) + scaleOut(
-                                targetScale = 0.85f,
-                                animationSpec = spring(stiffness = Spring.StiffnessMedium)
-                            ) + fadeOut(animationSpec = tween(150)),
+                                targetScale = 0.88f,
+                                animationSpec = spring(stiffness = Spring.StiffnessMediumLow)
+                            ) + fadeOut(animationSpec = tween(280)),
                             modifier = Modifier
                                 .align(Alignment.BottomCenter)
                                 .padding(bottom = 8.dp)
