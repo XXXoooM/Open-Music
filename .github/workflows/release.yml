@@ -1,0 +1,56 @@
+name: Auto Build & Release
+
+on:
+  push:
+    tags:
+      - 'v*' # Triggers workflow automatically when pushing tags like v1.0.1, v1.0.2
+
+jobs:
+  build-and-release:
+    name: Build Android APK & Publish Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Grant Execute Permission for Gradle Wrapper
+        run: chmod +x android-native/gradlew
+
+      - name: Build Android Release APK
+        run: |
+          cd android-native
+          ./gradlew assembleRelease
+
+      - name: Prepare Release Artifacts
+        run: |
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+          echo "Building for Tag: $TAG_NAME"
+          
+          # Find generated APK and copy with standard name
+          APK_PATH=$(find android-native/app/build/outputs/apk/release/ -name "*.apk" | head -n 1)
+          if [ -f "$APK_PATH" ]; then
+            cp "$APK_PATH" "open-music-${TAG_NAME}.apk"
+            echo "Successfully generated open-music-${TAG_NAME}.apk"
+          else
+            echo "APK output not found!" && exit 1
+          fi
+
+      - name: Create GitHub Release & Upload APK Asset
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "Open Music Release ${{ github.ref_name }}"
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: |
+            open-music-*.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
