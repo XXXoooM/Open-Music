@@ -12,6 +12,11 @@ jobs:
   build-android:
     name: Build & Sign Android APK
     runs-on: ubuntu-latest
+    env:
+      KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+      KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+      KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+      KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
 
     steps:
       - name: Checkout Code
@@ -44,13 +49,13 @@ jobs:
       - name: Sign Release APK
         id: sign_app
         uses: r0adkll/sign-android-release@v1
-        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
+        if: ${{ env.KEYSTORE_BASE64 != '' }}
         with:
           releaseDirectory: android-native/app/build/outputs/apk/release
-          signingKeyBase64: ${{ secrets.KEYSTORE_BASE64 }}
-          alias: ${{ secrets.KEY_ALIAS }}
-          keyStorePassword: ${{ secrets.KEYSTORE_PASSWORD }}
-          keyPassword: ${{ secrets.KEY_PASSWORD }}
+          signingKeyBase64: ${{ env.KEYSTORE_BASE64 }}
+          alias: ${{ env.KEY_ALIAS }}
+          keyStorePassword: ${{ env.KEYSTORE_PASSWORD }}
+          keyPassword: ${{ env.KEY_PASSWORD }}
 
       - name: Prepare Final Signed APK
         run: |
