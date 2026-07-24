@@ -9,7 +9,6 @@ npm-debug.log*
 
 # Node modules (if initialized later)
 node_modules/
-package-lock.json
 
 # Local storage overrides
 .vscode/
