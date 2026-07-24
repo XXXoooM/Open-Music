@@ -17,6 +17,7 @@ jobs:
       KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
       KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
       KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+      BUILD_TOOLS_VERSION: "34.0.0"
 
     steps:
       - name: Checkout Code
@@ -55,13 +56,14 @@ jobs:
         id: sign_app
         uses: r0adkll/sign-android-release@v1
         if: ${{ env.KEYSTORE_BASE64 != '' }}
+        env:
+          BUILD_TOOLS_VERSION: "34.0.0"
         with:
           releaseDirectory: android-native/app/build/outputs/apk/release
           signingKeyBase64: ${{ env.KEYSTORE_BASE64 }}
           alias: ${{ env.KEY_ALIAS }}
           keyStorePassword: ${{ env.KEYSTORE_PASSWORD }}
           keyPassword: ${{ env.KEY_PASSWORD }}
-          buildToolsVersion: 34.0.0
 
       - name: Prepare Final Signed APK
         run: |
