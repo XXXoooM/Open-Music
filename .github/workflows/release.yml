@@ -45,6 +45,11 @@ jobs:
           echo "FOUND_APK=$APK_PATH" >> $GITHUB_ENV
           echo "TAG_NAME=$TAG_NAME" >> $GITHUB_ENV
 
+      - name: Setup Android SDK Build Tools
+        run: |
+          yes | ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --licenses || true
+          ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager "build-tools;34.0.0"
+
       # Automatically Sign APK with KeyStore Secrets
       - name: Sign Release APK
         id: sign_app
@@ -56,6 +61,7 @@ jobs:
           alias: ${{ env.KEY_ALIAS }}
           keyStorePassword: ${{ env.KEYSTORE_PASSWORD }}
           keyPassword: ${{ env.KEY_PASSWORD }}
+          buildToolsVersion: 34.0.0
 
       - name: Prepare Final Signed APK
         run: |
