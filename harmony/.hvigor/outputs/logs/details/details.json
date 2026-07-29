@@ -1,0 +1,23 @@
+{
+  "HVIGOR": {
+    "IS_INCREMENTAL": true,
+    "IS_DAEMON": true,
+    "IS_PARALLEL": true,
+    "IS_HVIGORFILE_TYPE_CHECK": false,
+    "TASK_TIME": {},
+    "APIS": [],
+    "CONFIG_EXPERIMENT": {
+      "ENABLE_MODULE_SKIP": false,
+      "ENABLE_CPP_FUNCTION_LEVEL_INCREMENTAL": false
+    },
+    "CONFIG_PROPERTIES": {},
+    "BUILD_ID": "202607051432313000",
+    "ERROR_MESSAGE": [
+      {
+        "CODE": "00000000",
+        "TIMESTAMP": "1783233161518"
+      }
+    ],
+    "TOTAL_TIME": 10223840100
+  }
+}

@@ -44,7 +44,7 @@ object LyricParser {
                         milliseconds *= 10
                     }
                     
-                    val time = minutes * 60f + seconds + milliseconds / 1000f
+                    val time: Long = (minutes * 60L + seconds) * 1000L + milliseconds
                     lyricLines.add(LyricLine(time, cleanLine.ifEmpty { "♫" }))
                 }
             }

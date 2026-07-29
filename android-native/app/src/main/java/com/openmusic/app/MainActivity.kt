@@ -48,6 +48,7 @@ import com.openmusic.app.ui.MainViewModel
 import com.openmusic.app.ui.library.LibraryScreen
 import com.openmusic.app.ui.favorites.FavoritesScreen
 import com.openmusic.app.ui.player.PlayerScreen
+import com.openmusic.app.ui.settings.EqualizerScreen
 import com.openmusic.app.ui.settings.SettingsScreen
 import com.openmusic.app.ui.theme.HslColorPalette
 import com.openmusic.app.ui.theme.OpenMusicTheme
@@ -82,6 +83,7 @@ class MainActivity : ComponentActivity() {
             ) {
 
                 var activeTab by remember { mutableStateOf("library") }
+                var showEqualizer by remember { mutableStateOf(false) }
 
                 // Auto-check for updates in background on app launch
                 LaunchedEffect(Unit) {
@@ -219,6 +221,7 @@ class MainActivity : ComponentActivity() {
                                     SettingsScreen(
                                         viewModel = viewModel,
                                         palette = palette,
+                                        onNavigateToEqualizer = { showEqualizer = true },
                                         modifier = Modifier.fillMaxSize()
                                     )
                                 }
@@ -271,6 +274,21 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                     }
+                }
+
+                // Equalizer full-screen overlay (slides in over settings)
+                AnimatedVisibility(
+                    visible = showEqualizer,
+                    enter = slideInHorizontally(initialOffsetX = { it }, animationSpec = tween(350, easing = FastOutSlowInEasing)) + fadeIn(animationSpec = tween(250)),
+                    exit = slideOutHorizontally(targetOffsetX = { it }, animationSpec = tween(300, easing = FastOutSlowInEasing)) + fadeOut(animationSpec = tween(200))
+                ) {
+                    EqualizerScreen(
+                        viewModel = viewModel,
+                        palette = palette,
+                        onBack = { showEqualizer = false },
+                        modifier = Modifier.fillMaxSize()
+                    )
+                    BackHandler { showEqualizer = false }
                 }
             }
         }

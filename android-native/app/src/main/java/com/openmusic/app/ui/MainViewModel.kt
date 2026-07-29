@@ -16,6 +16,7 @@ import androidx.media3.common.Player
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.google.common.util.concurrent.ListenableFuture
+import com.openmusic.app.audio.EqualizerManager
 import com.openmusic.app.audio.PlaybackService
 import com.openmusic.app.data.LyricLine
 import com.openmusic.app.data.LyricParser
@@ -106,9 +107,22 @@ class MainViewModel : ViewModel() {
     var isHslThemeEnabled by mutableStateOf(true)
         private set
     
+    // Sleep Timer States
+    var sleepTimerRemaining by mutableLongStateOf(-1L) // -1 = inactive; ≥0 = remaining ms
+        private set
+    var sleepAfterCurrentTrack by mutableStateOf(false)
+        private set
+
+    // Equalizer States
+    var eqPreset by mutableStateOf(EqualizerManager.currentPreset)
+        private set
+    var eqBandLevels by mutableStateOf(EqualizerManager.bandLevels.clone())
+        private set
+
     // Coroutine Jobs
     private var progressJob: Job? = null
     private var lyricsFetchJob: Job? = null
+    private var sleepTimerJob: Job? = null
 
     fun initialize(context: Context) {
         if (settingsManager != null) return // Already initialized
@@ -132,6 +146,19 @@ class MainViewModel : ViewModel() {
                 PlayMode.LIST_LOOP
             }
             collectedPlaylists = manager.collectedPlaylistsFlow.first()
+
+            // Restore EQ settings and apply to hardware
+            val savedPreset = manager.eqPresetFlow.first()
+            val savedLevels = manager.eqBandLevelsFlow.first()
+            if (savedPreset == "自定义") {
+                savedLevels.forEachIndexed { band, level ->
+                    EqualizerManager.setBandLevel(band, level)
+                }
+            } else {
+                EqualizerManager.applyPreset(savedPreset)
+            }
+            eqPreset = EqualizerManager.currentPreset
+            eqBandLevels = EqualizerManager.bandLevels.clone()
 
             if (playlist.isEmpty() && playlistIdInput.isNotEmpty()) {
                 loadPlaylist(playlistIdInput)
@@ -196,6 +223,11 @@ class MainViewModel : ViewModel() {
                     viewModelScope.launch {
                         settingsManager?.saveCurrentTrackIndex(newIndex)
                     }
+                }
+                // Sleep after current track: pause when the next track begins
+                if (sleepAfterCurrentTrack) {
+                    controller?.pause()
+                    sleepAfterCurrentTrack = false
                 }
             }
 
@@ -406,10 +438,10 @@ class MainViewModel : ViewModel() {
             currentLyricIndex = -1
             return
         }
-        val currentTimeSec = currentPosition / 1000f
+        // Both currentPosition and lyrics[i].time are now Long milliseconds — no conversion needed
         var matchedIndex = -1
         for (i in lyrics.indices) {
-            if (currentTimeSec >= lyrics[i].time) {
+            if (currentPosition >= lyrics[i].time) {
                 matchedIndex = i
             } else {
                 break
@@ -502,9 +534,77 @@ class MainViewModel : ViewModel() {
         showUpdateDialog = false
     }
 
+    // --- Equalizer ---
+
+    /**
+     * Applies a named EQ preset (e.g. "流行", "电子") to the hardware and persists the choice.
+     */
+    fun setEqPreset(presetName: String) {
+        EqualizerManager.applyPreset(presetName)
+        eqPreset = EqualizerManager.currentPreset
+        eqBandLevels = EqualizerManager.bandLevels.clone()
+        viewModelScope.launch {
+            settingsManager?.saveEqPreset(presetName)
+            settingsManager?.saveEqBandLevels(EqualizerManager.bandLevels)
+        }
+    }
+
+    /**
+     * Sets a single EQ [band] level in milliBels and persists the change.
+     * Automatically sets preset to "自定义".
+     */
+    fun setEqBandLevel(band: Int, levelMb: Int) {
+        EqualizerManager.setBandLevel(band, levelMb)
+        eqPreset = EqualizerManager.currentPreset
+        eqBandLevels = EqualizerManager.bandLevels.clone()
+        viewModelScope.launch {
+            settingsManager?.saveEqPreset(EqualizerManager.currentPreset)
+            settingsManager?.saveEqBandLevels(EqualizerManager.bandLevels)
+        }
+    }
+
+    // --- Sleep Timer ---
+
+    /**
+     * Starts a countdown sleep timer. When the timer expires, playback is paused.
+     * @param durationMs Duration in milliseconds until playback stops.
+     */
+    fun setSleepTimer(durationMs: Long) {
+        cancelSleepTimer()
+        sleepAfterCurrentTrack = false
+        sleepTimerRemaining = durationMs
+        sleepTimerJob = viewModelScope.launch {
+            while (sleepTimerRemaining > 0) {
+                delay(1000)
+                sleepTimerRemaining = (sleepTimerRemaining - 1000L).coerceAtLeast(0L)
+            }
+            controller?.pause()
+            sleepTimerRemaining = -1L
+        }
+    }
+
+    /**
+     * Schedules playback to stop after the currently playing track finishes.
+     */
+    fun setSleepAfterCurrentTrack() {
+        cancelSleepTimer()
+        sleepAfterCurrentTrack = true
+    }
+
+    /**
+     * Cancels any active sleep timer or sleep-after-track schedule.
+     */
+    fun cancelSleepTimer() {
+        sleepTimerJob?.cancel()
+        sleepTimerJob = null
+        sleepTimerRemaining = -1L
+        sleepAfterCurrentTrack = false
+    }
+
     override fun onCleared() {
         stopProgressTracker()
         lyricsFetchJob?.cancel()
+        sleepTimerJob?.cancel()
         controllerFuture?.let {
             MediaController.releaseFuture(it)
         }

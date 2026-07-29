@@ -33,6 +33,9 @@ class PlaybackService : MediaSessionService() {
             .setHandleAudioBecomingNoisy(true)
             .build()
 
+        // Initialize Equalizer with ExoPlayer's audio session — must happen after player is built
+        EqualizerManager.initialize(player.audioSessionId)
+
         // Build SessionActivity PendingIntent to handle taps on notification card
         val intent = Intent(this, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
@@ -60,6 +63,7 @@ class PlaybackService : MediaSessionService() {
     }
 
     override fun onDestroy() {
+        EqualizerManager.release()
         mediaSession?.run {
             player.release()
             release()

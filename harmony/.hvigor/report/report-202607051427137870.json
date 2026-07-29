@@ -1,0 +1,418 @@
+{
+  "version": "2.0",
+  "ppid": 432,
+  "events": [
+    {
+      "head": {
+        "id": "57e0a3bd-ab20-46fc-a760-44bdcd5efa42",
+        "name": "watch worker: worker id should be larger than 0. Nothing will be sent to any worker thread.",
+        "description": "",
+        "type": "log"
+      },
+      "body": {
+        "pid": 23424,
+        "tid": "Main Thread",
+        "startTime": 15135467567500
+      },
+      "additional": {
+        "logType": "debug",
+        "children": []
+      }
+    },
+    {
+      "head": {
+        "id": "7678a9ee-868c-48d7-8747-2411ff576df5",
+        "name": "Since there is no instance or instance is terminated, create a new worker pool.",
+        "description": "",
+        "type": "log"
+      },
+      "body": {
+        "pid": 23424,
+        "tid": "Main Thread",
+        "startTime": 15135470082100
+      },
+      "additional": {
+        "logType": "debug",
+        "children": []
+      }
+    },
+    {
+      "head": {
+        "id": "9b082d36-b227-46e7-99b1-ee2d1cc7805b",
+        "name": "Worker pool is initialized with config:  {\n  minPoolNum: 2,\n  maxPoolNum: undefined,\n  maxCoreSize: undefined,\n  cacheCapacity: undefined,\n  cacheTtl: undefined\n}",
+        "description": "",
+        "type": "log"
+      },
+      "body": {
+        "pid": 23424,
+        "tid": "Main Thread",
+        "startTime": 15135470404900
+      },
+      "additional": {
+        "logType": "debug",
+        "children": []
+      }
+    },
+    {
+      "head": {
+        "id": "80eb82ac-e960-4511-9b55-d78c4ab562ca",
+        "name": "Create  resident worker with id: 0.",
+        "description": "",
+        "type": "log"
+      },
+      "body": {
+        "pid": 23424,
+        "tid": "Main Thread",
+        "startTime": 15135471031500
+      },
+      "additional": {
+        "logType": "debug",
+        "children": []
+      }
+    },
+    {
+      "head": {
+        "id": "1aba9806-1ee3-42e0-90a7-717e40b8dd8b",
+        "name": "Create  resident worker with id: 1.",
+        "description": "",
+        "type": "log"
+      },
+      "body": {
+        "pid": 23424,
+        "tid": "Main Thread",
+        "startTime": 15135472605500
+      },
+      "additional": {
+        "logType": "debug",
+        "children": []
+      }
+    },
+    {
+      "head": {
+        "id": "2f0d8ff7-651d-4714-b9f8-a3eedd84811d",
+        "name": "Workers' log level updated to INFO",
+        "description": "",
+        "type": "log"
+      },
+      "body": {
+        "pid": 23424,
+        "tid": "Main Thread",
+        "startTime": 15135474159900
+      },
+      "additional": {
+        "logType": "debug",
+        "children": []
+      }
+    },
+    {
+      "head": {
+        "id": "7f670810-976b-41b9-8c7c-d0a9bc149c50",
+        "name": "init",
+        "description": "Initialize and build task graph.",
+        "type": "duration"
+      },
+      "body": {
+        "pid": 23424,
+        "tid": "Main Thread",
+        "startTime": 15135475064400
+      },
+      "additional": {
+        "children": [
+          "a8fb1a68-8cfb-4937-a3f8-0d63229d38dd",
+          "090ef83c-00fc-4651-9d34-73b7ba9b1d5d",
+          "d7520f6c-5707-4d12-9452-e6d9ee42893a",
+          "9ec7b8b9-2c25-41d1-8b79-22a370ddf14f",
+          "882ba011-93fb-45de-9448-ab93e72f85a5"
+        ],
+        "state": "running",
+        "targetName": "",
+        "moduleName": "",
+        "category": "Init",
+        "taskRunReasons": []
+      },
+      "log": {
+        "_logger": {
+          "category": "DurationEvent",
+          "context": {},
+          "callStackSkipIndex": 0
+        },
+        "_filelogger": {
+          "category": "debug-file",
+          "context": {},
+          "callStackSkipIndex": 0
+        },
+        "anonymizeFileLogger": {
+          "fileLogger": {
+            "category": "debug-file",
+            "context": {},
+            "callStackSkipIndex": 0
+          }
+        }
+      }
+    },
+    {
+      "head": {
+        "id": "a8fb1a68-8cfb-4937-a3f8-0d63229d38dd",
+        "name": "create hvigor project model",
+        "description": "Initialize hvigor project model.",
+        "type": "duration"
+      },
+      "body": {
+        "pid": 23424,
+        "tid": "Main Thread",
+        "startTime": 15135475065900
+      },
+      "additional": {
+        "children": [],
+        "state": "running",
+        "targetName": "",
+        "moduleName": "",
+        "category": "",
+        "taskRunReasons": [],
+        "parent": "7f670810-976b-41b9-8c7c-d0a9bc149c50"
+      },
+      "log": {
+        "_logger": {
+          "category": "DurationEvent",
+          "context": {},
+          "callStackSkipIndex": 0
+        },
+        "_filelogger": {
+          "category": "debug-file",
+          "context": {},
+          "callStackSkipIndex": 0
+        },
+        "anonymizeFileLogger": {
+          "fileLogger": {
+            "category": "debug-file",
+            "context": {},
+            "callStackSkipIndex": 0
+          }
+        }
+      }
+    },
+    {
+      "head": {
+        "id": "882ba011-93fb-45de-9448-ab93e72f85a5",
+        "name": "\"configEvaluated\" hook function",
+        "description": "",
+        "type": "duration"
+      },
+      "body": {
+        "pid": 23424,
+        "tid": "Main Thread",
+        "startTime": 15135477402900,
+        "endTime": 15135477727600
+      },
+      "additional": {
+        "children": [],
+        "state": "success",
+        "targetName": "",
+        "moduleName": "",
+        "category": "",
+        "taskRunReasons": [],
+        "parent": "7f670810-976b-41b9-8c7c-d0a9bc149c50",
+        "logId": "aa34f952-5946-453b-aca1-da4473f760f3"
+      },
+      "log": {
+        "_logger": {
+          "category": "DurationEvent",
+          "context": {},
+          "callStackSkipIndex": 0
+        },
+        "_filelogger": {
+          "category": "debug-file",
+          "context": {},
+          "callStackSkipIndex": 0
+        },
+        "anonymizeFileLogger": {
+          "fileLogger": {
+            "category": "debug-file",
+            "context": {},
+            "callStackSkipIndex": 0
+          }
+        }
+      }
+    },
+    {
+      "head": {
+        "id": "aa34f952-5946-453b-aca1-da4473f760f3",
+        "name": "\"configEvaluated\" hook function",
+        "description": "",
+        "type": "log"
+      },
+      "body": {
+        "pid": 23424,
+        "tid": "Main Thread",
+        "startTime": 15135477402900,
+        "endTime": 15135477727600
+      },
+      "additional": {
+        "logType": "info",
+        "children": [],
+        "durationId": "882ba011-93fb-45de-9448-ab93e72f85a5"
+      }
+    },
+    {
+      "head": {
+        "id": "813c1904-801d-44cb-b2f9-a50456914fef",
+        "name": "hvigor build process will be closed with an error.",
+        "description": "",
+        "type": "log"
+      },
+      "body": {
+        "pid": 23424,
+        "tid": "Main Thread",
+        "startTime": 15135479288900
+      },
+      "additional": {
+        "logType": "debug",
+        "children": []
+      }
+    },
+    {
+      "head": {
+        "id": "194436c6-be98-4d2b-aefd-a741f6797c03",
+        "name": "\u001b[31m00303149 Configuration Error\r\nError Message: Path not found. At file: O:\\entry\r\n\r\n* Try the following:\r\n  > Please check field: modules in file: O:\\build-profile.json5.\r\n\u001b[39m\r\n\r\n\u001b[31m* Try:\r\n> Run with --stacktrace option to get the stack trace.\r\n> Run with --debug option to get more log output.\r\n",
+        "description": "",
+        "type": "log"
+      },
+      "body": {
+        "pid": 23424,
+        "tid": "Main Thread",
+        "startTime": 15135479409500
+      },
+      "additional": {
+        "logType": "error",
+        "children": []
+      }
+    },
+    {
+      "head": {
+        "id": "315cbd5a-d991-47cb-9b39-c2c0dc232113",
+        "name": "ERROR: stacktrace = AdaptorError: \u001b[31m00303149 Configuration Error\r\nError Message: Path not found. At file: O:\\entry\r\n\r\n* Try the following:\r\n  > Please check field: modules in file: O:\\build-profile.json5.\r\n\u001b[39m\n    at HvigorLogger.printErrorExit (C:\\Program Files\\Huawei\\HM\\DevEco Studio\\tools\\hvigor\\hvigor\\src\\base\\log\\hvigor-log.js:1:5087)\n    at exitIfNotExists (C:\\Program Files\\Huawei\\HM\\DevEco Studio\\tools\\hvigor\\hvigor\\src\\base\\util\\file-util.js:1:1245)\n    at C:\\Program Files\\Huawei\\HM\\DevEco Studio\\tools\\hvigor\\hvigor\\src\\base\\internal\\lifecycle\\init.js:1:3371\n    at Array.forEach (<anonymous>)\n    at init (C:\\Program Files\\Huawei\\HM\\DevEco Studio\\tools\\hvigor\\hvigor\\src\\base\\internal\\lifecycle\\init.js:1:3125)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async start (C:\\Program Files\\Huawei\\HM\\DevEco Studio\\tools\\hvigor\\hvigor\\src\\base\\boot\\index.js:1:2472)\n    at async boot (C:\\Program Files\\Huawei\\HM\\DevEco Studio\\tools\\hvigor\\hvigor\\src\\base\\boot\\index.js:1:1789)\n    at async Worker.<anonymous> (C:\\Program Files\\Huawei\\HM\\DevEco Studio\\tools\\hvigor\\hvigor\\src\\base\\daemon\\cluster\\worker-process-lifecycle.js:1:3723)",
+        "description": "",
+        "type": "log"
+      },
+      "body": {
+        "pid": 23424,
+        "tid": "Main Thread",
+        "startTime": 15135479707200
+      },
+      "additional": {
+        "logType": "debug",
+        "children": []
+      }
+    },
+    {
+      "head": {
+        "id": "10204247-ad46-4ed0-b208-364ca85ecdc0",
+        "name": "\"buildFinished\" hook function",
+        "description": "",
+        "type": "duration"
+      },
+      "body": {
+        "pid": 23424,
+        "tid": "Main Thread",
+        "startTime": 15135488234800,
+        "endTime": 15135488264200
+      },
+      "additional": {
+        "children": [],
+        "state": "success",
+        "targetName": "",
+        "moduleName": "",
+        "category": "",
+        "taskRunReasons": [],
+        "parent": "c11e2005-0599-4185-8c73-77b25d9cabcd",
+        "logId": "0328f191-e764-4a49-b921-a83c08336749"
+      },
+      "log": {
+        "_logger": {
+          "category": "DurationEvent",
+          "context": {},
+          "callStackSkipIndex": 0
+        },
+        "_filelogger": {
+          "category": "debug-file",
+          "context": {},
+          "callStackSkipIndex": 0
+        },
+        "anonymizeFileLogger": {
+          "fileLogger": {
+            "category": "debug-file",
+            "context": {},
+            "callStackSkipIndex": 0
+          }
+        }
+      }
+    },
+    {
+      "head": {
+        "id": "0328f191-e764-4a49-b921-a83c08336749",
+        "name": "\"buildFinished\" hook function",
+        "description": "",
+        "type": "log"
+      },
+      "body": {
+        "pid": 23424,
+        "tid": "Main Thread",
+        "startTime": 15135488234800,
+        "endTime": 15135488264200
+      },
+      "additional": {
+        "logType": "info",
+        "children": [],
+        "durationId": "10204247-ad46-4ed0-b208-364ca85ecdc0"
+      }
+    },
+    {
+      "head": {
+        "id": "8e8000eb-65a4-4baa-af28-45256977a9b5",
+        "name": "",
+        "description": "",
+        "type": "mark"
+      },
+      "body": {
+        "pid": 23424,
+        "tid": "Main Thread",
+        "startTime": 15135474597300,
+        "endTime": 15135489641200
+      },
+      "additional": {
+        "time": {
+          "year": 2026,
+          "month": 7,
+          "day": 5,
+          "hour": 14,
+          "minute": 27,
+          "second": 13
+        },
+        "completeCommand": "{\"prop\":[\"product=default\"],\"sync\":true,\"parallel\":true,\"incremental\":true,\"daemon\":true,\"_\":[],\"analyze\":\"normal\"};",
+        "hvigorVersion": "6.22.3",
+        "markType": "history",
+        "nodeVersion": "v18.20.1",
+        "category": "build",
+        "state": "failed"
+      }
+    },
+    {
+      "head": {
+        "id": "cf75e320-59ae-4e28-afeb-b38513522f75",
+        "name": "BUILD FAILED in 14 ms ",
+        "description": "",
+        "type": "log"
+      },
+      "body": {
+        "pid": 23424,
+        "tid": "Main Thread",
+        "startTime": 15135489820400
+      },
+      "additional": {
+        "logType": "error",
+        "children": []
+      }
+    }
+  ],
+  "workLog": []
+}

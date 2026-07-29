@@ -5,14 +5,20 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -26,17 +32,29 @@ import kotlin.OptIn
 import coil.annotation.ExperimentalCoilApi
 import com.openmusic.app.data.MetingRepository
 import com.openmusic.app.ui.MainViewModel
+import com.openmusic.app.ui.components.SleepTimerDialog
 import com.openmusic.app.ui.theme.HslColorPalette
 import coil.imageLoader
+import java.util.concurrent.TimeUnit
 
 @OptIn(ExperimentalCoilApi::class)
 @Composable
 fun SettingsScreen(
     viewModel: MainViewModel,
     palette: HslColorPalette,
+    onNavigateToEqualizer: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    var showSleepTimerDialog by remember { mutableStateOf(false) }
+
+    if (showSleepTimerDialog) {
+        SleepTimerDialog(
+            viewModel = viewModel,
+            palette = palette,
+            onDismiss = { showSleepTimerDialog = false }
+        )
+    }
 
     Box(
         modifier = modifier
@@ -47,6 +65,7 @@ fun SettingsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 20.dp)
+                .verticalScroll(rememberScrollState())
                 .systemBarsPadding()
         ) {
             // Header
@@ -148,6 +167,45 @@ fun SettingsScreen(
                                 uncheckedThumbColor = palette.textInactive,
                                 uncheckedTrackColor = palette.textInactive.copy(alpha = 0.2f)
                             )
+                        )
+                    }
+                }
+
+                // Section 2.5: Playback Control (播放控制)
+                SettingsGroup(title = "播放控制", palette = palette) {
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        // EQ row
+                        SettingsRow(
+                            icon = Icons.Default.Settings,
+                            title = "均衡器 (EQ)",
+                            subtitle = "当前：${viewModel.eqPreset}  ·  调节频段音效",
+                            palette = palette,
+                            onClick = onNavigateToEqualizer
+                        )
+
+                        HorizontalDivider(
+                            color = palette.textInactive.copy(alpha = 0.08f),
+                            modifier = Modifier.padding(vertical = 4.dp)
+                        )
+
+                        // Sleep Timer row
+                        val isTimerActive = viewModel.sleepTimerRemaining >= 0L
+                        val isAfterTrack = viewModel.sleepAfterCurrentTrack
+                        val sleepSubtitle = when {
+                            isAfterTrack -> "当前曲结束后停止"
+                            isTimerActive -> {
+                                val mins = TimeUnit.MILLISECONDS.toMinutes(viewModel.sleepTimerRemaining)
+                                val secs = TimeUnit.MILLISECONDS.toSeconds(viewModel.sleepTimerRemaining) % 60
+                                "剩余 %02d:%02d".format(mins, secs)
+                            }
+                            else -> "点击设置睡眠定时，到时自动停止播放"
+                        }
+                        SettingsRow(
+                            icon = Icons.Default.Info,
+                            title = "睡眠定时器",
+                            subtitle = sleepSubtitle,
+                            palette = palette,
+                            onClick = { showSleepTimerDialog = true }
                         )
                     }
                 }

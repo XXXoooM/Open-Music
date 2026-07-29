@@ -23,6 +23,8 @@ class SettingsManager(private val context: Context) {
         val KEY_HSL_THEME_ENABLED = booleanPreferencesKey("hsl_theme_enabled")
         val KEY_PLAY_MODE = stringPreferencesKey("play_mode")
         val KEY_COLLECTED_PLAYLISTS_JSON = stringPreferencesKey("collected_playlists_json")
+        val KEY_EQ_PRESET = stringPreferencesKey("eq_preset")
+        val KEY_EQ_BAND_LEVELS = stringPreferencesKey("eq_band_levels") // JSON array of 5 ints
     }
 
     // Read streams mapped directly to clean Kotlin data flows
@@ -111,6 +113,34 @@ class SettingsManager(private val context: Context) {
     suspend fun saveCollectedPlaylists(playlists: List<CollectedPlaylist>) {
         context.dataStore.edit { preferences ->
             preferences[KEY_COLLECTED_PLAYLISTS_JSON] = gson.toJson(playlists)
+        }
+    }
+
+    val eqPresetFlow: Flow<String> = context.dataStore.data.map { preferences ->
+        preferences[KEY_EQ_PRESET] ?: "默认"
+    }
+
+    val eqBandLevelsFlow: Flow<IntArray> = context.dataStore.data.map { preferences ->
+        val json = preferences[KEY_EQ_BAND_LEVELS] ?: ""
+        if (json.isEmpty()) IntArray(5) { 0 } else {
+            try {
+                val type = object : TypeToken<IntArray>() {}.type
+                gson.fromJson(json, type) ?: IntArray(5) { 0 }
+            } catch (e: Exception) {
+                IntArray(5) { 0 }
+            }
+        }
+    }
+
+    suspend fun saveEqPreset(preset: String) {
+        context.dataStore.edit { preferences ->
+            preferences[KEY_EQ_PRESET] = preset
+        }
+    }
+
+    suspend fun saveEqBandLevels(levels: IntArray) {
+        context.dataStore.edit { preferences ->
+            preferences[KEY_EQ_BAND_LEVELS] = gson.toJson(levels)
         }
     }
 }

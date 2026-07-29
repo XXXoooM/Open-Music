@@ -189,7 +189,7 @@ fun LyricsPanel(
                                 alpha = if (isActive) 1f else lineAlpha
                             }
                             .clickable {
-                                viewModel.seekTo((line.time * 1000).toLong())
+                                viewModel.seekTo(line.time) // time is now Long ms, no conversion needed
                                 lastUserInteractionTime = 0L
                             }
                     )
