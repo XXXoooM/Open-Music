@@ -133,7 +133,7 @@ fun EqualizerScreen(
                                     isSelected = viewModel.eqPreset == presetName,
                                     palette = palette,
                                     modifier = Modifier.weight(1f),
-                                    onClick = { viewModel.setEqPreset(presetName) }
+                                    onClick = { viewModel.applyEqPreset(presetName) }
                                 )
                             }
                             // Fill remaining slots in last row
@@ -247,7 +247,7 @@ fun EqualizerScreen(
 
                 // ── Reset Button ──
                 OutlinedButton(
-                    onClick = { viewModel.setEqPreset("默认") },
+                    onClick = { viewModel.applyEqPreset("默认") },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = palette.textMuted),

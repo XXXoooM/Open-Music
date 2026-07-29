@@ -539,7 +539,7 @@ class MainViewModel : ViewModel() {
     /**
      * Applies a named EQ preset (e.g. "流行", "电子") to the hardware and persists the choice.
      */
-    fun setEqPreset(presetName: String) {
+    fun applyEqPreset(presetName: String) {
         EqualizerManager.applyPreset(presetName)
         eqPreset = EqualizerManager.currentPreset
         eqBandLevels = EqualizerManager.bandLevels.clone()
