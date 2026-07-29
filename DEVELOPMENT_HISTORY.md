@@ -173,3 +173,129 @@
 
 ### `[d79d720]` 2026-07-03 | docs: update README.md and add DEVELOPMENT_HISTORY.md with important disclaimers and timeline history
 * **内容详述**：初步梳理项目自述文件与迭代进度文档，加入项目免责声明与 MIT 开源许可证。
+
+---
+
+## 🚀 发版时代 (Release Pipeline & Feature Expansion)
+
+### `[v1.0.1]` 2026-07-21 | CI/CD 全面重构 + OTA 双层热更新系统
+
+#### CI/CD 流水线修复与优化
+
+##### `[feat/ci]` 重写 GitHub Actions release.yml
+* **问题溯源**：v1.0.1 首次发版时接连暴露出多个 CI 问题：
+  - `secrets.*` 在 `if` 条件中不可引用（Workflow 语法限制），导致 Workflow 直接被拒绝解析执行
+  - `r0adkll/sign-android-release@v1` 默认依赖 `build-tools;29.0.3`，该版本在 Ubuntu 最新运行器上不存在
+  - `actions/setup-node` 要求 `package-lock.json` 存在，但 `.gitignore` 中错误地排除了该文件
+  - `tauri-action` 被同时配置了 `tagName` 等参数，导致 Tauri Job 与 `publish-release` Job 双重抢占 Release 创建权，引发 `Resource not accessible by integration` 鉴权失败
+* **修复方案**：
+  - 移除 `if: secrets.X != ''` 条件判断，改为 `if: env.KEYSTORE_BASE64 != ''`（通过环境变量中转绕过限制）
+  - 在签名步骤前新增 `Setup Android SDK Build Tools` 步骤，显式安装 `build-tools;34.0.0`
+  - 从 `.gitignore` 中解除对 `package-lock.json` 的忽略，将其纳入版本控制
+  - 剥离 `tauri-action` 的所有 Release 创建参数，使其仅负责构建，统一由 `publish-release` Job 汇总发布
+  - `publish-release` Job 新增 `needs: [build-android, build-tauri-windows]` 保证执行顺序
+  - 全局添加 `permissions: contents: write`，授予 `GITHUB_TOKEN` 写入 Release 的权限
+  - 新增 `Swatinem/rust-cache@v2` Rust 编译缓存，将 Windows 端 Tauri 构建时间从 15 分钟+ 压缩至约 2 分钟
+
+#### OTA 双层热更新系统
+* **架构设计**：通过读取 GitHub 上托管的 `version.json` 文件检测远端最新版本号，与本地 `versionCode` 进行数值比对
+* **前端层**：`MainViewModel.checkForUpdates()` App 冷启动时静默触发，检测到新版本后弹出 `UpdateDialog` 弹窗
+* **下载层**：使用 OkHttp 流式下载 APK，通过 `downloadState` Flow 实时广播下载进度（百分比）至 UI
+* **安装层**：`FileProvider` 配合 `REQUEST_INSTALL_PACKAGES` 权限，下载完成后一键弹出系统安装界面
+* **新增文件**：`UpdateInfo.kt`、`UpdateRepository.kt`、`UpdateDialog.kt`、`ApkInstaller.kt`、`file_paths.xml`
+
+---
+
+### `[v1.0.2]` 2026-07-29 | B1 均衡器 + B5 睡眠定时器 + D3 歌词精度升级
+
+#### D3 — 歌词时间精度升级（Float → Long 毫秒）
+
+##### 问题背景
+原 `LyricLine.time` 字段类型为 `Float`（单位：秒），`LyricParser` 计算公式为：
+
+```kotlin
+val time = minutes * 60f + seconds + milliseconds / 1000f
+```
+
+`Float` 的有效精度仅约 7 位有效数字，歌曲播放数分钟后小数部分精度损耗可积累至数十毫秒，造成歌词高亮与播放位置存在肉眼可察的时序偏移。
+
+##### 修改文件
+| 文件 | 改动内容 |
+|------|----------|
+| `LyricLine.kt` | `time: Float`（秒）→ `time: Long`（毫秒） |
+| `LyricParser.kt` | `val time: Long = (minutes * 60L + seconds) * 1000L + milliseconds`，完全绕过浮点运算 |
+| `MainViewModel.kt` | `updateLyricIndex()` 移除 `currentPosition / 1000f` 中间转换，直接 Long 毫秒比较 |
+| `LyricsPanel.kt` | 点击跳转由 `(line.time * 1000).toLong()` 改为直接传 `line.time` |
+
+---
+
+#### B5 — 睡眠定时器
+
+##### 实现细节
+
+**`MainViewModel.kt`** 新增：
+* `sleepTimerRemaining: Long`（-1 = 未激活，≥0 = 剩余毫秒）、`sleepAfterCurrentTrack: Boolean` 状态
+* `setSleepTimer(durationMs)` — 启动协程倒计时，归零后 `controller?.pause()`
+* `setSleepAfterCurrentTrack()` — 通过 `onMediaItemTransition` 监听下一首切入时执行暂停
+* `cancelSleepTimer()` — 取消协程、重置所有状态
+* `onCleared()` 中补充 `sleepTimerJob?.cancel()` 防止协程泄漏
+
+**`SleepTimerDialog.kt`（新建）**：
+* Material3 弹窗，4 个时长选项（15 / 30 / 45 / 60 分钟）+ 「当前曲结束后停止」全宽选项
+* 定时器激活时弹窗内实时显示倒计时「剩余 MM:SS」
+* 所有选项跟随 `HslColorPalette`，已选项 `animateColorAsState` 高亮
+* 定时器激活时额外显示「取消定时」`OutlinedButton`
+
+**`SettingsScreen.kt`** 新增「播放控制」`SettingsGroup`，入口副标题实时映射三种状态
+
+---
+
+#### B1 — 均衡器（EQ）音效系统
+
+均衡器是本版本改动范围最大的特性，共涉及 7 个文件。
+
+##### 架构选型
+Android `Equalizer` AudioFX API 要求与 ExoPlayer 共享同一 Audio Session ID。本版本采用**全局单例 `EqualizerManager`**：由 `PlaybackService` 初始化并持有，`MainViewModel` 直接读写，生命周期与 Service 精确绑定，避免 IPC Binder 复杂性。
+
+##### 新建 `EqualizerManager.kt`（`audio/` 包）
+* Kotlin `object` 单例，包装 `android.media.audiofx.Equalizer`
+* 频段范围：-10dB ~ +10dB（毫贝单位：-1000 ~ +1000 mB），5 个频段
+* 6 套内置预设：**默认 / 流行 / 古典 / 电子 / 人声增强 / 低音增强**
+* 核心方法：`initialize(audioSessionId)`、`applyPreset(name)`、`setBandLevel(band, levelMb)`、`release()`
+* **全方法 try-catch**：MIUI / EMUI 等定制 ROM 可能接管 EQ，所有硬件调用均有兜底，不会崩溃
+
+##### 修改 `PlaybackService.kt`
+* `onCreate()` ExoPlayer 构建后立即 `EqualizerManager.initialize(player.audioSessionId)`
+* `onDestroy()` 调用 `EqualizerManager.release()`
+
+##### 修改 `SettingsManager.kt`
+* 新增 `KEY_EQ_PRESET`、`KEY_EQ_BAND_LEVELS` 两个持久化键（后者存为 JSON 整数数组）
+* 新增 `eqPresetFlow`、`eqBandLevelsFlow` 读取 Flow 及 `saveEqPreset()`、`saveEqBandLevels()` 写入函数
+
+##### 修改 `MainViewModel.kt`
+* 新增 `eqPreset`、`eqBandLevels` 可观测状态
+* `initialize()` 中从 DataStore 读取 EQ 设置，区分「自定义」与命名预设，重新应用至硬件
+* 新增 `setEqPreset(name)` 和 `setEqBandLevel(band, levelMb)` 函数（调用 Manager + 更新 State + 协程持久化）
+
+##### 新建 `EqualizerScreen.kt`（`settings/` 包）
+* 顶部 Bar：返回按钮 + 标题 + 当前预设名 Badge
+* 设备不支持时显示橙色警告 Card（不影响正常运行）
+* 预设区：6 个预设按 3 列网格排列，`animateColorAsState` 高亮当前选中
+* 5 频段 Slider：通过 `graphicsLayer { rotationZ = -90f }` 将水平 Slider 旋转为垂直方向，每列显示 dB 数值标签
+* 底部「重置为默认」按钮；颜色全部跟随 `HslColorPalette`
+
+##### 修改 `SettingsScreen.kt` & `MainActivity.kt`
+* `SettingsScreen` 新增 `onNavigateToEqualizer` 回调参数；「播放控制」分区展示 EQ 入口行
+* `MainActivity` 用 `AnimatedVisibility`（右滑进入/退出，350ms `FastOutSlowInEasing`）覆盖显示 `EqualizerScreen`；支持系统返回手势退出
+
+---
+
+#### CI/CD 更新日志展示优化
+
+##### 新建 `CHANGELOG.md`
+* 规范化记录每个版本的功能更新和修复说明，结构为 `## vX.X.X (日期)` 段落，倒序排列
+
+##### 修改 `release.yml` publish-release Job
+* 新增 `Checkout Code` 步骤（原 Job 未 checkout，无法读取仓库文件）
+* 新增 `Extract Release Notes from CHANGELOG.md` 步骤：`awk` 精确提取当前 tag 版本的 CHANGELOG 内容段落，输出至 `release_notes.md`
+* 将 `generate_release_notes: true`（仅生成 commit 链接列表）替换为 `body_path: release_notes.md`（展示真正的用户可读更新说明）
