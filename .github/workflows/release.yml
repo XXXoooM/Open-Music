@@ -135,6 +135,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
       - name: Download Android APK Artifact
         uses: actions/download-artifact@v4
         with:
@@ -146,13 +149,23 @@ jobs:
           name: windows-installers
           path: windows-installers
 
+      - name: Extract Release Notes from CHANGELOG.md
+        id: extract_notes
+        run: |
+          TAG="${{ github.ref_name }}"
+          VERSION="${TAG#v}"
+          # Extract the section for the current version between its ## header and the next ## header
+          awk "/^## v${VERSION}[[:space:]]/{found=1; next} found && /^## v/{exit} found{print}" CHANGELOG.md > release_notes.md
+          echo "--- Release Notes Preview ---"
+          cat release_notes.md
+
       - name: Create / Update GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          name: "Open Music Release ${{ github.ref_name }}"
+          name: "Open Music ${{ github.ref_name }}"
           draft: false
           prerelease: false
-          generate_release_notes: true
+          body_path: release_notes.md
           files: |
             open-music-*.apk
             windows-installers/*.msi
