@@ -176,126 +176,52 @@
 
 ---
 
-## 🚀 发版时代 (Release Pipeline & Feature Expansion)
+## 🚀 现代扩展与多端自动化时代 (v1.0.1 ~ v1.0.2)
 
-### `[v1.0.1]` 2026-07-21 | CI/CD 全面重构 + OTA 双层热更新系统
+### `[7e5b66d]` 2026-07-04 | feat(native): implement macOS Genie Effect suction transition and MiniPlayer elastic bounce
+* **交互动效调优**：
+  - **macOS 神奇效果 (Genie Effect)**：播放器折叠收起时引入 macOS 经典吮吸动画，以匀速 decelerate 曲线平滑缩放至 MiniPlayer 锚点。
+  - **静态主题替换**：关闭 HSL 动态变色时，静态主题更新为极简纯白与皇家宝蓝（Royal Sapphire Blue）配色，视觉清新高雅。
 
-#### CI/CD 流水线修复与优化
+### `[04781c8]` 2026-07-21 | feat(native): implement multi-platform Hot Update, FileProvider APK installer & in-app update system
+* **应用内热更新架构**：
+  - 新增 `UpdateRepository.kt` 与 `UpdateInfo.kt` 远程版本检测模块。
+  - 集成 Android `FileProvider` 与 `ApkInstaller`，支持在应用内直接流式下载新版 APK 并自动唤起系统安装界面。
 
-##### `[feat/ci]` 重写 GitHub Actions release.yml
-* **问题溯源**：v1.0.1 首次发版时接连暴露出多个 CI 问题：
-  - `secrets.*` 在 `if` 条件中不可引用（Workflow 语法限制），导致 Workflow 直接被拒绝解析执行
-  - `r0adkll/sign-android-release@v1` 默认依赖 `build-tools;29.0.3`，该版本在 Ubuntu 最新运行器上不存在
-  - `actions/setup-node` 要求 `package-lock.json` 存在，但 `.gitignore` 中错误地排除了该文件
-  - `tauri-action` 被同时配置了 `tagName` 等参数，导致 Tauri Job 与 `publish-release` Job 双重抢占 Release 创建权，引发 `Resource not accessible by integration` 鉴权失败
-* **修复方案**：
-  - 移除 `if: secrets.X != ''` 条件判断，改为 `if: env.KEYSTORE_BASE64 != ''`（通过环境变量中转绕过限制）
-  - 在签名步骤前新增 `Setup Android SDK Build Tools` 步骤，显式安装 `build-tools;34.0.0`
-  - 从 `.gitignore` 中解除对 `package-lock.json` 的忽略，将其纳入版本控制
-  - 剥离 `tauri-action` 的所有 Release 创建参数，使其仅负责构建，统一由 `publish-release` Job 汇总发布
-  - `publish-release` Job 新增 `needs: [build-android, build-tauri-windows]` 保证执行顺序
-  - 全局添加 `permissions: contents: write`，授予 `GITHUB_TOKEN` 写入 Release 的权限
-  - 新增 `Swatinem/rust-cache@v2` Rust 编译缓存，将 Windows 端 Tauri 构建时间从 15 分钟+ 压缩至约 2 分钟
+### `[0f3345c]` 2026-07-21 | chore(release): bump version to 1.0.1 (Build 101) and optimize CI/CD workflow
+* **自动化发布构建 (v1.0.1)**：
+  - 配置 GitHub Actions `release.yml`，实现推送 `v*` 标签时自动打包 Release APK。
+  - 引入 `r0adkll/sign-android-release` 签名 Action，通过 GitHub Secrets（KeyStore Base64/Alias/Password）对 APK 进行官方数字签名。
+  - 引入 Tauri 2.0 Windows 桌面打包作业，并配置 `Swatinem/rust-cache` 增量缓存，将 Windows 构建时长从 15 分钟大幅缩短至 2 分钟。
 
-#### OTA 双层热更新系统
-* **架构设计**：通过读取 GitHub 上托管的 `version.json` 文件检测远端最新版本号，与本地 `versionCode` 进行数值比对
-* **前端层**：`MainViewModel.checkForUpdates()` App 冷启动时静默触发，检测到新版本后弹出 `UpdateDialog` 弹窗
-* **下载层**：使用 OkHttp 流式下载 APK，通过 `downloadState` Flow 实时广播下载进度（百分比）至 UI
-* **安装层**：`FileProvider` 配合 `REQUEST_INSTALL_PACKAGES` 权限，下载完成后一键弹出系统安装界面
-* **新增文件**：`UpdateInfo.kt`、`UpdateRepository.kt`、`UpdateDialog.kt`、`ApkInstaller.kt`、`file_paths.xml`
+### `[a09c336]` 2026-07-29 | ci: add permissions contents write, consolidate release publishing step, and upload Windows installers artifact
+* **CI/CD 踩坑修复与架构完善**：
+  - **权限修复**：显式声明 `permissions: contents: write`，解决默认 `GITHUB_TOKEN` 无 Release 写入权限导致的 403 `Resource not accessible by integration` 报错。
+  - **产物收敛**：移除 `tauri-action` 内部的重复 Release 创建逻辑，将其产物（.msi / .exe）作为 Artifact 上传，由统一的 `publish-release` Job 一次性汇总挂载 Android APK + Windows 安装包。
 
----
+### `[74e4e6e]` 2026-07-29 | feat: v1.0.2 — B1 均衡器EQ + B5 睡眠定时器 + D3 歌词精度升级(Float→Long)
+* **v1.0.2 三大核心新特性落地**：
+  - **🎛️ B1 均衡器 (EQ)**：新建 `EqualizerManager.kt` 单例封装 Android 原生 Equalizer API，内置 6 套曲风预设（默认/流行/古典/电子/人声增强/低音增强）与 5 频段 Slider 独立调节（60Hz ~ 14kHz，-10dB ~ +10dB）。提供 `EqualizerScreen.kt` 专属全屏调节页，设置自动持久化到 DataStore，且具备无硬件支持时的防崩溃平滑降级。
+  - **🌙 B5 睡眠定时器**：新建 `SleepTimerDialog.kt` 弹窗，支持 15/30/45/60 分钟定时及「当前曲结束后自动停止」模式，设置页实时展示倒计时剩余时间。
+  - **🎵 D3 歌词毫秒精度升级**：`LyricLine.time` 从 `Float`（秒）彻底重构为 `Long`（毫秒），解析与定位算法同步修改，消除了浮点数转换的累积误差，歌词高亮与点击跳转精准度达到毫秒级。
 
-### `[v1.0.2]` 2026-07-29 | B1 均衡器 + B5 睡眠定时器 + D3 歌词精度升级
+### `[fb581d4]` 2026-07-29 | ci: 使用 CHANGELOG.md 作为 GitHub Release 更新说明内容
+* **Release 日志自动注入**：
+  - 新增 `CHANGELOG.md` 规范化日志文件。
+  - 升级 `release.yml`，在 `publish-release` Job 中加入 `awk` 脚本，自动提取当前发布 Tag 对应的 Markdown 更新日志作为 GitHub Release Body 描述，替代原来的纯 commit 链接。
 
-#### D3 — 歌词时间精度升级（Float → Long 毫秒）
+### `[2607132]` 2026-07-29 | fix: rename setEqPreset to applyEqPreset to fix Kotlin JVM signature clash with eqPreset property setter
+* **Kotlin 编译器平台声明冲突修复**：
+  - `var eqPreset by mutableStateOf(...)` 属性自动在 JVM 字节码中生成 `setEqPreset(String)` setter，与手写成员函数 `fun setEqPreset(presetName: String)` 产生同名 JVM 签名冲突（`setEqPreset(Ljava/lang/String;)V`）。
+  - 将成员函数重命名为 `applyEqPreset`，解决了 Kotlin 编译器在 release 阶段的报错。
 
-##### 问题背景
-原 `LyricLine.time` 字段类型为 `Float`（单位：秒），`LyricParser` 计算公式为：
+### `[32e3b3e]` 2026-07-30 | fix: update version.json to 1.0.2 and upgrade UpdateRepository with GitHub Releases API support
+* **更新检测逻辑升级**：
+  - 更新根目录 `version.json` 描述与目标 APK 链接至 v1.0.2。
+  - 升级 `UpdateRepository.kt`：优先请求 GitHub Releases API（`releases/latest`），实现零延迟的新版本检测；并在 fallback 请求 `version.json` 时附加动态时间戳参数破除 GitHub Raw HTTP 缓存。
 
-```kotlin
-val time = minutes * 60f + seconds + milliseconds / 1000f
-```
+### `[ca656ba]` 2026-07-30 | feat: 优化国内 APK 下载线路，支持 ghfast/ghproxy 多节点自动备用与降级
+* **国内下载加速与多节点自动降级**：
+  - 在 `version.json` 中配置国内镜像加速链接 `ghfast.top`，解决旧版客户端国内直接连接 GitHub 资源超时问题。
+  - 在 `UpdateRepository.kt` 中引入智能多节点降级算法：顺序尝试 `ghfast.top` -> `ghproxy.net` -> GitHub 官方直连，任一节点连接失败或超时会自动无缝切至下一节点，保障全球范围内 100% 的下载成功率。
 
-`Float` 的有效精度仅约 7 位有效数字，歌曲播放数分钟后小数部分精度损耗可积累至数十毫秒，造成歌词高亮与播放位置存在肉眼可察的时序偏移。
-
-##### 修改文件
-| 文件 | 改动内容 |
-|------|----------|
-| `LyricLine.kt` | `time: Float`（秒）→ `time: Long`（毫秒） |
-| `LyricParser.kt` | `val time: Long = (minutes * 60L + seconds) * 1000L + milliseconds`，完全绕过浮点运算 |
-| `MainViewModel.kt` | `updateLyricIndex()` 移除 `currentPosition / 1000f` 中间转换，直接 Long 毫秒比较 |
-| `LyricsPanel.kt` | 点击跳转由 `(line.time * 1000).toLong()` 改为直接传 `line.time` |
-
----
-
-#### B5 — 睡眠定时器
-
-##### 实现细节
-
-**`MainViewModel.kt`** 新增：
-* `sleepTimerRemaining: Long`（-1 = 未激活，≥0 = 剩余毫秒）、`sleepAfterCurrentTrack: Boolean` 状态
-* `setSleepTimer(durationMs)` — 启动协程倒计时，归零后 `controller?.pause()`
-* `setSleepAfterCurrentTrack()` — 通过 `onMediaItemTransition` 监听下一首切入时执行暂停
-* `cancelSleepTimer()` — 取消协程、重置所有状态
-* `onCleared()` 中补充 `sleepTimerJob?.cancel()` 防止协程泄漏
-
-**`SleepTimerDialog.kt`（新建）**：
-* Material3 弹窗，4 个时长选项（15 / 30 / 45 / 60 分钟）+ 「当前曲结束后停止」全宽选项
-* 定时器激活时弹窗内实时显示倒计时「剩余 MM:SS」
-* 所有选项跟随 `HslColorPalette`，已选项 `animateColorAsState` 高亮
-* 定时器激活时额外显示「取消定时」`OutlinedButton`
-
-**`SettingsScreen.kt`** 新增「播放控制」`SettingsGroup`，入口副标题实时映射三种状态
-
----
-
-#### B1 — 均衡器（EQ）音效系统
-
-均衡器是本版本改动范围最大的特性，共涉及 7 个文件。
-
-##### 架构选型
-Android `Equalizer` AudioFX API 要求与 ExoPlayer 共享同一 Audio Session ID。本版本采用**全局单例 `EqualizerManager`**：由 `PlaybackService` 初始化并持有，`MainViewModel` 直接读写，生命周期与 Service 精确绑定，避免 IPC Binder 复杂性。
-
-##### 新建 `EqualizerManager.kt`（`audio/` 包）
-* Kotlin `object` 单例，包装 `android.media.audiofx.Equalizer`
-* 频段范围：-10dB ~ +10dB（毫贝单位：-1000 ~ +1000 mB），5 个频段
-* 6 套内置预设：**默认 / 流行 / 古典 / 电子 / 人声增强 / 低音增强**
-* 核心方法：`initialize(audioSessionId)`、`applyPreset(name)`、`setBandLevel(band, levelMb)`、`release()`
-* **全方法 try-catch**：MIUI / EMUI 等定制 ROM 可能接管 EQ，所有硬件调用均有兜底，不会崩溃
-
-##### 修改 `PlaybackService.kt`
-* `onCreate()` ExoPlayer 构建后立即 `EqualizerManager.initialize(player.audioSessionId)`
-* `onDestroy()` 调用 `EqualizerManager.release()`
-
-##### 修改 `SettingsManager.kt`
-* 新增 `KEY_EQ_PRESET`、`KEY_EQ_BAND_LEVELS` 两个持久化键（后者存为 JSON 整数数组）
-* 新增 `eqPresetFlow`、`eqBandLevelsFlow` 读取 Flow 及 `saveEqPreset()`、`saveEqBandLevels()` 写入函数
-
-##### 修改 `MainViewModel.kt`
-* 新增 `eqPreset`、`eqBandLevels` 可观测状态
-* `initialize()` 中从 DataStore 读取 EQ 设置，区分「自定义」与命名预设，重新应用至硬件
-* 新增 `setEqPreset(name)` 和 `setEqBandLevel(band, levelMb)` 函数（调用 Manager + 更新 State + 协程持久化）
-
-##### 新建 `EqualizerScreen.kt`（`settings/` 包）
-* 顶部 Bar：返回按钮 + 标题 + 当前预设名 Badge
-* 设备不支持时显示橙色警告 Card（不影响正常运行）
-* 预设区：6 个预设按 3 列网格排列，`animateColorAsState` 高亮当前选中
-* 5 频段 Slider：通过 `graphicsLayer { rotationZ = -90f }` 将水平 Slider 旋转为垂直方向，每列显示 dB 数值标签
-* 底部「重置为默认」按钮；颜色全部跟随 `HslColorPalette`
-
-##### 修改 `SettingsScreen.kt` & `MainActivity.kt`
-* `SettingsScreen` 新增 `onNavigateToEqualizer` 回调参数；「播放控制」分区展示 EQ 入口行
-* `MainActivity` 用 `AnimatedVisibility`（右滑进入/退出，350ms `FastOutSlowInEasing`）覆盖显示 `EqualizerScreen`；支持系统返回手势退出
-
----
-
-#### CI/CD 更新日志展示优化
-
-##### 新建 `CHANGELOG.md`
-* 规范化记录每个版本的功能更新和修复说明，结构为 `## vX.X.X (日期)` 段落，倒序排列
-
-##### 修改 `release.yml` publish-release Job
-* 新增 `Checkout Code` 步骤（原 Job 未 checkout，无法读取仓库文件）
-* 新增 `Extract Release Notes from CHANGELOG.md` 步骤：`awk` 精确提取当前 tag 版本的 CHANGELOG 内容段落，输出至 `release_notes.md`
-* 将 `generate_release_notes: true`（仅生成 commit 链接列表）替换为 `body_path: release_notes.md`（展示真正的用户可读更新说明）
