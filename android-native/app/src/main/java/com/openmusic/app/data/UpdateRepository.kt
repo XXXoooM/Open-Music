@@ -128,67 +128,99 @@ class UpdateRepository {
     }
 
     /**
-     * Downloads APK with real-time percentage and speed flow
+     * Downloads APK with real-time percentage and speed flow, with intelligent multi-mirror automatic fallback.
      */
-    fun downloadApk(context: Context, apkUrl: String): Flow<DownloadState> = flow {
+    fun downloadApk(context: Context, rawApkUrl: String): Flow<DownloadState> = flow {
         emit(DownloadState.Downloading(0, 0, 0, 0))
 
-        try {
-            val destinationFile = File(context.filesDir, "update_latest.apk")
-            if (destinationFile.exists()) {
-                destinationFile.delete()
-            }
+        // Extract pure GitHub release URL if passed through another mirror
+        val cleanGithubUrl = if (rawApkUrl.contains("github.com/")) {
+            "https://" + rawApkUrl.substring(rawApkUrl.indexOf("github.com/"))
+        } else {
+            rawApkUrl
+        }
 
-            val url = URL(apkUrl)
-            val connection = (url.openConnection() as HttpURLConnection).apply {
-                connectTimeout = 12000
-                readTimeout = 12000
-                requestMethod = "GET"
-                setRequestProperty("User-Agent", "OpenMusicApp")
-            }
+        // Build candidate download endpoints (High-speed domestic CDN mirrors first, direct GitHub fallback last)
+        val candidateUrls = mutableListOf<String>()
+        if (cleanGithubUrl.startsWith("https://github.com/")) {
+            candidateUrls.add("https://ghfast.top/$cleanGithubUrl")
+            candidateUrls.add("https://ghproxy.net/$cleanGithubUrl")
+            candidateUrls.add(cleanGithubUrl)
+        } else {
+            candidateUrls.add(rawApkUrl)
+        }
 
-            if (connection.responseCode != HttpURLConnection.HTTP_OK) {
-                emit(DownloadState.Error("服务器响应异常: ${connection.responseCode}"))
-                return@flow
-            }
+        val destinationFile = File(context.filesDir, "update_latest.apk")
+        var downloadSuccess = false
+        var lastErrorMsg = "网络连接失败"
 
-            val totalBytes = connection.contentLength.toLong()
-            var bytesReadTotal = 0L
-            var lastEmittedTime = System.currentTimeMillis()
-            var bytesSinceLastEmit = 0L
-
-            val inputStream: InputStream = connection.inputStream
-            val outputStream = FileOutputStream(destinationFile)
-            val buffer = ByteArray(8192)
-            var bytesRead: Int
-
-            while (inputStream.read(buffer).also { bytesRead = it } != -1) {
-                outputStream.write(buffer, 0, bytesRead)
-                bytesReadTotal += bytesRead
-                bytesSinceLastEmit += bytesRead
-
-                val currentTime = System.currentTimeMillis()
-                val timeDiff = currentTime - lastEmittedTime
-
-                if (timeDiff >= 300 || bytesReadTotal == totalBytes) {
-                    val progress = if (totalBytes > 0) ((bytesReadTotal * 100) / totalBytes).toInt() else 0
-                    val speedKbps = if (timeDiff > 0) (bytesSinceLastEmit / 1024) * 1000 / timeDiff else 0
-
-                    emit(DownloadState.Downloading(progress, bytesReadTotal, totalBytes, speedKbps))
-
-                    lastEmittedTime = currentTime
-                    bytesSinceLastEmit = 0L
+        for (candidateUrl in candidateUrls) {
+            try {
+                if (destinationFile.exists()) {
+                    destinationFile.delete()
                 }
+
+                val url = URL(candidateUrl)
+                val connection = (url.openConnection() as HttpURLConnection).apply {
+                    connectTimeout = 8000
+                    readTimeout = 15000
+                    requestMethod = "GET"
+                    setRequestProperty("User-Agent", "OpenMusicApp")
+                    instanceFollowRedirects = true
+                }
+
+                val responseCode = connection.responseCode
+                if (responseCode != HttpURLConnection.HTTP_OK) {
+                    lastErrorMsg = "镜像节点响应异常: $responseCode"
+                    continue
+                }
+
+                val totalBytes = connection.contentLength.toLong()
+                var bytesReadTotal = 0L
+                var lastEmittedTime = System.currentTimeMillis()
+                var bytesSinceLastEmit = 0L
+
+                val inputStream: InputStream = connection.inputStream
+                val outputStream = FileOutputStream(destinationFile)
+                val buffer = ByteArray(8192)
+                var bytesRead: Int
+
+                while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+                    outputStream.write(buffer, 0, bytesRead)
+                    bytesReadTotal += bytesRead
+                    bytesSinceLastEmit += bytesRead
+
+                    val currentTime = System.currentTimeMillis()
+                    val timeDiff = currentTime - lastEmittedTime
+
+                    if (timeDiff >= 300 || bytesReadTotal == totalBytes) {
+                        val progress = if (totalBytes > 0) ((bytesReadTotal * 100) / totalBytes).toInt() else 0
+                        val speedKbps = if (timeDiff > 0) (bytesSinceLastEmit / 1024) * 1000 / timeDiff else 0
+
+                        emit(DownloadState.Downloading(progress, bytesReadTotal, totalBytes, speedKbps))
+
+                        lastEmittedTime = currentTime
+                        bytesSinceLastEmit = 0L
+                    }
+                }
+
+                outputStream.flush()
+                outputStream.close()
+                inputStream.close()
+
+                if (destinationFile.exists() && destinationFile.length() > 0) {
+                    downloadSuccess = true
+                    emit(DownloadState.Completed(destinationFile))
+                    break
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                lastErrorMsg = e.localizedMessage ?: "镜像节点超时"
             }
+        }
 
-            outputStream.flush()
-            outputStream.close()
-            inputStream.close()
-
-            emit(DownloadState.Completed(destinationFile))
-        } catch (e: Exception) {
-            e.printStackTrace()
-            emit(DownloadState.Error("下载中断: ${e.localizedMessage ?: "网络连接失败"}"))
+        if (!downloadSuccess) {
+            emit(DownloadState.Error("多线路下载均失败: $lastErrorMsg"))
         }
     }.flowOn(Dispatchers.IO)
 }
