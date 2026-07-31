@@ -225,11 +225,15 @@
   - 在 `version.json` 中配置国内镜像加速链接 `ghfast.top`，解决旧版客户端国内直接连接 GitHub 资源超时问题。
   - 在 `UpdateRepository.kt` 中引入智能多节点降级算法：顺序尝试 `ghfast.top` -> `ghproxy.net` -> GitHub 官方直连，任一节点连接失败或超时会自动无缝切至下一节点，保障全球范围内 100% 的下载成功率。
 
-### `[352758c]` 2026-07-31 | chore(release): bump version to 1.0.3 (Build 103) & UI detail polishing
-* **v1.0.3 版本发布与细节精雕**：
-  - **指示点弹性流动动画**：播放器封面/歌词切换指示点引入 `animateDpAsState` 与 `animateColorAsState`，具备类似 iOS 的动态拉伸高亮动效。
-  - **歌词独立页顶部导航栏**：补全歌词全屏页顶部导航栏，展示当前曲目歌手信息并提供便捷切回按钮。
-  - **代码净化**：消除 Compose 弃用 API 警告与 ViewModel 冗余属性。
-  - **全量发布**：更新 `version.json` 与 `CHANGELOG.md`，同步发布 `v1.0.3` 正式版。
+### `[dbe4219]` 2026-08-01 | style(lyrics): 优化歌词页背景与系统状态栏沉浸式融合度 (多阶渐变遮罩 + 状态栏透明)
+* **歌词页状态栏沉浸式极速融合**：
+  - 透明状态栏 `Color.Transparent` + 140.dp 多阶软衰减遮罩，歌词向上流动呈现焦深淡出。
+  - 双端 Gradle 优化：本地使用腾讯云 Gradle 镜像，CI 自动 `sed` 切至官方 CDN + Cache，彻底解决超时。
+
+### `[1411637]` 2026-08-01 | chore(release): bump version to 1.0.4 (Build 104)
+* **v1.0.4 正式版全量发布**：
+  - 更新 `android-native/app/build.gradle.kts` `versionCode = 104`, `versionName = "1.0.4"`。
+  - 更新 `version.json` 与 `CHANGELOG.md`，挂载 `ghfast.top` 镜像加速链接并准备全量分发。
+
 
 
