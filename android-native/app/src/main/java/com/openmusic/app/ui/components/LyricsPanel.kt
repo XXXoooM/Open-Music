@@ -197,20 +197,38 @@ fun LyricsPanel(
             }
         }
 
-        // Top/Bottom mask gradients
+        // Top/Bottom multi-stop status bar fusion mask gradients
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(80.dp)
+                .height(140.dp)
                 .align(Alignment.TopCenter)
-                .background(Brush.verticalGradient(listOf(palette.background.copy(0.9f), Color.Transparent)))
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            palette.background.copy(alpha = 0.96f),
+                            palette.background.copy(alpha = 0.70f),
+                            palette.background.copy(alpha = 0.25f),
+                            Color.Transparent
+                        )
+                    )
+                )
         )
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(120.dp)
+                .height(140.dp)
                 .align(Alignment.BottomCenter)
-                .background(Brush.verticalGradient(listOf(Color.Transparent, palette.background.copy(0.95f))))
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            Color.Transparent,
+                            palette.background.copy(alpha = 0.30f),
+                            palette.background.copy(alpha = 0.80f),
+                            palette.background.copy(alpha = 0.96f)
+                        )
+                    )
+                )
         )
     }
 }

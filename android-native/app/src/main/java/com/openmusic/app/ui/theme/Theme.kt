@@ -24,7 +24,7 @@ private val DarkColorScheme = darkColorScheme(
 
 @Composable
 fun OpenMusicTheme(
-    statusBarColor: Color = DarkColorScheme.background,
+    statusBarColor: Color = Color.Transparent,
     isLightStatusBars: Boolean = false,
     content: @Composable () -> Unit
 ) {
