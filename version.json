@@ -1,10 +1,10 @@
 {
-  "versionCode": 102,
-  "versionName": "1.0.2",
-  "releaseDate": "2026-07-29",
-  "releaseNotes": "• 🎛️ 均衡器 (EQ)：支持 5 频段调节 + 6 套预设（默认/流行/古典/电子/人声增强/低音增强），参数自动持久化\n• 🌙 睡眠定时器：支持 15/30/45/60 分钟定时 + 当前曲结束后自动停止\n• 🎵 歌词精度升级：时间戳提升至毫秒级 Long 存储，定位与点击跳转精准无误差",
-  "apkUrl": "https://ghfast.top/https://github.com/XXXoooM/Open-Music/releases/download/v1.0.2/open-music-v1.0.2.apk",
-  "webBundleUrl": "https://github.com/XXXoooM/Open-Music/releases/download/v1.0.2/web_bundle.zip",
+  "versionCode": 103,
+  "versionName": "1.0.3",
+  "releaseDate": "2026-07-31",
+  "releaseNotes": "• 🎛️ 页面指示点动效：播放器界面引入拉伸高亮平滑动画\n• 🎵 歌词全屏页导航：补全歌词页顶部导航栏与歌曲信息展示\n• ⚡️ 国内下载加速与容错：重构更新引擎，支持 GitHub Releases API 直连与多镜像节点自动降级\n• 🧹 编译与体验调优：消除弃用 API 警告与冗余属性清理",
+  "apkUrl": "https://ghfast.top/https://github.com/XXXoooM/Open-Music/releases/download/v1.0.3/open-music-v1.0.3.apk",
+  "webBundleUrl": "https://github.com/XXXoooM/Open-Music/releases/download/v1.0.3/web_bundle.zip",
   "isForceUpdate": false,
   "minSupportedVersion": 100
 }
