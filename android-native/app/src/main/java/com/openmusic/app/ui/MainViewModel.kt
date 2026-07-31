@@ -96,9 +96,6 @@ class MainViewModel : ViewModel() {
     var isLoading by mutableStateOf(false)
         private set
 
-    var isSearching by mutableStateOf(false)
-        private set
-
     var selectedRoute by mutableStateOf(MetingRepository.ApiRoute.QIJIEYA)
         private set
 
@@ -246,7 +243,6 @@ class MainViewModel : ViewModel() {
 
     fun loadPlaylist(playlistId: String) {
         isLoading = true
-        isSearching = false
         viewModelScope.launch {
             try {
                 val tracks = repository.fetchPlaylist(selectedRoute, playlistId)

@@ -16,7 +16,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -305,7 +305,7 @@ fun LyricsPlaybackControls(
             IconButton(onClick = onLyricsIconClick) {
                 Icon(
                     // List loop/lyrics icon to toggle back
-                    imageVector = Icons.Default.List,
+                    imageVector = Icons.AutoMirrored.Filled.List,
                     contentDescription = "Toggle back to cover",
                     tint = Color.White.copy(0.35f),
                     modifier = Modifier.size(ComponentStyles.subActionIconSize)

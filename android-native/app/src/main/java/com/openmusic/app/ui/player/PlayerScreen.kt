@@ -1,5 +1,8 @@
 package com.openmusic.app.ui.player
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -17,6 +20,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.PlayArrow
@@ -27,6 +31,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -35,9 +40,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import com.openmusic.app.ui.MainViewModel
 import com.openmusic.app.ui.components.FloatingAlbumArt
@@ -149,28 +157,40 @@ fun PlayerScreen(
                         )
                     }
 
-                    // Page Indicator Dots (Dynamic based on pagerState.currentPage)
+                    // Page Indicator Dots with smooth animated transitions
                     Row(
                         horizontalArrangement = Arrangement.Center,
                         modifier = Modifier.padding(vertical = 12.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        val activeDotColor = palette.primary
-                        val inactiveDotColor = palette.textInactive.copy(alpha = 0.4f)
-                        
-                        Box(
-                            modifier = Modifier
-                                .size(8.dp)
-                                .clip(ComponentStyles.iconButtonShape)
-                                .background(if (pagerState.currentPage == 0) activeDotColor else inactiveDotColor)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Box(
-                            modifier = Modifier
-                                .size(8.dp)
-                                .clip(ComponentStyles.iconButtonShape)
-                                .background(if (pagerState.currentPage == 1) activeDotColor else inactiveDotColor)
-                        )
+                        repeat(2) { pageIndex ->
+                            val isActive = pagerState.currentPage == pageIndex
+                            val dotWidth by animateDpAsState(
+                                targetValue = if (isActive) 16.dp else 8.dp,
+                                animationSpec = tween(300),
+                                label = "dot_width"
+                            )
+                            val dotColor by animateColorAsState(
+                                targetValue = if (isActive) palette.primary else palette.textInactive.copy(alpha = 0.35f),
+                                animationSpec = tween(300),
+                                label = "dot_color"
+                            )
+                            Box(
+                                modifier = Modifier
+                                    .height(8.dp)
+                                    .width(dotWidth)
+                                    .clip(RoundedCornerShape(4.dp))
+                                    .background(dotColor)
+                                    .clickable {
+                                        coroutineScope.launch {
+                                            pagerState.animateScrollToPage(pageIndex)
+                                        }
+                                    }
+                            )
+                            if (pageIndex < 1) {
+                                Spacer(modifier = Modifier.width(6.dp))
+                            }
+                        }
                     }
 
                     // Controls Panel (Vibrant Title & Artist & Vibrant Controls)
@@ -218,6 +238,51 @@ fun PlayerScreen(
                         .systemBarsPadding(),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    // Header Row for Lyrics page (Minimize button on left, title in center)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp, vertical = 12.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        IconButton(
+                            onClick = {
+                                coroutineScope.launch {
+                                    pagerState.animateScrollToPage(0)
+                                }
+                            },
+                            modifier = Modifier.background(ComponentStyles.translucentBgColor, ComponentStyles.iconButtonShape)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.KeyboardArrowDown,
+                                contentDescription = "Back to Cover",
+                                tint = palette.textMain
+                            )
+                        }
+
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                text = track?.title ?: "未在播放",
+                                color = palette.textMain,
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.Bold,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                            Text(
+                                text = track?.artist ?: "未知歌手",
+                                color = palette.textMuted,
+                                fontSize = 12.sp,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+
+                        // Placeholder for symmetry
+                        Spacer(modifier = Modifier.size(40.dp))
+                    }
+
                     // Let lyrics fill the entire screen space
                     Box(
                         modifier = Modifier

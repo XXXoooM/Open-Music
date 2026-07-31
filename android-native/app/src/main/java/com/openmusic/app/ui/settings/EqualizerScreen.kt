@@ -167,7 +167,7 @@ fun EqualizerScreen(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceAround
                         ) {
-                            EqualizerManager.BAND_LABELS.forEachIndexed { i, label ->
+                            EqualizerManager.BAND_LABELS.forEachIndexed { i, _ ->
                                 val levelMb = viewModel.eqBandLevels.getOrElse(i) { 0 }
                                 val db = levelMb / 100f
                                 Column(
@@ -195,7 +195,7 @@ fun EqualizerScreen(
                                 .height(200.dp),
                             horizontalArrangement = Arrangement.SpaceAround
                         ) {
-                            EqualizerManager.BAND_LABELS.forEachIndexed { band, label ->
+                            EqualizerManager.BAND_LABELS.forEachIndexed { band, _ ->
                                 val levelMb = viewModel.eqBandLevels.getOrElse(band) { 0 }
                                 Column(
                                     horizontalAlignment = Alignment.CenterHorizontally,
