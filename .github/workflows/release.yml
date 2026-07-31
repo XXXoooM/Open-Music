@@ -33,13 +33,22 @@ jobs:
           distribution: 'temurin'
           cache: 'gradle'
 
+      - name: Cache Gradle wrapper and caches
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/wrapper/dists
+            ~/.gradle/caches
+          key: gradle-${{ runner.os }}-${{ hashFiles('android-native/gradle/wrapper/gradle-wrapper.properties') }}
+
       - name: Grant Execute Permission for Gradle Wrapper
         run: chmod +x android-native/gradlew
 
       - name: Build Android Release APK
         run: |
           cd android-native
-          ./gradlew assembleRelease
+          export GRADLE_OPTS="-Dorg.gradle.internal.http.socketTimeout=60000 -Dorg.gradle.internal.http.connectionTimeout=60000"
+          ./gradlew assembleRelease --no-daemon
 
       - name: Locate Unsigned APK
         id: find_apk
