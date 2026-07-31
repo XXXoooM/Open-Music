@@ -235,10 +235,11 @@
   - 更新 `android-native/app/build.gradle.kts` `versionCode = 104`, `versionName = "1.0.4"`。
   - 更新 `version.json` 与 `CHANGELOG.md`，状态栏透明沉浸式融合 + 多镜像降级。
 
-### `[icon-update]` 2026-08-01 | feat(icon): 更换 App 高清自适应应用图标资源并发布 v1.0.5
-* **v1.0.5 图标重磅升级与发布**：
-  - 应用 `src-tauri/icons/android` 生成的全套 `mipmap-*` 图标（含 `mdpi` ~ `xxxhdpi` 及 `anydpi-v26` 矢量图层）。
-  - Bump `versionCode = 105`, `versionName = "1.0.5"` 并全量推送。
+### `[1dc3273]` 2026-08-01 | feat(icon): 更换 App 高清自适应应用图标资源并发布 v1.0.5 & 修复 Tauri 桌面端构建
+* **v1.0.5 全平台重磅升级**：
+  - **Android 图标**：应用 `src-tauri/icons/android` 生成的全套 `mipmap-*` 图标（含 `mdpi` ~ `xxxhdpi` 及 `anydpi-v26` 矢量图层）。
+  - **Tauri 桌面端**：升级 `tauri.conf.json` 与 `Cargo.toml` 版本至 `1.0.5`，修改 `identifier` 为 `com.openmusic.desktop` 解决 macOS 规范警告；优化 `.github/workflows/release.yml` 改用直接 `npx tauri build` + 严格产出校验（`if-no-files-found: error`），确保 GitHub Releases 同步挂载 Windows `.exe` 安装包与 `.msi` 安装包。
+
 
 
 

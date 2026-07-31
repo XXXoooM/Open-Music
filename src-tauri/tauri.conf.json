@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "open-music",
-  "version": "1.0.0",
-  "identifier": "com.openmusic.app",
+  "productName": "Open Music",
+  "version": "1.0.5",
+  "identifier": "com.openmusic.desktop",
   "build": {
     "frontendDist": "../web",
     "beforeDevCommand": "",
@@ -13,8 +13,8 @@
     "windows": [
       {
         "title": "Open Music",
-        "width": 1000,
-        "height": 700,
+        "width": 1080,
+        "height": 720,
         "minWidth": 800,
         "minHeight": 600,
         "resizable": true,
@@ -39,9 +39,6 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ],
-    "android": {
-      "debugApplicationIdSuffix": ".debug"
-    }
+    ]
   }
 }
