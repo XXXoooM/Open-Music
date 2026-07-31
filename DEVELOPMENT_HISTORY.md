@@ -230,10 +230,16 @@
   - 透明状态栏 `Color.Transparent` + 140.dp 多阶软衰减遮罩，歌词向上流动呈现焦深淡出。
   - 双端 Gradle 优化：本地使用腾讯云 Gradle 镜像，CI 自动 `sed` 切至官方 CDN + Cache，彻底解决超时。
 
-### `[1411637]` 2026-08-01 | chore(release): bump version to 1.0.4 (Build 104)
+### `[706d091]` 2026-08-01 | chore(release): bump version to 1.0.4 (Build 104) — 歌词页状态栏沉浸融合 + 双端 Gradle 智能加速
 * **v1.0.4 正式版全量发布**：
   - 更新 `android-native/app/build.gradle.kts` `versionCode = 104`, `versionName = "1.0.4"`。
-  - 更新 `version.json` 与 `CHANGELOG.md`，挂载 `ghfast.top` 镜像加速链接并准备全量分发。
+  - 更新 `version.json` 与 `CHANGELOG.md`，状态栏透明沉浸式融合 + 多镜像降级。
+
+### `[icon-update]` 2026-08-01 | feat(icon): 更换 App 高清自适应应用图标资源并发布 v1.0.5
+* **v1.0.5 图标重磅升级与发布**：
+  - 应用 `src-tauri/icons/android` 生成的全套 `mipmap-*` 图标（含 `mdpi` ~ `xxxhdpi` 及 `anydpi-v26` 矢量图层）。
+  - Bump `versionCode = 105`, `versionName = "1.0.5"` 并全量推送。
+
 
 
 

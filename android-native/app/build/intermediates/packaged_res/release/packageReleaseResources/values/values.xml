@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="ic_launcher_background">#FFFFFF</color>
+    <color name="ic_launcher_background">#fff</color>
     <string name="app_name">Open Music</string>
     <string name="custom_url_scheme">com.openmusic.app</string>
     <string name="package_name">com.openmusic.app</string>
