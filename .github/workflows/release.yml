@@ -44,6 +44,10 @@ jobs:
       - name: Grant Execute Permission for Gradle Wrapper
         run: chmod +x android-native/gradlew
 
+      - name: Optimize Gradle Wrapper URL for CI Runner
+        run: |
+          sed -i 's|mirrors.cloud.tencent.com/gradle|services.gradle.org/distributions|g' android-native/gradle/wrapper/gradle-wrapper.properties
+
       - name: Build Android Release APK
         run: |
           cd android-native
