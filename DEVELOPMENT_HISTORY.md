@@ -235,10 +235,13 @@
   - 更新 `android-native/app/build.gradle.kts` `versionCode = 104`, `versionName = "1.0.4"`。
   - 更新 `version.json` 与 `CHANGELOG.md`，状态栏透明沉浸式融合 + 多镜像降级。
 
-### `[1dc3273]` 2026-08-01 | feat(icon): 更换 App 高清自适应应用图标资源并发布 v1.0.5 & 修复 Tauri 桌面端构建
-* **v1.0.5 全平台重磅升级**：
-  - **Android 图标**：应用 `src-tauri/icons/android` 生成的全套 `mipmap-*` 图标（含 `mdpi` ~ `xxxhdpi` 及 `anydpi-v26` 矢量图层）。
-  - **Tauri 桌面端**：升级 `tauri.conf.json` 与 `Cargo.toml` 版本至 `1.0.5`，修改 `identifier` 为 `com.openmusic.desktop` 解决 macOS 规范警告；优化 `.github/workflows/release.yml` 改用直接 `npx tauri build` + 严格产出校验（`if-no-files-found: error`），确保 GitHub Releases 同步挂载 Windows `.exe` 安装包与 `.msi` 安装包。
+### `[updater-feat]` 2026-08-07 | feat(tauri): 接入 Tauri 2.0 官方应用自动热更新 (@tauri-apps/plugin-updater)
+* **Tauri 桌面端应用内热更新落地**：
+  - **密钥安全签名**：生成 Ed25519 签名密钥对，将公钥植入 `tauri.conf.json`，私钥集成至 GitHub CI/CD。
+  - **双端原生插件**：集成 `@tauri-apps/plugin-updater` 与 `@tauri-apps/plugin-process`，Rust 端注册 `tauri_plugin_updater` 引擎。
+  - **Web 端感知与秒级重启**：在 `native-bridge.js` 中新增启动与手动检测逻辑，检测到新版本时静默拉取无缝重载。
+  - **自动版本描述**：创建根目录 `desktop-version.json` 作为更新清单源，包含哈希签名与国内 ghfast 镜像地址。
+
 
 
 

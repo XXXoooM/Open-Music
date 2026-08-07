@@ -128,6 +128,9 @@ jobs:
 
       - name: Build Tauri Desktop App
         run: npx tauri build
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY || 'dW50cnVzdGVkIGNvbW1lbnQ6IHJzaWduIGVuY3J5cHRlZCBzZWNyZXQga2V5ClJXUlRZMEl5QXF4ZW9SZXR4SU1xc05xaW1Wbk1YRjRnbWhuVGU5a2pmOWFKOEh0cTU2WUFBQkFBQUFBQUFBQUFBQUlBQUFBQTVZanAyYVpBYS9lSUlDK2hCTFFRYVk1OEVuSzQxRk51dU9pQlBDbHBnZlFZWitDRGtFWW5TTmN0NVFhV2NVMXlib2VaSm96R2VrTWJXeW8xMkRkYTFTdjZhR0hCWFY3S3Z0YldtaE9zbmw2VUdTT0FkRk1pcW5Najh1dXd2d0doZ1o4WU5XS25hOEE9Cg==' }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ""
 
       - name: Upload Windows Installers
         uses: actions/upload-artifact@v4
@@ -137,6 +140,8 @@ jobs:
           path: |
             src-tauri/target/release/bundle/msi/*.msi
             src-tauri/target/release/bundle/nsis/*.exe
+            src-tauri/target/release/bundle/nsis/*.zip
+            src-tauri/target/release/bundle/nsis/*.sig
 
   # -------------------------------------------------------------
   # Job 3: Publish Unified GitHub Release (Android + Windows)
@@ -182,5 +187,7 @@ jobs:
             open-music-*.apk
             windows-installers/*.msi
             windows-installers/*.exe
+            windows-installers/*.zip
+            windows-installers/*.sig
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

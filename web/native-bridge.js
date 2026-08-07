@@ -423,6 +423,13 @@ const NativeBridge = {
         }
       });
     }
+
+    // Auto-check for Tauri desktop updates after launch
+    if (this.env.isTauri || window.__TAURI__ || window.__TAURI_INTERNALS__) {
+      setTimeout(() => {
+        this.checkDesktopUpdate(false);
+      }, 3000);
+    }
   },
 
   /**
@@ -476,8 +483,39 @@ const NativeBridge = {
     if (this.env.isHarmony && window.ohosNative) {
       window.ohosNative.updatePlayState(isPlaying);
     }
+  },
+
+  /**
+   * Tauri Desktop Auto-Updater Check
+   */
+  async checkDesktopUpdate(isManual = false) {
+    if (!window.__TAURI__ && !window.__TAURI_INTERNALS__) return;
+    try {
+      console.log('[NativeBridge] Checking for Tauri desktop updates...');
+      const { check } = await import('@tauri-apps/plugin-updater');
+      const { relaunch } = await import('@tauri-apps/plugin-process');
+
+      const update = await check();
+      if (update && update.available) {
+        console.log(`[NativeBridge] Found new version ${update.version}`);
+        const confirmed = confirm(`发现新版本 v${update.version}！\n\n更新说明:\n${update.body || '包含最新性能优化与修复'}\n\n是否立即下载升级？`);
+        if (confirmed) {
+          alert('正在后台下载新版本，下载完成后将自动重启应用...');
+          await update.downloadAndInstall();
+          await relaunch();
+        }
+      } else if (isManual) {
+        alert('当前已是最新桌面版本！');
+      }
+    } catch (e) {
+      console.warn('[NativeBridge] Desktop update check failed:', e);
+      if (isManual) {
+        alert('检查更新失败，请检查网络连接或稍后再试。');
+      }
+    }
   }
 };
 
 // Initialize immediately so that window.player is ready before subsequent scripts (app.js) run
 NativeBridge.init();
+

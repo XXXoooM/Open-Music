@@ -33,6 +33,7 @@
   "bundle": {
     "active": true,
     "targets": "all",
+    "createUpdaterArtifacts": true,
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
@@ -40,5 +41,14 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ]
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEQ4N0RBNjJFRjY0NjI2N0EKUldSNkprYjJMcVo5MlBCb1hmNlUwWlltSmdSd2c5RWJ0dGRsdDVBRnFDRHVKczkxd3ZxTFhMc0kK",
+      "endpoints": [
+        "https://raw.githubusercontent.com/XXXoooM/Open-Music/main/desktop-version.json",
+        "https://ghfast.top/https://raw.githubusercontent.com/XXXoooM/Open-Music/main/desktop-version.json"
+      ]
+    }
   }
 }

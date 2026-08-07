@@ -10,6 +10,8 @@ npm-debug.log*
 # Node modules (if initialized later)
 node_modules/
 
-# Local storage overrides
-.vscode/
-.idea/
+# Keys & Secrets
+*.key
+src-tauri/*.key
+src-tauri/*.key.pub
+
