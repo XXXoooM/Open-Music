@@ -126,18 +126,10 @@ jobs:
       - name: Install Frontend Dependencies
         run: npm ci || npm install
 
-      - name: Restore Tauri Signing Key
-        if: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY != '' }}
-        shell: pwsh
-        run: |
-          [IO.File]::WriteAllText("src-tauri/openmusic.key", $env:SECRET_KEY)
-          $keyContent = Get-Content -Raw "src-tauri/openmusic.key"
-          echo "TAURI_SIGNING_PRIVATE_KEY=$keyContent" >> $env:GITHUB_ENV
-          echo "TAURI_SIGNING_PRIVATE_KEY_PASSWORD=" >> $env:GITHUB_ENV
-        env:
-          SECRET_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-
       - name: Build Tauri Desktop App
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ""
         run: npx tauri build
 
       - name: Upload Windows Installers
