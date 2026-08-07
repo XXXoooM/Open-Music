@@ -111,7 +111,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: 'npm'
 
       - name: Install Rust Stable
@@ -135,8 +135,7 @@ jobs:
           name: windows-installers
           if-no-files-found: error
           path: |
-            src-tauri/target/release/bundle/msi/*.msi
-            src-tauri/target/release/bundle/nsis/*.exe
+            src-tauri/target/release/bundle/**/*
 
   # -------------------------------------------------------------
   # Job 3: Publish Unified GitHub Release (Android + Windows)
@@ -161,6 +160,9 @@ jobs:
           name: windows-installers
           path: windows-installers
 
+      - name: List downloaded windows installers
+        run: ls -laR windows-installers || true
+
       - name: Extract Release Notes from CHANGELOG.md
         id: extract_notes
         run: |
@@ -180,7 +182,6 @@ jobs:
           body_path: release_notes.md
           files: |
             open-music-*.apk
-            windows-installers/*.msi
-            windows-installers/*.exe
+            windows-installers/**
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
