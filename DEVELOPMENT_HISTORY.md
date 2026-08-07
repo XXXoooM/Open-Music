@@ -235,12 +235,11 @@
   - 更新 `android-native/app/build.gradle.kts` `versionCode = 104`, `versionName = "1.0.4"`。
   - 更新 `version.json` 与 `CHANGELOG.md`，状态栏透明沉浸式融合 + 多镜像降级。
 
-### `[updater-feat]` 2026-08-07 | feat(tauri): 接入 Tauri 2.0 官方应用自动热更新 (@tauri-apps/plugin-updater)
-* **Tauri 桌面端应用内热更新落地**：
-  - **密钥安全签名**：生成 Ed25519 签名密钥对，将公钥植入 `tauri.conf.json`，私钥集成至 GitHub CI/CD。
-  - **双端原生插件**：集成 `@tauri-apps/plugin-updater` 与 `@tauri-apps/plugin-process`，Rust 端注册 `tauri_plugin_updater` 引擎。
-  - **Web 端感知与秒级重启**：在 `native-bridge.js` 中新增启动与手动检测逻辑，检测到新版本时静默拉取无缝重载。
-  - **自动版本描述**：创建根目录 `desktop-version.json` 作为更新清单源，包含哈希签名与国内 ghfast 镜像地址。
+### `[updater-security]` 2026-08-07 | security(ci): 移出 CI/CD 硬编码私钥，全面收敛至 GitHub Secrets 加密管线
+* **安全加固与密钥防泄露**：
+  - 从 `.github/workflows/release.yml` 彻底移除硬编码 Fallback 私钥，私钥仅通过 GitHub Secrets `TAURI_SIGNING_PRIVATE_KEY` 保持端到端强加密。
+  - `.gitignore` 已配置过滤所有 `.key` 密钥文件，绝不随 Git 提交。
+
 
 
 

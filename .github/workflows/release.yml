@@ -127,14 +127,10 @@ jobs:
         run: npm ci || npm install
 
       - name: Restore Tauri Signing Key
+        if: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY != '' }}
         shell: pwsh
         run: |
-          if ($env:SECRET_KEY) {
-            [IO.File]::WriteAllText("src-tauri/openmusic.key", $env:SECRET_KEY)
-          } else {
-            $fallbackKey = "dW50cnVzdGVkIGNvbW1lbnQ6IHJzaWduIGVuY3J5cHRlZCBzZWNyZXQga2V5ClJXUlRZMEl5QXF4ZW9SZXR4SU1xc05xaW1Wbk1YRjRnbWhuVGU5a2pmOWFKOEh0cTU2WUFBQkFBQUFBQUFBQUFBQUlBQUFBQTVZanAyYVpBYS9lSUlDK2hCTFFRYVk1OEVuSzQxRk51dU9pQlBDbHBnZlFZWitDRGtFWW5TTmN0NVFhV2NVMXlib2VaSm96R2VrTWJXeW8xMkRkYTFTdjZhR0hCWFY3S3Z0YldtaE9zbmw2VUdTT0FkRk1pcW5Najh1dXd2d0doZ1o4WU5XS25hOEE9Cg=="
-            [IO.File]::WriteAllText("src-tauri/openmusic.key", $fallbackKey)
-          }
+          [IO.File]::WriteAllText("src-tauri/openmusic.key", $env:SECRET_KEY)
           $keyContent = Get-Content -Raw "src-tauri/openmusic.key"
           echo "TAURI_SIGNING_PRIVATE_KEY=$keyContent" >> $env:GITHUB_ENV
           echo "TAURI_SIGNING_PRIVATE_KEY_PASSWORD=" >> $env:GITHUB_ENV
