@@ -235,10 +235,12 @@
   - 更新 `android-native/app/build.gradle.kts` `versionCode = 104`, `versionName = "1.0.4"`。
   - 更新 `version.json` 与 `CHANGELOG.md`，状态栏透明沉浸式融合 + 多镜像降级。
 
-### `[updater-security]` 2026-08-07 | security(ci): 移出 CI/CD 硬编码私钥，全面收敛至 GitHub Secrets 加密管线
-* **安全加固与密钥防泄露**：
-  - 从 `.github/workflows/release.yml` 彻底移除硬编码 Fallback 私钥，私钥仅通过 GitHub Secrets `TAURI_SIGNING_PRIVATE_KEY` 保持端到端强加密。
-  - `.gitignore` 已配置过滤所有 `.key` 密钥文件，绝不随 Git 提交。
+### `[updater-security]` 2026-08-07 | security(ci): 旧私钥彻底作废，生成全新密钥对并移除历史明文风险
+* **密钥轮换与安全作废**：
+  - 重新生成全新 Ed25519 密钥对，旧私钥彻底失效作废；
+  - `tauri.conf.json` 公钥同步更新，旧版本记录中露出的旧私钥已无任何解密能力；
+  - 私钥完全收敛至用户自置的 GitHub Actions Secrets，代码仓库达到零密钥暴露（Zero Secret Exposure）。
+
 
 
 
