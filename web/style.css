@@ -306,11 +306,72 @@ body.is-tauri {
     to { transform: rotate(360deg); }
 }
 
-/* Song Meta Information */
+/* Song Meta Information & Favorite Button */
 .song-meta {
-    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
     margin-bottom: 20px;
+    padding: 0 10px;
+}
+
+.song-meta-text {
+    flex: 1;
+    text-align: center;
     overflow: hidden;
+}
+
+.favorite-btn {
+    position: absolute;
+    right: 0;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.favorite-btn:hover {
+    background: rgba(255, 255, 255, 0.12);
+    transform: scale(1.08);
+}
+
+.favorite-btn .heart-icon {
+    width: 20px;
+    height: 20px;
+    fill: transparent;
+    stroke: var(--text-muted);
+    stroke-width: 2;
+    transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.favorite-btn:hover .heart-icon {
+    stroke: #ff4777;
+    transform: scale(1.1);
+}
+
+.favorite-btn.favorited {
+    background: rgba(255, 71, 119, 0.12);
+    border-color: rgba(255, 71, 119, 0.35);
+    box-shadow: 0 0 12px rgba(255, 71, 119, 0.25);
+}
+
+.favorite-btn.favorited .heart-icon {
+    fill: #ff4777;
+    stroke: #ff4777;
+    animation: heartBounce 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.4) forwards;
+}
+
+@keyframes heartBounce {
+    0% { transform: scale(0.6); }
+    50% { transform: scale(1.35); }
+    100% { transform: scale(1); }
 }
 
 .song-title {
@@ -666,7 +727,126 @@ body.is-tauri {
     background: rgba(255, 255, 255, 0.1);
 }
 
-/* Playlist Search Bar */
+/* Playlist Tabs */
+.playlist-tabs {
+    display: flex;
+    gap: 8px;
+    padding: 0 15px 12px;
+}
+
+.playlist-tab {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.playlist-tab:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+}
+
+.playlist-tab.active {
+    background: rgba(var(--accent-color-rgb), 0.15);
+    border-color: rgba(var(--accent-color-rgb), 0.35);
+    color: #fff;
+    font-weight: 600;
+    box-shadow: 0 0 10px rgba(var(--accent-color-rgb), 0.15);
+}
+
+.tab-count {
+    font-size: 0.72rem;
+    padding: 1px 6px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.8);
+    font-variant-numeric: tabular-nums;
+}
+
+.playlist-tab.active .tab-count {
+    background: rgba(var(--accent-color-rgb), 0.3);
+    color: #fff;
+}
+
+/* Track list item favorite button */
+.track-fav-btn {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    opacity: 0.35;
+    transition: all var(--transition-fast);
+}
+
+.track-item:hover .track-fav-btn,
+.track-fav-btn.favorited {
+    opacity: 1;
+}
+
+.track-fav-btn svg {
+    width: 16px;
+    height: 16px;
+    fill: transparent;
+    stroke: rgba(255, 255, 255, 0.6);
+    stroke-width: 2;
+    transition: all var(--transition-fast);
+}
+
+.track-fav-btn:hover svg {
+    stroke: #ff4777;
+    transform: scale(1.15);
+}
+
+.track-fav-btn.favorited svg {
+    fill: #ff4777;
+    stroke: #ff4777;
+}
+
+/* Empty Favorites State */
+.empty-favorites-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 50px 20px;
+    text-align: center;
+    color: var(--text-inactive);
+}
+
+.empty-favorites-icon {
+    width: 48px;
+    height: 48px;
+    fill: rgba(255, 71, 119, 0.35);
+    margin-bottom: 12px;
+}
+
+.empty-favorites-text {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+}
+
+.empty-favorites-hint {
+    font-size: 0.76rem;
+    color: var(--text-inactive);
+}
+
+/* Search Box Container */
 .search-box {
     margin: 0 25px 20px;
     position: relative;

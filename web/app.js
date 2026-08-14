@@ -70,6 +70,8 @@ function getFallbackPlaylist() {
 // App State
 let playlist = [];
 let filteredPlaylist = [];
+let favorites = [];
+let currentPlaylistTab = 'all'; // 'all' or 'favorites'
 let currentTrackIndex = 0;
 let parsedLyrics = [];
 let currentLyricIndex = -1;
@@ -249,6 +251,7 @@ window.addEventListener('DOMContentLoaded', () => {
     if (window.playerEngine && typeof window.playerEngine.requestNotificationPermission === 'function') {
         window.playerEngine.requestNotificationPermission();
     }
+    loadFavorites();
     loadSettings();
     initEventListeners();
     initKeyboardShortcuts();
@@ -474,6 +477,9 @@ function loadTrack(index, shouldPlay = true) {
 
     // Generate dynamic accent colors matching the song's identity
     applyDynamicTheme(track.name, track.artist);
+
+    // Update favorite heart button status
+    updateFavoriteBtnUI();
 
     // Reset Progress Bar
     progressBar.style.width = '0%';
@@ -714,10 +720,105 @@ function syncLyrics(forceScroll = false) {
 }
 
 /* ==========================================================================
+   Favorites Collection Logic & Persistence
+   ========================================================================== */
+function loadFavorites() {
+    try {
+        const saved = localStorage.getItem('om-favorites');
+        if (saved) {
+            favorites = JSON.parse(saved);
+        }
+    } catch (e) {
+        console.warn('Failed to parse favorites:', e);
+        favorites = [];
+    }
+    updateFavoritesCount();
+}
+
+function saveFavorites() {
+    try {
+        localStorage.setItem('om-favorites', JSON.stringify(favorites));
+    } catch (e) {}
+    updateFavoritesCount();
+}
+
+function getTrackKey(track) {
+    if (!track) return '';
+    return `${track.name}___${track.artist}`;
+}
+
+function isTrackFavorite(track) {
+    if (!track) return false;
+    const key = getTrackKey(track);
+    return favorites.some(f => getTrackKey(f) === key);
+}
+
+function toggleTrackFavorite(track) {
+    if (!track) return false;
+    const key = getTrackKey(track);
+    const index = favorites.findIndex(f => getTrackKey(f) === key);
+    let nowFavorited = false;
+    if (index >= 0) {
+        favorites.splice(index, 1);
+        nowFavorited = false;
+    } else {
+        favorites.unshift({
+            name: track.name,
+            artist: track.artist,
+            url: track.url,
+            pic: track.pic,
+            lrc: track.lrc,
+            addedAt: Date.now()
+        });
+        nowFavorited = true;
+    }
+    saveFavorites();
+    updateFavoriteBtnUI();
+    filterPlaylist(searchInput.value);
+    return nowFavorited;
+}
+
+function updateFavoritesCount() {
+    const countAll = document.getElementById('count-playlist-all');
+    const countFav = document.getElementById('count-playlist-fav');
+    if (countAll) countAll.textContent = playlist.length;
+    if (countFav) countFav.textContent = favorites.length;
+}
+
+function updateFavoriteBtnUI() {
+    const track = playlist[currentTrackIndex];
+    const isFav = isTrackFavorite(track);
+    const btn = document.getElementById('btn-favorite-current');
+    if (btn) {
+        if (isFav) {
+            btn.classList.add('favorited');
+            btn.title = '取消收藏当前歌曲';
+        } else {
+            btn.classList.remove('favorited');
+            btn.title = '收藏当前歌曲';
+        }
+    }
+}
+
+/* ==========================================================================
    Playlist Renderer & Search Box Filter
    ========================================================================== */
 function renderPlaylist() {
     trackListContainer.innerHTML = '';
+    updateFavoritesCount();
+
+    if (currentPlaylistTab === 'favorites' && favorites.length === 0) {
+        trackListContainer.innerHTML = `
+            <div class="empty-favorites-state">
+                <svg viewBox="0 0 24 24" class="empty-favorites-icon">
+                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                </svg>
+                <div class="empty-favorites-text">暂无收藏歌曲</div>
+                <div class="empty-favorites-hint">在播放器或列表中点击 ❤️ 即可收藏喜爱的音乐</div>
+            </div>
+        `;
+        return;
+    }
 
     if (filteredPlaylist.length === 0) {
         trackListContainer.innerHTML = '<div style="text-align: center; color: var(--text-inactive); padding-top: 40px; font-size: 0.9rem;">没有找到匹配的歌曲</div>';
@@ -726,11 +827,18 @@ function renderPlaylist() {
 
     filteredPlaylist.forEach((track, displayIndex) => {
         // Find index in original master playlist
-        const masterIndex = playlist.findIndex(t => t.url === track.url);
+        let masterIndex = playlist.findIndex(t => getTrackKey(t) === getTrackKey(track));
+        if (masterIndex === -1 && currentPlaylistTab === 'favorites') {
+            // Track in favorites might not be in the current playlist, append it if played
+            masterIndex = playlist.length;
+        }
+
+        const isFav = isTrackFavorite(track);
+        const isCurrentPlaying = playlist[currentTrackIndex] && getTrackKey(playlist[currentTrackIndex]) === getTrackKey(track);
 
         const item = document.createElement('div');
         item.className = 'track-item';
-        if (masterIndex === currentTrackIndex) {
+        if (isCurrentPlaying) {
             item.classList.add('active');
         }
         item.dataset.index = masterIndex;
@@ -749,15 +857,36 @@ function renderPlaylist() {
                 <div class="track-name">${track.name}</div>
                 <div class="track-artist">${track.artist}</div>
             </div>
+            <button class="track-fav-btn ${isFav ? 'favorited' : ''}" title="${isFav ? '取消收藏' : '收藏歌曲'}">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                </svg>
+            </button>
         `;
 
+        // Row Click: Play song
         item.addEventListener('click', () => {
-            loadTrack(masterIndex, true);
+            let targetIdx = playlist.findIndex(t => getTrackKey(t) === getTrackKey(track));
+            if (targetIdx === -1) {
+                // Add from favorites to current queue
+                playlist.push(track);
+                targetIdx = playlist.length - 1;
+            }
+            loadTrack(targetIdx, true);
             // On mobile viewports, automatically close the playlist drawer on selection
             if (window.innerWidth <= 960) {
                 playlistDrawer.classList.remove('open');
             }
         });
+
+        // Favorite Button Click
+        const favBtn = item.querySelector('.track-fav-btn');
+        if (favBtn) {
+            favBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                toggleTrackFavorite(track);
+            });
+        }
 
         trackListContainer.appendChild(item);
     });
@@ -765,12 +894,14 @@ function renderPlaylist() {
 
 function updatePlaylistHighlight() {
     const items = trackListContainer.querySelectorAll('.track-item');
+    const currentTrack = playlist[currentTrackIndex];
     items.forEach(item => {
-        const index = parseInt(item.dataset.index, 10);
-        if (index === currentTrackIndex) {
+        const itemIdx = parseInt(item.dataset.index, 10);
+        const itemTrack = filteredPlaylist.find(t => playlist.findIndex(p => getTrackKey(p) === getTrackKey(t)) === itemIdx) || filteredPlaylist[itemIdx];
+        const isActive = currentTrack && itemTrack && getTrackKey(currentTrack) === getTrackKey(itemTrack);
+        
+        if (isActive) {
             item.classList.add('active');
-            
-            // Adjust numbering container layout
             const numEl = item.querySelector('.track-number');
             if (numEl) numEl.style.display = 'none';
         } else {
@@ -779,21 +910,23 @@ function updatePlaylistHighlight() {
             if (numEl) numEl.style.display = 'block';
         }
     });
+    updateFavoriteBtnUI();
 }
 
-// Search Filter Logic
-function filterPlaylist(query) {
-    query = query.trim().toLowerCase();
+// Search & Tab Filter Logic
+function filterPlaylist(query = '') {
+    query = (query || searchInput.value || '').trim().toLowerCase();
+    const sourceList = currentPlaylistTab === 'favorites' ? favorites : playlist;
     
     if (query) {
         clearSearchBtn.classList.remove('hidden');
-        filteredPlaylist = playlist.filter(track => 
+        filteredPlaylist = sourceList.filter(track => 
             track.name.toLowerCase().includes(query) || 
             track.artist.toLowerCase().includes(query)
         );
     } else {
         clearSearchBtn.classList.add('hidden');
-        filteredPlaylist = [...playlist];
+        filteredPlaylist = [...sourceList];
     }
     
     renderPlaylist();
@@ -880,9 +1013,38 @@ function initEventListeners() {
         updatePlayModeUI();
     });
 
-    // Seek Drag Control
-    progressContainer.addEventListener('mousedown', startSeekDrag);
-    progressContainer.addEventListener('touchstart', startSeekDrag, { passive: true });
+    // Current Song Favorite Button
+    const btnFavoriteCurrent = document.getElementById('btn-favorite-current');
+    if (btnFavoriteCurrent) {
+        btnFavoriteCurrent.addEventListener('click', () => {
+            const track = playlist[currentTrackIndex];
+            if (track) {
+                toggleTrackFavorite(track);
+            }
+        });
+    }
+
+    // Playlist Drawer Tabs (All vs Favorites)
+    const tabPlaylistAll = document.getElementById('tab-playlist-all');
+    const tabPlaylistFav = document.getElementById('tab-playlist-fav');
+
+    if (tabPlaylistAll) {
+        tabPlaylistAll.addEventListener('click', () => {
+            currentPlaylistTab = 'all';
+            tabPlaylistAll.classList.add('active');
+            if (tabPlaylistFav) tabPlaylistFav.classList.remove('active');
+            filterPlaylist(searchInput.value);
+        });
+    }
+
+    if (tabPlaylistFav) {
+        tabPlaylistFav.addEventListener('click', () => {
+            currentPlaylistTab = 'favorites';
+            tabPlaylistFav.classList.add('active');
+            if (tabPlaylistAll) tabPlaylistAll.classList.remove('active');
+            filterPlaylist(searchInput.value);
+        });
+    }
 
     const closeDrawer = () => {
         playlistDrawer.classList.remove('open');

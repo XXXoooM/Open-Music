@@ -77,10 +77,17 @@
                     </div>
                 </div>
 
-                <!-- Song Info -->
+                <!-- Song Info & Favorite Button -->
                 <div class="song-meta">
-                    <h1 class="song-title" id="song-title">加载中...</h1>
-                    <p class="song-artist" id="song-artist">请稍候</p>
+                    <div class="song-meta-text">
+                        <h1 class="song-title" id="song-title">加载中...</h1>
+                        <p class="song-artist" id="song-artist">请稍候</p>
+                    </div>
+                    <button class="icon-btn favorite-btn" id="btn-favorite-current" title="收藏当前歌曲" aria-label="收藏当前歌曲">
+                        <svg viewBox="0 0 24 24" class="heart-icon" id="heart-icon-current">
+                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                        </svg>
+                    </button>
                 </div>
 
                 <!-- Progress Bar -->
@@ -206,6 +213,17 @@
                         <button id="btn-save-settings">载入</button>
                     </div>
                     <button class="text-btn" id="btn-reset-playlist">恢复默认歌单</button>
+                </div>
+                <!-- Playlist Filter Tabs (All vs Favorites) -->
+                <div class="playlist-tabs">
+                    <button class="playlist-tab active" id="tab-playlist-all">
+                        <span>全部歌曲</span>
+                        <span class="tab-count" id="count-playlist-all">0</span>
+                    </button>
+                    <button class="playlist-tab" id="tab-playlist-fav">
+                        <span>❤️ 我的收藏</span>
+                        <span class="tab-count" id="count-playlist-fav">0</span>
+                    </button>
                 </div>
                 <!-- Search Box -->
                 <div class="search-box">
