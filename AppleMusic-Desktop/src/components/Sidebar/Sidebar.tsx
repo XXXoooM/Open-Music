@@ -32,20 +32,22 @@ interface NavItemProps {
 const NavItem = ({ icon, label, active, count, onClick }: NavItemProps) => (
   <button
     onClick={onClick}
-    className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-[13px] font-medium transition-all cursor-pointer ${
+    className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-[13px] font-medium transition-all cursor-pointer select-none group ${
       active
-        ? "bg-[#fa2d48] text-white shadow-sm shadow-[#fa2d48]/25"
-        : "text-neutral-700 dark:text-neutral-300 hover:bg-black/[0.04] dark:hover:bg-white/[0.06]"
+        ? "bg-[#fa2d48]/12 text-[#fa2d48] dark:bg-[#fa2d48]/20 font-semibold"
+        : "text-neutral-600 dark:text-neutral-300 hover:bg-black/[0.04] dark:hover:bg-white/[0.06] hover:text-neutral-900 dark:hover:text-white"
     }`}
   >
-    <div className="flex items-center gap-2.5">
-      <span className={active ? "text-white" : "text-neutral-500 dark:text-neutral-400"}>
+    <div className="flex items-center gap-2.5 overflow-hidden pr-1">
+      <span className={`flex-shrink-0 transition-colors ${active ? "text-[#fa2d48]" : "text-neutral-500 dark:text-neutral-400 group-hover:text-neutral-800 dark:group-hover:text-neutral-200"}`}>
         {icon}
       </span>
-      <span>{label}</span>
+      <span className="truncate">{label}</span>
     </div>
     {count !== undefined && (
-      <span className={`text-[11px] px-1.5 py-0.5 rounded-full ${active ? "bg-white/20 text-white" : "text-neutral-400"}`}>
+      <span className={`text-[11px] tabular-nums font-medium flex-shrink-0 ml-1.5 px-1.5 py-0.5 rounded-full ${
+        active ? "text-[#fa2d48] bg-[#fa2d48]/10" : "text-neutral-400 dark:text-neutral-500"
+      }`}>
         {count}
       </span>
     )}
@@ -61,9 +63,9 @@ export const Sidebar = () => {
 
   return (
     <>
-      <aside className="w-56 h-[calc(100vh-44px-80px)] apple-sidebar-glass flex flex-col justify-between select-none p-3">
-        <div className="space-y-5 overflow-y-auto pr-1">
-          {/* Quick Search Item */}
+      <aside className="w-60 h-[calc(100vh-44px-80px)] apple-sidebar-glass flex flex-col justify-between select-none p-3.5 flex-shrink-0">
+        <div className="space-y-4 overflow-y-auto pr-1.5 custom-sidebar-scroll">
+          {/* Quick Access Items */}
           <div className="space-y-0.5">
             <NavItem
               icon={<Search className="w-4 h-4" />}
@@ -87,7 +89,7 @@ export const Sidebar = () => {
 
           {/* Apple Music Navigation */}
           <div>
-            <div className="px-3 mb-1.5 text-[11px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">
+            <div className="px-3 mb-1 text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">
               发现
             </div>
             <div className="space-y-0.5">
@@ -113,7 +115,7 @@ export const Sidebar = () => {
           </div>
 
           <div>
-            <div className="px-3 mb-1.5 text-[11px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">
+            <div className="px-3 mb-1 text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">
               资料库
             </div>
             <div className="space-y-0.5">
@@ -130,19 +132,23 @@ export const Sidebar = () => {
                 active={activeView === "favorites"}
                 onClick={() => setActiveView("favorites")}
               />
-              <NavItem icon={<Clock className="w-4 h-4" />} label="最近播放" onClick={() => setActiveView("profile")} />
+              <NavItem
+                icon={<Clock className="w-4 h-4" />}
+                label="最近播放"
+                onClick={() => setActiveView("profile")}
+              />
               <NavItem icon={<FolderHeart className="w-4 h-4" />} label="已存专辑" />
             </div>
           </div>
 
           <div>
-            <div className="flex items-center justify-between px-3 mb-1.5">
-              <span className="text-[11px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">
+            <div className="flex items-center justify-between px-3 mb-1">
+              <span className="text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">
                 我的歌单
               </span>
               <button
                 onClick={() => setIsCreatePlaylistOpen(true)}
-                className="text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 transition-colors cursor-pointer"
+                className="text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 transition-colors cursor-pointer p-0.5 rounded-md hover:bg-black/5 dark:hover:bg-white/5"
                 title="创建新歌单"
               >
                 <Plus className="w-3.5 h-3.5" />
@@ -168,20 +174,20 @@ export const Sidebar = () => {
           {isAuthenticated && user ? (
             <div
               onClick={() => setActiveView("profile")}
-              className="flex items-center justify-between px-2 py-1 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-all cursor-pointer group"
+              className="flex items-center justify-between p-2 rounded-2xl hover:bg-black/5 dark:hover:bg-white/5 transition-all cursor-pointer group"
             >
-              <div className="flex items-center gap-2 overflow-hidden pr-1">
+              <div className="flex items-center gap-2.5 overflow-hidden pr-1">
                 <img
                   src={user.avatarUrl}
                   alt={user.nickname}
-                  className="w-7 h-7 rounded-full object-cover border border-black/10 dark:border-white/15"
+                  className="w-8 h-8 rounded-full object-cover border border-black/10 dark:border-white/15 shadow-sm"
                 />
                 <div className="text-left overflow-hidden">
                   <div className="text-xs font-semibold text-neutral-800 dark:text-neutral-200 truncate flex items-center gap-1">
                     {user.nickname}
                     <UserCheck className="w-3 h-3 text-[#fa2d48] flex-shrink-0" />
                   </div>
-                  <div className="text-[10px] text-neutral-400 truncate">Apple Music Plus</div>
+                  <div className="text-[10px] text-neutral-400 truncate">Apple Music 会员</div>
                 </div>
               </div>
               <button
@@ -190,7 +196,7 @@ export const Sidebar = () => {
                   logout();
                 }}
                 title="退出登录"
-                className="p-1 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 text-neutral-400 hover:text-red-500 transition-colors cursor-pointer"
+                className="p-1.5 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 text-neutral-400 hover:text-red-500 transition-colors cursor-pointer"
               >
                 <LogOut className="w-3.5 h-3.5" />
               </button>

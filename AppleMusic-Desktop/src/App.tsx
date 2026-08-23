@@ -120,149 +120,149 @@ export function App() {
                       initial={{ opacity: 0, y: 16 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                      className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-violet-600 via-pink-600 to-[#fa2d48] p-8 text-white shadow-xl shadow-[#fa2d48]/15"
+                      className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-violet-600 via-pink-600 to-[#fa2d48] p-7 sm:p-8 text-white shadow-xl shadow-[#fa2d48]/15"
                     >
-                    <div className="max-w-xl space-y-3 relative z-10">
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-xs font-semibold tracking-wide uppercase">
-                        <Sparkles className="w-3.5 h-3.5" /> 今日聚焦 · 杜比全景声
-                      </span>
-                      <h1 className="text-3xl font-extrabold tracking-tight">
-                        {spatialPlaylist?.title || "Apple Spatial Audio 空间音频精选"}
-                      </h1>
-                      <p className="text-sm text-white/80 leading-relaxed">
-                        {spatialPlaylist?.description ||
-                          "戴上 AirPods 或 Hi-Fi 耳机，感受 360 度全方位包裹的杜比全景声沉浸式音乐盛宴。"}
-                      </p>
-                      <div className="pt-2 flex items-center gap-3">
-                        <Button
-                          onClick={handleHeroPlay}
-                          size="pill"
-                          className="bg-white text-black hover:bg-white/90 shadow-xl"
-                        >
-                          {isPlaying ? (
-                            <>
-                              <Pause className="w-4 h-4 fill-current" /> 暂停播放
-                            </>
-                          ) : (
-                            <>
-                              <Play className="w-4 h-4 fill-current ml-0.5" /> 立即播放 ({spatialPlaylist?.tracks?.length || 0} 首)
-                            </>
-                          )}
-                        </Button>
-                        <Button
-                          onClick={() => setActiveView("search")}
-                          size="pill"
-                          variant="glass"
-                          className="bg-white/20 hover:bg-white/30 border-white/20 text-white"
-                        >
-                          搜索探索
-                        </Button>
+                      <div className="max-w-xl space-y-3 relative z-10">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/20 dark:bg-white/20 backdrop-blur-md text-[11px] font-semibold tracking-wide uppercase">
+                          <Sparkles className="w-3.5 h-3.5" /> 今日聚焦 · 空间音频
+                        </span>
+                        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight leading-tight line-clamp-2">
+                          {spatialPlaylist?.title || "Apple Spatial Audio 空间音频精选"}
+                        </h1>
+                        <p className="text-xs sm:text-sm text-white/85 leading-relaxed line-clamp-2 max-w-lg">
+                          {spatialPlaylist?.description ||
+                            "戴上 AirPods 或 Hi-Fi 耳机，感受 360 度全方位包裹的杜比全景声沉浸式音乐盛宴。"}
+                        </p>
+                        <div className="pt-2 flex items-center gap-3">
+                          <Button
+                            onClick={handleHeroPlay}
+                            size="pill"
+                            className="bg-white text-black hover:bg-white/90 shadow-lg px-5 font-semibold text-xs h-9"
+                          >
+                            {isPlaying ? (
+                              <>
+                                <Pause className="w-3.5 h-3.5 fill-current" /> 暂停播放
+                              </>
+                            ) : (
+                              <>
+                                <Play className="w-3.5 h-3.5 fill-current ml-0.5" /> 立即播放 ({spatialPlaylist?.tracks?.length || 0} 首)
+                              </>
+                            )}
+                          </Button>
+                          <Button
+                            onClick={() => setActiveView("search")}
+                            size="pill"
+                            variant="glass"
+                            className="bg-white/20 hover:bg-white/30 border-white/20 text-white px-4 font-semibold text-xs h-9"
+                          >
+                            搜索探索
+                          </Button>
+                        </div>
                       </div>
-                    </div>
-                    {/* Ambient art ornament */}
-                    <div className="absolute -right-10 -bottom-10 w-72 h-72 bg-white/10 rounded-full blur-2xl pointer-events-none" />
-                  </motion.section>
+                      {/* Ambient art ornament */}
+                      <div className="absolute -right-10 -bottom-10 w-72 h-72 bg-white/15 rounded-full blur-2xl pointer-events-none" />
+                    </motion.section>
 
-                  {/* Online Dynamic Tracks List (TanStack Query) */}
-                  <section className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h2 className="text-xl font-bold tracking-tight flex items-center gap-2">
-                        <Disc3 className="w-5 h-5 text-[#fa2d48]" /> 精选曲目列表 (在线流播放)
-                      </h2>
-                      <span className="text-xs text-neutral-400 font-medium">
-                        {isLoading ? "正在同步云端曲目..." : `共 ${spatialPlaylist?.tracks?.length || 0} 首曲目`}
-                      </span>
-                    </div>
-
-                    {isLoading ? (
-                      <div className="space-y-3">
-                        {[1, 2, 3].map((i) => (
-                          <div key={i} className="h-14 rounded-xl bg-black/5 dark:bg-white/5 animate-pulse" />
-                        ))}
+                    {/* Online Dynamic Tracks List (TanStack Query) */}
+                    <section className="space-y-3.5">
+                      <div className="flex items-center justify-between">
+                        <h2 className="text-lg font-bold tracking-tight flex items-center gap-2">
+                          <Disc3 className="w-4 h-4 text-[#fa2d48]" /> 精选曲目列表 (在线流播放)
+                        </h2>
+                        <span className="text-xs text-neutral-400 font-medium">
+                          {isLoading ? "正在同步云端曲目..." : `共 ${spatialPlaylist?.tracks?.length || 0} 首曲目`}
+                        </span>
                       </div>
-                    ) : (
-                      <motion.div
-                        variants={staggerContainer}
-                        initial="hidden"
-                        animate="visible"
-                        className="grid grid-cols-1 md:grid-cols-2 gap-3"
-                      >
-                        {spatialPlaylist?.tracks?.map((track, idx) => {
-                          const isCurrent = currentTrack?.id === track.id || currentTrack?.url === track.url;
 
-                          return (
-                            <motion.div key={track.id} variants={staggerItem}>
-                              <Card
-                                className={`flex items-center justify-between p-2.5 rounded-2xl border transition-all group cursor-pointer ${
-                                  isCurrent
-                                    ? "border-[#fa2d48]/40 bg-[#fa2d48]/5 dark:bg-[#fa2d48]/10"
-                                    : "border-black/5 dark:border-white/5 hover:bg-black/5 dark:hover:bg-white/10"
-                                }`}
-                                onClick={() => playTrack(track, spatialPlaylist.tracks)}
-                              >
-                                <div className="flex items-center gap-3 overflow-hidden pr-2">
-                                  <span className="text-xs font-semibold text-neutral-400 w-5 text-center tabular-nums">
-                                    {isCurrent && isPlaying ? (
-                                      <Volume2 className="w-3.5 h-3.5 text-[#fa2d48] animate-pulse" />
-                                    ) : (
-                                      idx + 1
-                                    )}
-                                  </span>
-                                  <img
-                                    src={track.pic}
-                                    alt={track.name}
-                                    className="w-10 h-10 rounded-lg object-cover shadow-sm flex-shrink-0"
-                                  />
-                                  <div className="overflow-hidden">
-                                    <div
-                                      className={`text-sm font-semibold truncate transition-colors ${
-                                        isCurrent ? "text-[#fa2d48]" : "group-hover:text-[#fa2d48]"
-                                      }`}
-                                    >
-                                      {track.name}
-                                    </div>
-                                    <div className="text-xs text-neutral-500 dark:text-neutral-400 truncate">
-                                      {track.artist} · {track.album || "精选单曲"}
+                      {isLoading ? (
+                        <div className="space-y-2.5">
+                          {[1, 2, 3].map((i) => (
+                            <div key={i} className="h-14 rounded-2xl bg-black/5 dark:bg-white/5 animate-pulse" />
+                          ))}
+                        </div>
+                      ) : (
+                        <motion.div
+                          variants={staggerContainer}
+                          initial="hidden"
+                          animate="visible"
+                          className="grid grid-cols-1 lg:grid-cols-2 gap-3"
+                        >
+                          {spatialPlaylist?.tracks?.map((track, idx) => {
+                            const isCurrent = currentTrack?.id === track.id || currentTrack?.url === track.url;
+
+                            return (
+                              <motion.div key={track.id} variants={staggerItem}>
+                                <Card
+                                  className={`flex items-center justify-between p-2.5 rounded-2xl border transition-all group cursor-pointer ${
+                                    isCurrent
+                                      ? "border-[#fa2d48]/40 bg-[#fa2d48]/5 dark:bg-[#fa2d48]/10 shadow-sm"
+                                      : "border-black/[0.04] dark:border-white/[0.06] bg-white/60 dark:bg-white/[0.03] hover:bg-white/90 dark:hover:bg-white/[0.07]"
+                                  }`}
+                                  onClick={() => playTrack(track, spatialPlaylist.tracks)}
+                                >
+                                  <div className="flex items-center gap-3 overflow-hidden pr-2">
+                                    <span className="text-xs font-semibold text-neutral-400 w-5 text-center tabular-nums">
+                                      {isCurrent && isPlaying ? (
+                                        <Volume2 className="w-3.5 h-3.5 text-[#fa2d48] animate-pulse" />
+                                      ) : (
+                                        idx + 1
+                                      )}
+                                    </span>
+                                    <img
+                                      src={track.pic}
+                                      alt={track.name}
+                                      className="w-10 h-10 rounded-xl object-cover shadow-sm flex-shrink-0"
+                                    />
+                                    <div className="overflow-hidden">
+                                      <div
+                                        className={`text-sm font-semibold truncate transition-colors ${
+                                          isCurrent ? "text-[#fa2d48]" : "group-hover:text-[#fa2d48]"
+                                        }`}
+                                      >
+                                        {track.name}
+                                      </div>
+                                      <div className="text-xs text-neutral-500 dark:text-neutral-400 truncate">
+                                        {track.artist} · {track.album || "精选单曲"}
+                                      </div>
                                     </div>
                                   </div>
-                                </div>
-                                <Button
-                                  size="icon"
-                                  variant="default"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    if (isCurrent) {
-                                      togglePlay();
-                                    } else {
-                                      playTrack(track, spatialPlaylist.tracks);
-                                    }
-                                  }}
-                                  className={`w-8 h-8 rounded-full transition-all ${
-                                    isCurrent
-                                      ? "opacity-100 scale-100"
-                                      : "opacity-0 group-hover:opacity-100 scale-90 group-hover:scale-100"
-                                  }`}
-                                >
-                                  {isCurrent && isPlaying ? (
-                                    <Pause className="w-3.5 h-3.5 fill-current" />
-                                  ) : (
-                                    <Play className="w-3.5 h-3.5 fill-current ml-0.5" />
-                                  )}
-                                </Button>
-                              </Card>
-                            </motion.div>
-                          );
-                        })}
-                      </motion.div>
-                    )}
-                  </section>
+                                  <Button
+                                    size="icon"
+                                    variant="default"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      if (isCurrent) {
+                                        togglePlay();
+                                      } else {
+                                        playTrack(track, spatialPlaylist.tracks);
+                                      }
+                                    }}
+                                    className={`w-8 h-8 rounded-full transition-all ${
+                                      isCurrent
+                                        ? "bg-[#fa2d48] text-white hover:bg-[#fa2d48]/90 shadow-md shadow-[#fa2d48]/30"
+                                        : "bg-black/5 dark:bg-white/10 text-neutral-700 dark:text-neutral-200 hover:bg-[#fa2d48] hover:text-white"
+                                    }`}
+                                  >
+                                    {isCurrent && isPlaying ? (
+                                      <Pause className="w-3.5 h-3.5 fill-current" />
+                                    ) : (
+                                      <Play className="w-3.5 h-3.5 fill-current ml-0.5" />
+                                    )}
+                                  </Button>
+                                </Card>
+                              </motion.div>
+                            );
+                          })}
+                        </motion.div>
+                      )}
+                    </section>
 
-                  {/* Quick Recommendations Grid */}
-                  <section className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h2 className="text-xl font-bold tracking-tight flex items-center gap-2">
-                        <Flame className="w-5 h-5 text-[#fa2d48]" /> 热门歌单推荐
-                      </h2>
+                    {/* Quick Recommendations Grid */}
+                    <section className="space-y-3.5">
+                      <div className="flex items-center justify-between">
+                        <h2 className="text-lg font-bold tracking-tight flex items-center gap-2">
+                          <Flame className="w-4 h-4 text-[#fa2d48]" /> 热门歌单推荐
+                        </h2>
                       <Button
                         variant="link"
                         size="sm"
