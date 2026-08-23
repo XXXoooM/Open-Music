@@ -15,6 +15,8 @@ import { usePlaylistStore } from "@/stores/playlistStore";
 import { useMediaSession } from "@/hooks/useMediaSession";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { Play, Pause, Sparkles, Flame, Disc3, Volume2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 
 export function App() {
   const { data: spatialPlaylist, isLoading } = usePlaylistQuery("spatial-top");
@@ -106,9 +108,10 @@ export function App() {
                       "戴上 AirPods 或 Hi-Fi 耳机，感受 360 度全方位包裹的杜比全景声沉浸式音乐盛宴。"}
                   </p>
                   <div className="pt-2 flex items-center gap-3">
-                    <button
+                    <Button
                       onClick={handleHeroPlay}
-                      className="px-5 py-2.5 rounded-full bg-white text-black font-semibold text-sm hover:scale-105 active:scale-95 transition-all flex items-center gap-2 shadow-lg cursor-pointer"
+                      size="pill"
+                      className="bg-white text-black hover:bg-white/90 shadow-xl"
                     >
                       {isPlaying ? (
                         <>
@@ -116,16 +119,18 @@ export function App() {
                         </>
                       ) : (
                         <>
-                          <Play className="w-4 h-4 fill-current" /> 立即播放 ({spatialPlaylist?.tracks?.length || 0} 首)
+                          <Play className="w-4 h-4 fill-current ml-0.5" /> 立即播放 ({spatialPlaylist?.tracks?.length || 0} 首)
                         </>
                       )}
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       onClick={() => setActiveView("search")}
-                      className="px-4 py-2.5 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-md font-semibold text-sm transition-all cursor-pointer"
+                      size="pill"
+                      variant="glass"
+                      className="bg-white/20 hover:bg-white/30 border-white/20 text-white"
                     >
                       搜索探索
-                    </button>
+                    </Button>
                   </div>
                 </div>
                 {/* Ambient art ornament */}
@@ -155,13 +160,13 @@ export function App() {
                       const isCurrent = currentTrack?.id === track.id || currentTrack?.url === track.url;
 
                       return (
-                        <div
+                        <Card
                           key={track.id}
                           onClick={() => playTrack(track, spatialPlaylist.tracks)}
-                          className={`flex items-center justify-between p-2.5 rounded-xl apple-glass hover:bg-black/5 dark:hover:bg-white/10 transition-all group cursor-pointer border ${
+                          className={`flex items-center justify-between p-2.5 rounded-2xl border transition-all group cursor-pointer ${
                             isCurrent
                               ? "border-[#fa2d48]/40 bg-[#fa2d48]/5 dark:bg-[#fa2d48]/10"
-                              : "border-black/5 dark:border-white/5"
+                              : "border-black/5 dark:border-white/5 hover:bg-black/5 dark:hover:bg-white/10"
                           }`}
                         >
                           <div className="flex items-center gap-3 overflow-hidden pr-2">
@@ -190,7 +195,9 @@ export function App() {
                               </div>
                             </div>
                           </div>
-                          <button
+                          <Button
+                            size="icon"
+                            variant="default"
                             onClick={(e) => {
                               e.stopPropagation();
                               if (isCurrent) {
@@ -199,7 +206,7 @@ export function App() {
                                 playTrack(track, spatialPlaylist.tracks);
                               }
                             }}
-                            className={`w-8 h-8 rounded-full bg-[#fa2d48] text-white flex items-center justify-center shadow-md transition-all cursor-pointer ${
+                            className={`w-8 h-8 rounded-full transition-all ${
                               isCurrent
                                 ? "opacity-100 scale-100"
                                 : "opacity-0 group-hover:opacity-100 scale-90 group-hover:scale-100"
@@ -210,8 +217,8 @@ export function App() {
                             ) : (
                               <Play className="w-3.5 h-3.5 fill-current ml-0.5" />
                             )}
-                          </button>
-                        </div>
+                          </Button>
+                        </Card>
                       );
                     })}
                   </div>
@@ -224,12 +231,14 @@ export function App() {
                   <h2 className="text-xl font-bold tracking-tight flex items-center gap-2">
                     <Flame className="w-5 h-5 text-[#fa2d48]" /> 热门歌单推荐
                   </h2>
-                  <button
+                  <Button
+                    variant="link"
+                    size="sm"
                     onClick={() => setActiveView("search")}
-                    className="text-xs font-semibold text-[#fa2d48] hover:underline cursor-pointer"
+                    className="text-xs font-semibold text-[#fa2d48] p-0 h-auto"
                   >
                     查看全部
-                  </button>
+                  </Button>
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
@@ -240,28 +249,32 @@ export function App() {
                     { title: "Spatial Audio", desc: "杜比全景声环绕", cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=300&auto=format&fit=crop&q=80" },
                     { title: "Late Night Jazz", desc: "微醺慵懒爵士夜", cover: "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=300&auto=format&fit=crop&q=80" },
                   ].map((item, idx) => (
-                    <div
+                    <Card
                       key={idx}
                       onClick={() => setActiveView("album", "17910751956")}
-                      className="group cursor-pointer space-y-2"
+                      className="group cursor-pointer space-y-2 p-2 border-0 bg-transparent shadow-none"
                     >
-                      <div className="aspect-square rounded-xl overflow-hidden bg-neutral-200 dark:bg-neutral-800 relative shadow-md group-hover:shadow-xl transition-all duration-300">
+                      <div className="aspect-square rounded-2xl overflow-hidden bg-neutral-200 dark:bg-neutral-800 relative shadow-md group-hover:shadow-xl transition-all duration-300">
                         <img
                           src={item.cover}
                           alt={item.title}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         />
-                        <button className="absolute right-3 bottom-3 w-10 h-10 rounded-full bg-[#fa2d48] text-white flex items-center justify-center shadow-lg opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 hover:scale-110 cursor-pointer">
+                        <Button
+                          size="icon"
+                          variant="apple"
+                          className="absolute right-3 bottom-3 w-10 h-10 rounded-full opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0"
+                        >
                           <Play className="w-4 h-4 fill-current ml-0.5" />
-                        </button>
+                        </Button>
                       </div>
-                      <div>
+                      <CardContent className="p-0">
                         <h3 className="text-sm font-semibold truncate group-hover:text-[#fa2d48] transition-colors">
                           {item.title}
                         </h3>
                         <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate">{item.desc}</p>
-                      </div>
-                    </div>
+                      </CardContent>
+                    </Card>
                   ))}
                 </div>
               </section>

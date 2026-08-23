@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { usePlayerStore } from "@/stores/playerStore";
 import { usePlaylistStore } from "@/stores/playlistStore";
+import { Button } from "@/components/ui/button";
 
 const formatTime = (seconds: number) => {
   if (!seconds || isNaN(seconds) || !isFinite(seconds)) return "00:00";
@@ -69,7 +70,7 @@ export const PlayerBar: React.FC = () => {
     <footer className="h-20 w-full apple-player-glass fixed bottom-0 left-0 right-0 z-40 flex items-center justify-between px-5 select-none">
       {/* Current Playing Track Info */}
       <div className="flex items-center gap-3.5 w-1/4 min-w-[220px]">
-        <div className="w-12 h-12 rounded-lg bg-neutral-200 dark:bg-neutral-800 shadow-md overflow-hidden relative group border border-black/5 dark:border-white/10 flex-shrink-0">
+        <div className="w-12 h-12 rounded-xl bg-neutral-200 dark:bg-neutral-800 shadow-md overflow-hidden relative group border border-black/5 dark:border-white/10 flex-shrink-0">
           <img
             src={
               currentTrack?.pic ||
@@ -88,18 +89,20 @@ export const PlayerBar: React.FC = () => {
           </div>
         </div>
         {currentTrack && (
-          <button className="p-1.5 text-neutral-400 hover:text-[#fa2d48] transition-colors cursor-pointer">
+          <Button size="icon" variant="ghost" className="h-8 w-8 text-neutral-400 hover:text-[#fa2d48]">
             <Heart className="w-4 h-4 stroke-[2]" />
-          </button>
+          </Button>
         )}
       </div>
 
       {/* Center Controls & Progress Bar */}
       <div className="flex-1 max-w-xl flex flex-col items-center gap-1.5 px-4">
         <div className="flex items-center gap-4">
-          <button
+          <Button
+            size="icon"
+            variant="ghost"
             onClick={togglePlayMode}
-            className={`p-1.5 transition-colors cursor-pointer ${
+            className={`h-8 w-8 ${
               playMode === "shuffle"
                 ? "text-[#fa2d48]"
                 : "text-neutral-400 hover:text-neutral-800 dark:hover:text-white"
@@ -119,19 +122,23 @@ export const PlayerBar: React.FC = () => {
             ) : (
               <Repeat className="w-4 h-4" />
             )}
-          </button>
+          </Button>
 
-          <button
+          <Button
+            size="icon"
+            variant="ghost"
             onClick={prev}
-            className="p-1.5 text-neutral-700 dark:text-neutral-200 hover:scale-110 active:scale-95 transition-transform cursor-pointer"
+            className="h-8 w-8 text-neutral-700 dark:text-neutral-200"
             title="上一首"
           >
             <SkipBack className="w-5 h-5 fill-current" />
-          </button>
+          </Button>
 
-          <button
+          <Button
+            size="icon"
+            variant="apple"
             onClick={togglePlay}
-            className="w-10 h-10 rounded-full bg-[#fa2d48] hover:bg-[#ff3b56] text-white flex items-center justify-center shadow-lg shadow-[#fa2d48]/30 hover:scale-105 active:scale-95 transition-all cursor-pointer"
+            className="w-10 h-10 rounded-full"
             title={isPlaying ? "暂停" : "播放"}
           >
             {isPlaying ? (
@@ -139,15 +146,17 @@ export const PlayerBar: React.FC = () => {
             ) : (
               <Play className="w-4 h-4 fill-current ml-0.5" />
             )}
-          </button>
+          </Button>
 
-          <button
+          <Button
+            size="icon"
+            variant="ghost"
             onClick={next}
-            className="p-1.5 text-neutral-700 dark:text-neutral-200 hover:scale-110 active:scale-95 transition-transform cursor-pointer"
+            className="h-8 w-8 text-neutral-700 dark:text-neutral-200"
             title="下一首"
           >
             <SkipForward className="w-5 h-5 fill-current" />
-          </button>
+          </Button>
 
           <div className="w-4" />
         </div>
@@ -174,10 +183,12 @@ export const PlayerBar: React.FC = () => {
       </div>
 
       {/* Right Controls (Lyrics Mic, Volume, Airplay, Queue) */}
-      <div className="flex items-center justify-end gap-3 w-1/4 min-w-[220px]">
-        <button
+      <div className="flex items-center justify-end gap-1.5 w-1/4 min-w-[220px]">
+        <Button
+          size="icon"
+          variant="ghost"
           onClick={() => setActiveView(activeView === "lyrics" ? "listen-now" : "lyrics")}
-          className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+          className={`h-8 w-8 rounded-lg ${
             activeView === "lyrics"
               ? "text-[#fa2d48] bg-[#fa2d48]/15"
               : "text-neutral-500 hover:text-neutral-800 dark:hover:text-white"
@@ -185,24 +196,26 @@ export const PlayerBar: React.FC = () => {
           title="沉浸式动态歌词舞台"
         >
           <Mic2 className="w-4 h-4" />
-        </button>
-        <button className="p-1.5 text-neutral-500 hover:text-neutral-800 dark:hover:text-white transition-colors cursor-pointer">
+        </Button>
+        <Button size="icon" variant="ghost" className="h-8 w-8 text-neutral-500 hover:text-neutral-800 dark:hover:text-white">
           <Airplay className="w-4 h-4" />
-        </button>
-        <button className="p-1.5 text-neutral-500 hover:text-neutral-800 dark:hover:text-white transition-colors cursor-pointer">
+        </Button>
+        <Button size="icon" variant="ghost" className="h-8 w-8 text-neutral-500 hover:text-neutral-800 dark:hover:text-white">
           <ListMusic className="w-4 h-4" />
-        </button>
-        <div className="flex items-center gap-2 w-28">
-          <button
+        </Button>
+        <div className="flex items-center gap-2 w-28 pl-1">
+          <Button
+            size="icon"
+            variant="ghost"
             onClick={toggleMute}
-            className="p-1 text-neutral-500 hover:text-neutral-800 dark:hover:text-white transition-colors cursor-pointer"
+            className="h-7 w-7 text-neutral-500 hover:text-neutral-800 dark:hover:text-white"
           >
             {isMuted || volume === 0 ? (
               <VolumeX className="w-4 h-4 text-red-500" />
             ) : (
               <Volume2 className="w-4 h-4" />
             )}
-          </button>
+          </Button>
           <div
             ref={volumeRef}
             onClick={handleVolumeClick}

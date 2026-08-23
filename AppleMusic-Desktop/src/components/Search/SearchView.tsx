@@ -5,6 +5,9 @@ import { usePlayerStore } from "@/stores/playerStore";
 import { usePlaylistStore } from "@/stores/playlistStore";
 import { useSettingsStore, MusicServer, ApiSource } from "@/stores/settingsStore";
 import { searchOnlineTracks } from "@/api/musicClient";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
 
 const POPULAR_TAGS = ["周杰伦", "Taylor Swift", "The Weeknd", "林俊杰", "陈奕迅", "空间音频", "华语经典", "爵士微醺"];
 
@@ -63,69 +66,62 @@ export const SearchView: React.FC = () => {
           {/* Route & Platform Selector Chips */}
           <div className="flex items-center gap-2">
             <div className="flex items-center bg-black/5 dark:bg-white/5 p-1 rounded-xl border border-black/5 dark:border-white/5 text-xs">
-              <button
+              <Button
+                size="sm"
+                variant={apiSource === "qijieya" ? "default" : "ghost"}
                 onClick={() => handleSourceChange("qijieya")}
-                className={`px-2.5 py-1 rounded-lg font-medium transition-all cursor-pointer ${
-                  apiSource === "qijieya"
-                    ? "bg-[#fa2d48] text-white shadow-sm"
-                    : "text-neutral-500 hover:text-neutral-800 dark:hover:text-white"
-                }`}
+                className="h-7 px-2.5 text-xs rounded-lg"
               >
                 祈杰VIP源
-              </button>
-              <button
+              </Button>
+              <Button
+                size="sm"
+                variant={apiSource === "mikus" ? "default" : "ghost"}
                 onClick={() => handleSourceChange("mikus")}
-                className={`px-2.5 py-1 rounded-lg font-medium transition-all cursor-pointer ${
-                  apiSource === "mikus"
-                    ? "bg-[#fa2d48] text-white shadow-sm"
-                    : "text-neutral-500 hover:text-neutral-800 dark:hover:text-white"
-                }`}
+                className="h-7 px-2.5 text-xs rounded-lg"
               >
                 Mikus官方源
-              </button>
+              </Button>
             </div>
 
             <div className="flex items-center bg-black/5 dark:bg-white/5 p-1 rounded-xl border border-black/5 dark:border-white/5 text-xs">
-              <button
+              <Button
+                size="sm"
+                variant={musicServer === "netease" ? "destructive" : "ghost"}
                 onClick={() => handleServerChange("netease")}
-                className={`px-2.5 py-1 rounded-lg font-medium transition-all cursor-pointer ${
-                  musicServer === "netease"
-                    ? "bg-red-500 text-white shadow-sm"
-                    : "text-neutral-500 hover:text-neutral-800 dark:hover:text-white"
-                }`}
+                className="h-7 px-2.5 text-xs rounded-lg"
               >
                 网易云
-              </button>
-              <button
+              </Button>
+              <Button
+                size="sm"
+                variant={musicServer === "tencent" ? "default" : "ghost"}
                 onClick={() => handleServerChange("tencent")}
-                className={`px-2.5 py-1 rounded-lg font-medium transition-all cursor-pointer ${
-                  musicServer === "tencent"
-                    ? "bg-emerald-500 text-white shadow-sm"
-                    : "text-neutral-500 hover:text-neutral-800 dark:hover:text-white"
-                }`}
+                className={`h-7 px-2.5 text-xs rounded-lg ${musicServer === "tencent" ? "bg-emerald-500 hover:bg-emerald-600" : ""}`}
               >
                 QQ音乐
-              </button>
+              </Button>
             </div>
           </div>
         </div>
 
         <form onSubmit={handleFormSubmit} className="relative flex items-center">
           <Search className="w-5 h-5 text-neutral-400 absolute left-4 pointer-events-none" />
-          <input
+          <Input
             type="text"
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
             placeholder="搜索歌曲、艺人、专辑（支持网易云 / QQ音乐多源实时搜索）..."
-            className="w-full h-12 pl-12 pr-28 rounded-2xl apple-glass border border-black/10 dark:border-white/10 text-sm focus:outline-none focus:border-[#fa2d48] focus:ring-2 focus:ring-[#fa2d48]/20 transition-all text-neutral-900 dark:text-white"
+            className="h-12 pl-12 pr-28 rounded-2xl text-sm"
           />
-          <button
+          <Button
             type="submit"
+            size="sm"
             disabled={isSearching}
-            className="absolute right-2 px-4 py-1.5 rounded-xl bg-[#fa2d48] text-white text-xs font-semibold hover:bg-[#ff3b56] transition-colors cursor-pointer shadow-md shadow-[#fa2d48]/20 disabled:opacity-50"
+            className="absolute right-2 rounded-xl"
           >
             {isSearching ? "正在检索..." : "探索"}
-          </button>
+          </Button>
         </form>
 
         {/* Hot Search Tags */}
@@ -134,13 +130,15 @@ export const SearchView: React.FC = () => {
             <TrendingUp className="w-3.5 h-3.5 text-[#fa2d48]" /> 热门探索：
           </span>
           {POPULAR_TAGS.map((tag) => (
-            <button
+            <Button
               key={tag}
+              size="sm"
+              variant="secondary"
               onClick={() => handleTagClick(tag)}
-              className="px-3 py-1 rounded-full text-xs font-medium bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 text-neutral-600 dark:text-neutral-300 transition-all cursor-pointer"
+              className="h-7 px-3 rounded-full text-xs"
             >
               {tag}
-            </button>
+            </Button>
           ))}
         </div>
       </div>
@@ -178,13 +176,13 @@ export const SearchView: React.FC = () => {
               const isFav = isFavorite(track.id);
 
               return (
-                <div
+                <Card
                   key={track.id + idx}
                   onClick={() => playTrack(track, results)}
-                  className={`flex items-center justify-between p-3 rounded-2xl apple-glass hover:bg-black/5 dark:hover:bg-white/10 transition-all group cursor-pointer border ${
+                  className={`flex items-center justify-between p-3 rounded-2xl border transition-all group cursor-pointer ${
                     isCurrent
                       ? "border-[#fa2d48]/40 bg-[#fa2d48]/5 dark:bg-[#fa2d48]/10"
-                      : "border-black/5 dark:border-white/5"
+                      : "border-black/5 dark:border-white/5 hover:bg-black/5 dark:hover:bg-white/10"
                   }`}
                 >
                   <div className="flex items-center gap-3.5 overflow-hidden pr-2">
@@ -211,34 +209,40 @@ export const SearchView: React.FC = () => {
                   </div>
 
                   <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
-                    <button
+                    <Button
+                      size="icon"
+                      variant="ghost"
                       onClick={() => toggleFavorite(track)}
-                      className={`p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer ${
-                        isFav ? "text-[#fa2d48]" : "text-neutral-400"
+                      className={`h-8 w-8 rounded-full ${
+                        isFav ? "text-[#fa2d48]" : "text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200"
                       }`}
                       title={isFav ? "取消喜爱" : "添加到喜爱歌曲"}
                     >
                       <Heart className={`w-4 h-4 ${isFav ? "fill-current" : ""}`} />
-                    </button>
+                    </Button>
 
                     {customPlaylists.length > 0 && (
-                      <button
+                      <Button
+                        size="icon"
+                        variant="ghost"
                         onClick={() => addTrackToPlaylist(customPlaylists[0].id, track)}
-                        className="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/10 text-neutral-400 hover:text-neutral-800 dark:hover:text-white transition-colors cursor-pointer"
+                        className="h-8 w-8 rounded-full text-neutral-400 hover:text-neutral-800 dark:hover:text-white"
                         title={`添加到歌单: ${customPlaylists[0].title}`}
                       >
                         <Plus className="w-4 h-4" />
-                      </button>
+                      </Button>
                     )}
 
-                    <button
+                    <Button
+                      size="icon"
+                      variant="apple"
                       onClick={() => playTrack(track, results)}
-                      className="w-8 h-8 rounded-full bg-[#fa2d48] text-white flex items-center justify-center shadow-md hover:scale-105 transition-all cursor-pointer ml-1"
+                      className="w-8 h-8 rounded-full ml-1"
                     >
                       <Play className="w-3.5 h-3.5 fill-current ml-0.5" />
-                    </button>
+                    </Button>
                   </div>
-                </div>
+                </Card>
               );
             })}
           </div>
