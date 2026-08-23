@@ -1,14 +1,16 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { motion, type HTMLMotionProps } from "motion/react";
 
 export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  extends Omit<HTMLMotionProps<"button">, "ref"> {
   variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link" | "glass" | "apple";
   size?: "default" | "sm" | "lg" | "icon" | "pill";
+  disableAnimation?: boolean;
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant = "default", size = "default", ...props }, ref) => {
+  ({ className, variant = "default", size = "default", disableAnimation = false, ...props }, ref) => {
     const variants = {
       default: "bg-[#fa2d48] text-white hover:bg-[#ff3b56] shadow-sm shadow-[#fa2d48]/20",
       destructive: "bg-red-500 text-white hover:bg-red-600 shadow-sm",
@@ -17,7 +19,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       ghost: "hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-200",
       link: "text-[#fa2d48] underline-offset-4 hover:underline",
       glass: "apple-glass hover:bg-black/10 dark:hover:bg-white/15 text-neutral-800 dark:text-neutral-100",
-      apple: "bg-[#fa2d48] text-white hover:scale-105 active:scale-95 shadow-md shadow-[#fa2d48]/30 transition-all",
+      apple: "bg-[#fa2d48] text-white shadow-md shadow-[#fa2d48]/30",
     };
 
     const sizes = {
@@ -29,10 +31,13 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     };
 
     return (
-      <button
+      <motion.button
         ref={ref}
+        whileHover={disableAnimation ? undefined : { scale: variant === "link" ? 1 : 1.03 }}
+        whileTap={disableAnimation ? undefined : { scale: 0.96 }}
+        transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
         className={cn(
-          "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fa2d48] disabled:pointer-events-none disabled:opacity-50 cursor-pointer select-none",
+          "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fa2d48] disabled:pointer-events-none disabled:opacity-50 cursor-pointer select-none",
           variants[variant],
           sizes[size],
           className

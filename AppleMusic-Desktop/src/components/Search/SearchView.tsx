@@ -8,6 +8,8 @@ import { searchOnlineTracks } from "@/api/musicClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
+import { motion } from "motion/react";
+import { staggerContainer, staggerItem } from "@/lib/motion";
 
 const POPULAR_TAGS = ["周杰伦", "Taylor Swift", "The Weeknd", "林俊杰", "陈奕迅", "空间音频", "华语经典", "爵士微醺"];
 
@@ -170,82 +172,89 @@ export const SearchView: React.FC = () => {
             <div className="text-xs">支持网易云与QQ音乐双源自动解析播放</div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <motion.div
+            variants={staggerContainer}
+            initial="hidden"
+            animate="visible"
+            className="grid grid-cols-1 md:grid-cols-2 gap-3"
+          >
             {results.map((track, idx) => {
               const isCurrent = currentTrack?.id === track.id || currentTrack?.url === track.url;
               const isFav = isFavorite(track.id);
 
               return (
-                <Card
-                  key={track.id + idx}
-                  onClick={() => playTrack(track, results)}
-                  className={`flex items-center justify-between p-3 rounded-2xl border transition-all group cursor-pointer ${
-                    isCurrent
-                      ? "border-[#fa2d48]/40 bg-[#fa2d48]/5 dark:bg-[#fa2d48]/10"
-                      : "border-black/5 dark:border-white/5 hover:bg-black/5 dark:hover:bg-white/10"
-                  }`}
-                >
-                  <div className="flex items-center gap-3.5 overflow-hidden pr-2">
-                    <span className="text-xs font-semibold text-neutral-400 w-5 text-center tabular-nums">
-                      {idx + 1}
-                    </span>
-                    <img
-                      src={track.pic}
-                      alt={track.name}
-                      className="w-11 h-11 rounded-xl object-cover shadow-sm flex-shrink-0"
-                    />
-                    <div className="overflow-hidden">
-                      <div
-                        className={`text-sm font-semibold truncate transition-colors ${
-                          isCurrent ? "text-[#fa2d48]" : "group-hover:text-[#fa2d48]"
-                        }`}
-                      >
-                        {track.name}
-                      </div>
-                      <div className="text-xs text-neutral-500 dark:text-neutral-400 truncate">
-                        {track.artist} · {track.album || "在线音乐"}
+                <motion.div key={track.id + idx} variants={staggerItem}>
+                  <Card
+                    enableHover
+                    onClick={() => playTrack(track, results)}
+                    className={`flex items-center justify-between p-3 rounded-2xl border transition-all group cursor-pointer ${
+                      isCurrent
+                        ? "border-[#fa2d48]/40 bg-[#fa2d48]/5 dark:bg-[#fa2d48]/10"
+                        : "border-black/5 dark:border-white/5 hover:bg-black/5 dark:hover:bg-white/10"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3.5 overflow-hidden pr-2">
+                      <span className="text-xs font-semibold text-neutral-400 w-5 text-center tabular-nums">
+                        {idx + 1}
+                      </span>
+                      <img
+                        src={track.pic}
+                        alt={track.name}
+                        className="w-11 h-11 rounded-xl object-cover shadow-sm flex-shrink-0"
+                      />
+                      <div className="overflow-hidden">
+                        <div
+                          className={`text-sm font-semibold truncate transition-colors ${
+                            isCurrent ? "text-[#fa2d48]" : "group-hover:text-[#fa2d48]"
+                          }`}
+                        >
+                          {track.name}
+                        </div>
+                        <div className="text-xs text-neutral-500 dark:text-neutral-400 truncate">
+                          {track.artist} · {track.album || "在线音乐"}
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      onClick={() => toggleFavorite(track)}
-                      className={`h-8 w-8 rounded-full ${
-                        isFav ? "text-[#fa2d48]" : "text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200"
-                      }`}
-                      title={isFav ? "取消喜爱" : "添加到喜爱歌曲"}
-                    >
-                      <Heart className={`w-4 h-4 ${isFav ? "fill-current" : ""}`} />
-                    </Button>
-
-                    {customPlaylists.length > 0 && (
+                    <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
                       <Button
                         size="icon"
                         variant="ghost"
-                        onClick={() => addTrackToPlaylist(customPlaylists[0].id, track)}
-                        className="h-8 w-8 rounded-full text-neutral-400 hover:text-neutral-800 dark:hover:text-white"
-                        title={`添加到歌单: ${customPlaylists[0].title}`}
+                        onClick={() => toggleFavorite(track)}
+                        className={`h-8 w-8 rounded-full ${
+                          isFav ? "text-[#fa2d48]" : "text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200"
+                        }`}
+                        title={isFav ? "取消喜爱" : "添加到喜爱歌曲"}
                       >
-                        <Plus className="w-4 h-4" />
+                        <Heart className={`w-4 h-4 ${isFav ? "fill-current" : ""}`} />
                       </Button>
-                    )}
 
-                    <Button
-                      size="icon"
-                      variant="apple"
-                      onClick={() => playTrack(track, results)}
-                      className="w-8 h-8 rounded-full ml-1"
-                    >
-                      <Play className="w-3.5 h-3.5 fill-current ml-0.5" />
-                    </Button>
-                  </div>
-                </Card>
+                      {customPlaylists.length > 0 && (
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => addTrackToPlaylist(customPlaylists[0].id, track)}
+                          className="h-8 w-8 rounded-full text-neutral-400 hover:text-neutral-800 dark:hover:text-white"
+                          title={`添加到歌单: ${customPlaylists[0].title}`}
+                        >
+                          <Plus className="w-4 h-4" />
+                        </Button>
+                      )}
+
+                      <Button
+                        size="icon"
+                        variant="apple"
+                        onClick={() => playTrack(track, results)}
+                        className="w-8 h-8 rounded-full ml-1"
+                      >
+                        <Play className="w-3.5 h-3.5 fill-current ml-0.5" />
+                      </Button>
+                    </div>
+                  </Card>
+                </motion.div>
               );
             })}
-          </div>
+          </motion.div>
         )}
       </div>
     </div>

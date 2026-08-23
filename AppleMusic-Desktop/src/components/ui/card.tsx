@@ -1,19 +1,25 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { motion, type HTMLMotionProps } from "motion/react";
 
-const Card = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn(
-      "rounded-3xl apple-glass text-neutral-950 dark:text-neutral-50 shadow-sm transition-all",
-      className
-    )}
-    {...props}
-  />
-));
+export interface CardProps extends Omit<HTMLMotionProps<"div">, "ref"> {
+  enableHover?: boolean;
+}
+
+const Card = React.forwardRef<HTMLDivElement, CardProps>(
+  ({ className, enableHover = false, ...props }, ref) => (
+    <motion.div
+      ref={ref}
+      whileHover={enableHover ? { y: -4, scale: 1.01 } : undefined}
+      transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+      className={cn(
+        "rounded-3xl apple-glass text-neutral-950 dark:text-neutral-50 shadow-sm transition-colors",
+        className
+      )}
+      {...props}
+    />
+  )
+);
 Card.displayName = "Card";
 
 const CardHeader = React.forwardRef<

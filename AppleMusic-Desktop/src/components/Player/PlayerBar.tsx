@@ -17,6 +17,7 @@ import {
 import { usePlayerStore } from "@/stores/playerStore";
 import { usePlaylistStore } from "@/stores/playlistStore";
 import { Button } from "@/components/ui/button";
+import { motion } from "motion/react";
 
 const formatTime = (seconds: number) => {
   if (!seconds || isNaN(seconds) || !isFinite(seconds)) return "00:00";
@@ -171,9 +172,11 @@ export const PlayerBar: React.FC = () => {
             onClick={handleProgressClick}
             className="flex-1 h-1.5 bg-black/10 dark:bg-white/15 rounded-full relative group cursor-pointer overflow-hidden"
           >
-            <div
-              className="h-full bg-[#fa2d48] rounded-full transition-all duration-100"
-              style={{ width: `${progressPercent}%` }}
+            <motion.div
+              className="h-full bg-[#fa2d48] rounded-full"
+              initial={false}
+              animate={{ width: `${progressPercent}%` }}
+              transition={{ duration: 0.1, ease: "linear" }}
             />
           </div>
           <span className="text-[11px] tabular-nums text-neutral-400 dark:text-neutral-500 font-medium w-9 text-left">
@@ -221,9 +224,11 @@ export const PlayerBar: React.FC = () => {
             onClick={handleVolumeClick}
             className="flex-1 h-1.5 bg-black/10 dark:bg-white/15 rounded-full relative group cursor-pointer overflow-hidden"
           >
-            <div
+            <motion.div
               className="h-full bg-neutral-700 dark:bg-neutral-200 rounded-full"
-              style={{ width: `${isMuted ? 0 : volume * 100}%` }}
+              initial={false}
+              animate={{ width: `${isMuted ? 0 : volume * 100}%` }}
+              transition={{ duration: 0.15, ease: "easeOut" }}
             />
           </div>
         </div>
