@@ -5,58 +5,66 @@
 
 @layer base {
   :root {
-    --background: 0 0% 98%;
-    --foreground: 240 10% 3.9%;
+    /* Apple Light Palette: #F5F5F7 Clean Canvas */
+    --background: 240 6% 96.5%;
+    --foreground: 240 10% 10%;
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
+    --card-foreground: 240 10% 10%;
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 350 90% 55%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
+    --popover-foreground: 240 10% 10%;
+    --primary: 350 95% 58%; /* Apple Music Signature Crimson #fa2d48 */
+    --primary-foreground: 0 0% 100%;
+    --apple-blue: 211 100% 50%; /* Apple System Blue #007aff */
+    --secondary: 240 5% 90%;
+    --secondary-foreground: 240 6% 12%;
+    --muted: 240 5% 92%;
+    --muted-foreground: 240 4% 46%;
+    --accent: 240 5% 92%;
+    --accent-foreground: 240 6% 12%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 350 90% 55%;
-    --radius: 0.75rem;
+    --border: 240 6% 88%;
+    --input: 240 6% 88%;
+    --ring: 350 95% 58%;
+    --radius: 0.85rem;
 
-    --apple-glass: rgba(255, 255, 255, 0.72);
+    /* Apple Glassmorphism Light Tokens */
+    --apple-glass: rgba(255, 255, 255, 0.76);
     --apple-glass-border: rgba(0, 0, 0, 0.08);
-    --apple-sidebar: rgba(246, 246, 246, 0.78);
+    --apple-glass-highlight: rgba(255, 255, 255, 0.9);
+    --apple-sidebar: rgba(245, 245, 247, 0.82);
     --apple-player-bar: rgba(255, 255, 255, 0.88);
   }
 
   .dark {
-    --background: 240 10% 4%;
+    /* Apple Dark Palette: #000000 / #161618 OLED & Acrylic */
+    --background: 240 6% 6%;
     --foreground: 0 0% 98%;
-    --card: 240 10% 4%;
+    --card: 240 5% 10%;
     --card-foreground: 0 0% 98%;
-    --popover: 240 10% 4%;
+    --popover: 240 5% 10%;
     --popover-foreground: 0 0% 98%;
-    --primary: 350 90% 60%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 3.7% 15.9%;
+    --primary: 350 95% 62%;
+    --primary-foreground: 0 0% 100%;
+    --apple-blue: 211 100% 55%;
+    --secondary: 240 4% 16%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
+    --muted: 240 4% 16%;
+    --muted-foreground: 240 5% 65%;
+    --accent: 240 4% 18%;
     --accent-foreground: 0 0% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 350 90% 60%;
+    --border: 240 4% 18%;
+    --input: 240 4% 18%;
+    --ring: 350 95% 62%;
 
-    --apple-glass: rgba(28, 28, 30, 0.72);
+    /* Apple Glassmorphism Dark Tokens */
+    --apple-glass: rgba(28, 28, 30, 0.76);
     --apple-glass-border: rgba(255, 255, 255, 0.1);
-    --apple-sidebar: rgba(20, 20, 22, 0.78);
-    --apple-player-bar: rgba(30, 30, 34, 0.88);
+    --apple-glass-highlight: rgba(255, 255, 255, 0.08);
+    --apple-sidebar: rgba(18, 18, 20, 0.82);
+    --apple-player-bar: rgba(24, 24, 28, 0.9);
   }
 }
 
@@ -71,33 +79,52 @@
 body {
   font-family: var(--font-apple);
   overflow: hidden;
-  background: transparent;
-  color: #1c1c1e;
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  transition: background-color 0.3s cubic-bezier(0.16, 1, 0.3, 1), color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-.dark body {
-  color: #f2f2f7;
+/* Apple 拟态毛玻璃核心工具类 */
+.glass {
+  background: var(--apple-glass);
+  backdrop-filter: blur(28px) saturate(190%);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  border: 1px solid var(--apple-glass-border);
+  box-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.06), inset 0 1px 0 0 var(--apple-glass-highlight);
 }
 
+.glass-dark {
+  background: rgba(22, 22, 26, 0.8);
+  backdrop-filter: blur(30px) saturate(200%);
+  -webkit-backdrop-filter: blur(30px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.36), inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
+}
+
+/* 兼容现有类名映射 */
 .apple-glass {
   background: var(--apple-glass);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(28px) saturate(190%);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
   border: 1px solid var(--apple-glass-border);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05), inset 0 1px 0 0 var(--apple-glass-highlight);
 }
 
 .apple-sidebar-glass {
   background: var(--apple-sidebar);
-  backdrop-filter: blur(30px) saturate(190%);
-  -webkit-backdrop-filter: blur(30px) saturate(190%);
+  backdrop-filter: blur(32px) saturate(200%);
+  -webkit-backdrop-filter: blur(32px) saturate(200%);
   border-right: 1px solid var(--apple-glass-border);
 }
 
 .apple-player-glass {
   background: var(--apple-player-bar);
-  backdrop-filter: blur(30px) saturate(190%);
-  -webkit-backdrop-filter: blur(30px) saturate(190%);
+  backdrop-filter: blur(32px) saturate(200%);
+  -webkit-backdrop-filter: blur(32px) saturate(200%);
   border-top: 1px solid var(--apple-glass-border);
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.04);
 }
 
 ::-webkit-scrollbar {
@@ -108,9 +135,9 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(140, 140, 145, 0.3);
-  border-radius: 4px;
+  background: rgba(140, 140, 145, 0.25);
+  border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(140, 140, 145, 0.5);
+  background: rgba(140, 140, 145, 0.45);
 }
