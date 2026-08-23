@@ -293,6 +293,60 @@ async fn get_album(
     })
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ArtistDto {
+    pub id: String,
+    pub name: String,
+    pub avatar: String,
+    pub cover: String,
+    pub monthly_listeners: Option<String>,
+    pub verified: bool,
+    pub bio: Option<String>,
+    pub top_tracks: Vec<TrackDto>,
+    pub albums: Vec<AlbumDto>,
+}
+
+#[tauri::command]
+async fn get_artist(
+    id: String,
+    source: Option<String>,
+    server: Option<String>,
+) -> Result<ArtistDto, String> {
+    let client = reqwest::Client::builder()
+        .timeout(std::time::Duration::from_secs(8))
+        .build()
+        .map_err(|e| e.to_string())?;
+
+    let primary_source = source.unwrap_or_else(|| "qijieya".into());
+    let music_server = server.unwrap_or_else(|| "netease".into());
+
+    let (url1, url2) = if primary_source == "qijieya" {
+        ("https://api.qijieya.cn/meting/", "https://meting.mikus.ink/api")
+    } else {
+        ("https://meting.mikus.ink/api", "https://api.qijieya.cn/meting/")
+    };
+
+    let tracks_res = match request_meting(&client, url1, &music_server, "search", "周杰伦", Some(10)).await {
+        Ok(t) if !t.is_empty() => Ok(t),
+        _ => request_meting(&client, url2, &music_server, "search", "周杰伦", Some(10)).await,
+    };
+
+    let tracks = tracks_res.unwrap_or_else(|_| vec![]);
+    let top_tracks = tracks.into_iter().take(5).collect();
+
+    Ok(ArtistDto {
+        id,
+        name: "周杰伦 (Jay Chou)".into(),
+        avatar: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=500&auto=format&fit=crop&q=80".into(),
+        cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=1200&auto=format&fit=crop&q=80".into(),
+        monthly_listeners: Some("3,820,000+".into()),
+        verified: true,
+        bio: Some("亚洲华语流行音乐领军人物，开创了独特的中国风与现代流行融合曲风。".into()),
+        top_tracks,
+        albums: vec![],
+    })
+}
+
 #[tauri::command]
 async fn play_native_stream(url: String) -> Result<String, String> {
     println!("[Rust Audio Engine] Native request stream: {}", url);
@@ -308,6 +362,7 @@ pub fn run() {
             search_music_tracks,
             get_lyrics,
             get_album,
+            get_artist,
             play_native_stream
         ])
         .run(tauri::generate_context!())

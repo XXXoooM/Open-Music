@@ -6,6 +6,7 @@ import { SearchView } from "@/components/Search/SearchView";
 import { PlaylistDetailView } from "@/components/Playlist/PlaylistDetailView";
 import { LyricsPage } from "@/routes/LyricsPage";
 import { AlbumPage } from "@/routes/AlbumPage";
+import { ArtistPage } from "@/routes/ArtistPage";
 import { usePlaylistQuery } from "@/hooks/useMusicQuery";
 import { usePlayerStore } from "@/stores/playerStore";
 import { usePlaylistStore } from "@/stores/playlistStore";
@@ -16,7 +17,15 @@ import { Play, Pause, Sparkles, Flame, Disc3, Volume2 } from "lucide-react";
 export function App() {
   const { data: spatialPlaylist, isLoading } = usePlaylistQuery("spatial-top");
   const { currentTrack, isPlaying, playTrack, togglePlay, initAudio } = usePlayerStore();
-  const { activeView, selectedPlaylistId, selectedAlbumId, customPlaylists, favoriteTracks, setActiveView } = usePlaylistStore();
+  const {
+    activeView,
+    selectedPlaylistId,
+    selectedAlbumId,
+    selectedArtistId,
+    customPlaylists,
+    favoriteTracks,
+    setActiveView,
+  } = usePlaylistStore();
 
   // Phase 5 System Integrations
   useMediaSession();
@@ -65,6 +74,8 @@ export function App() {
             <LyricsPage />
           ) : activeView === "album" ? (
             <AlbumPage albumId={selectedAlbumId} />
+          ) : activeView === "artist" ? (
+            <ArtistPage artistId={selectedArtistId} />
           ) : activeView === "search" ? (
             <SearchView />
           ) : activeView === "playlist-detail" || activeView === "favorites" ? (
