@@ -9,11 +9,13 @@ interface SettingsState {
   musicServer: MusicServer;
   defaultPlaylistId: string;
   audioQuality: AudioQuality;
+  autoPlayOnStart: boolean;
 
   setApiSource: (source: ApiSource) => void;
   setMusicServer: (server: MusicServer) => void;
   setDefaultPlaylistId: (id: string) => void;
   setAudioQuality: (quality: AudioQuality) => void;
+  setAutoPlayOnStart: (autoPlay: boolean) => void;
 }
 
 export const useSettingsStore = create<SettingsState>((set) => {
@@ -21,12 +23,14 @@ export const useSettingsStore = create<SettingsState>((set) => {
   const savedServer = (typeof localStorage !== "undefined" ? localStorage.getItem("apple-music-server") : null) as MusicServer | null;
   const savedPlaylistId = typeof localStorage !== "undefined" ? localStorage.getItem("apple-default-playlist-id") : null;
   const savedQuality = (typeof localStorage !== "undefined" ? localStorage.getItem("apple-audio-quality") : null) as AudioQuality | null;
+  const savedAutoPlay = typeof localStorage !== "undefined" ? localStorage.getItem("apple-auto-play") === "true" : false;
 
   return {
     apiSource: savedSource || "qijieya",
     musicServer: savedServer || "netease",
     defaultPlaylistId: savedPlaylistId || "17910751956",
     audioQuality: savedQuality || "lossless",
+    autoPlayOnStart: savedAutoPlay,
 
     setApiSource: (source) => {
       localStorage.setItem("apple-api-source", source);
@@ -43,6 +47,10 @@ export const useSettingsStore = create<SettingsState>((set) => {
     setAudioQuality: (quality) => {
       localStorage.setItem("apple-audio-quality", quality);
       set({ audioQuality: quality });
+    },
+    setAutoPlayOnStart: (autoPlay) => {
+      localStorage.setItem("apple-auto-play", String(autoPlay));
+      set({ autoPlayOnStart: autoPlay });
     },
   };
 });

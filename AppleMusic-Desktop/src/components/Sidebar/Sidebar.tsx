@@ -13,7 +13,8 @@ import {
   UserCheck,
   Search,
   Mic2,
-  User
+  User,
+  Settings
 } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 import { usePlaylistStore } from "@/stores/playlistStore";
@@ -75,6 +76,12 @@ export const Sidebar = () => {
               label="歌词舞台"
               active={activeView === "lyrics"}
               onClick={() => setActiveView("lyrics")}
+            />
+            <NavItem
+              icon={<Settings className="w-4 h-4" />}
+              label="偏好设置"
+              active={activeView === "settings"}
+              onClick={() => setActiveView("settings")}
             />
           </div>
 

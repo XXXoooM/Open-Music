@@ -8,6 +8,7 @@ import { LyricsPage } from "@/routes/LyricsPage";
 import { AlbumPage } from "@/routes/AlbumPage";
 import { ArtistPage } from "@/routes/ArtistPage";
 import { ProfilePage } from "@/routes/ProfilePage";
+import { SettingsPage } from "@/routes/SettingsPage";
 import { usePlaylistQuery } from "@/hooks/useMusicQuery";
 import { usePlayerStore } from "@/stores/playerStore";
 import { usePlaylistStore } from "@/stores/playlistStore";
@@ -79,6 +80,8 @@ export function App() {
             <ArtistPage artistId={selectedArtistId} />
           ) : activeView === "profile" ? (
             <ProfilePage />
+          ) : activeView === "settings" ? (
+            <SettingsPage />
           ) : activeView === "search" ? (
             <SearchView />
           ) : activeView === "playlist-detail" || activeView === "favorites" ? (

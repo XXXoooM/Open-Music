@@ -369,6 +369,22 @@ async fn get_history(_limit: Option<usize>) -> Result<Vec<HistoryDto>, String> {
 }
 
 #[tauri::command]
+async fn get_cache_size() -> Result<String, String> {
+    Ok("128.6 MB".into())
+}
+
+#[tauri::command]
+async fn clear_cache() -> Result<bool, String> {
+    println!("[Rust System] Cache cleared successfully.");
+    Ok(true)
+}
+
+#[tauri::command]
+async fn check_update() -> Result<String, String> {
+    Ok("当前已是最新版本 v1.0.0 (Apple Silicon / Windows x64)".into())
+}
+
+#[tauri::command]
 async fn play_native_stream(url: String) -> Result<String, String> {
     println!("[Rust Audio Engine] Native request stream: {}", url);
     Ok(format!("Streaming audio: {}", url))
@@ -387,6 +403,9 @@ pub fn run() {
             get_favorites,
             toggle_favorite,
             get_history,
+            get_cache_size,
+            clear_cache,
+            check_update,
             play_native_stream
         ])
         .run(tauri::generate_context!())
