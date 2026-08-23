@@ -1,0 +1,80 @@
+@import "tailwindcss";
+@import "./fonts.css";
+
+@layer base {
+  :root {
+    --background: 240 10% 98%;
+    --foreground: 240 10% 3.9%;
+    --primary: 350 90% 55%;
+    --radius: 0.75rem;
+    --apple-glass: rgba(255, 255, 255, 0.72);
+    --apple-glass-border: rgba(0, 0, 0, 0.08);
+    --apple-sidebar: rgba(246, 246, 246, 0.78);
+    --apple-player-bar: rgba(255, 255, 255, 0.88);
+  }
+
+  .dark {
+    --background: 240 10% 4%;
+    --foreground: 0 0% 98%;
+    --primary: 350 90% 60%;
+    --apple-glass: rgba(28, 28, 30, 0.72);
+    --apple-glass-border: rgba(255, 255, 255, 0.1);
+    --apple-sidebar: rgba(20, 20, 22, 0.78);
+    --apple-player-bar: rgba(30, 30, 34, 0.88);
+  }
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+body {
+  font-family: var(--font-apple);
+  overflow: hidden;
+  background: transparent;
+  color: #1c1c1e;
+}
+
+.dark body {
+  color: #f2f2f7;
+}
+
+.apple-glass {
+  background: var(--apple-glass);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid var(--apple-glass-border);
+}
+
+.apple-sidebar-glass {
+  background: var(--apple-sidebar);
+  backdrop-filter: blur(30px) saturate(190%);
+  -webkit-backdrop-filter: blur(30px) saturate(190%);
+  border-right: 1px solid var(--apple-glass-border);
+}
+
+.apple-player-glass {
+  background: var(--apple-player-bar);
+  backdrop-filter: blur(30px) saturate(190%);
+  -webkit-backdrop-filter: blur(30px) saturate(190%);
+  border-top: 1px solid var(--apple-glass-border);
+}
+
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(140, 140, 145, 0.3);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(140, 140, 145, 0.5);
+}
