@@ -17,6 +17,19 @@ export default defineConfig(async () => ({
 
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
   clearScreen: false,
+  build: {
+    chunkSizeWarningLimit: 600,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          "vendor-react": ["react", "react-dom"],
+          "vendor-motion": ["motion"],
+          "vendor-icons": ["lucide-react"],
+          "vendor-query": ["@tanstack/react-query"],
+        },
+      },
+    },
+  },
   server: {
     port: 1420,
     strictPort: true,
