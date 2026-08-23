@@ -1,8 +1,14 @@
 import React from "react";
-import { Play, Shuffle, Heart, Disc3, CheckCircle, Users, Volume2, ArrowRight } from "lucide-react";
+import { Play, Shuffle, Heart, Disc3, Users, Volume2 } from "lucide-react";
 import { useArtist } from "@/hooks/useArtist";
 import { usePlayerStore } from "@/stores/playerStore";
 import { usePlaylistStore } from "@/stores/playlistStore";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { motion } from "motion/react";
+import { staggerContainer, staggerItem } from "@/lib/motion";
+import { toast } from "@/stores/toastStore";
 
 interface ArtistPageProps {
   artistId?: string | null;
@@ -26,6 +32,7 @@ export const ArtistPage: React.FC<ArtistPageProps> = ({ artistId }) => {
   const handlePlayAll = () => {
     if (topTracks.length > 0) {
       playTrack(topTracks[0], topTracks);
+      toast.success("开始播放艺人热门单曲", artist?.name);
     }
   };
 
@@ -33,20 +40,18 @@ export const ArtistPage: React.FC<ArtistPageProps> = ({ artistId }) => {
     if (topTracks.length > 0) {
       const randomIndex = Math.floor(Math.random() * topTracks.length);
       playTrack(topTracks[randomIndex], topTracks);
+      toast.success("随机播放艺人单曲", artist?.name);
     }
   };
 
   if (isLoading) {
     return (
-      <div className="p-8 space-y-8 animate-pulse">
-        <div className="h-64 rounded-3xl bg-black/10 dark:bg-white/10" />
-        <div className="space-y-3">
-          <div className="w-36 h-6 bg-black/10 dark:bg-white/10 rounded" />
-          <div className="space-y-2">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="h-12 bg-black/5 dark:bg-white/5 rounded-xl" />
-            ))}
-          </div>
+      <div className="space-y-8 animate-pulse max-w-5xl mx-auto pb-16">
+        <div className="h-56 rounded-3xl bg-black/5 dark:bg-white/5" />
+        <div className="space-y-2">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="h-12 bg-black/5 dark:bg-white/5 rounded-xl" />
+          ))}
         </div>
       </div>
     );
@@ -54,176 +59,135 @@ export const ArtistPage: React.FC<ArtistPageProps> = ({ artistId }) => {
 
   if (!artist) {
     return (
-      <div className="h-full flex flex-col items-center justify-center text-center p-8 space-y-3 text-neutral-400">
-        <Disc3 className="w-12 h-12 opacity-30" />
-        <h2 className="text-lg font-bold">艺人信息不存在</h2>
+      <div className="py-24 text-center text-neutral-400 space-y-2 max-w-md mx-auto">
+        <Disc3 className="w-12 h-12 mx-auto opacity-20" />
+        <div className="text-sm font-semibold">艺人信息不存在</div>
+        <div className="text-xs">请返回搜索探索其他华语或欧美艺人</div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8 p-1 sm:p-2 animate-in fade-in duration-300">
-      {/* Artist Hero Header */}
-      <section className="relative rounded-3xl overflow-hidden shadow-2xl min-h-[260px] sm:min-h-[300px] flex flex-col justify-end p-6 sm:p-10 text-white select-none">
-        {/* Background Image / Backdrop */}
-        <div className="absolute inset-0 -z-10">
-          <img
-            src={artist.cover}
-            alt={artist.name}
-            className="w-full h-full object-cover brightness-[0.65] contrast-[1.1]"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
-        </div>
+    <div className="space-y-8 max-w-5xl mx-auto pb-20 select-none animate-in fade-in duration-300">
+      {/* iOS 27 Artist Hero Banner */}
+      <div className="relative rounded-3xl overflow-hidden shadow-xl p-8 flex flex-col justify-end min-h-[220px] bg-gradient-to-t from-black/80 via-black/40 to-transparent text-white">
+        <img
+          src={artist.cover}
+          alt={artist.name}
+          className="absolute inset-0 w-full h-full object-cover -z-10 brightness-75"
+        />
 
-        {/* Artist Header Info */}
-        <div className="space-y-3 relative z-10 max-w-2xl">
+        <div className="space-y-3 relative z-10">
           <div className="flex items-center gap-2">
-            {artist.verified && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-blue-500/80 backdrop-blur-md text-[11px] font-semibold tracking-wide">
-                <CheckCircle className="w-3 h-3" /> 认证艺人
-              </span>
-            )}
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/20 backdrop-blur-md text-[11px] font-medium text-white/90">
-              <Users className="w-3 h-3" /> {artist.monthlyListeners ? `${artist.monthlyListeners} 月度听众` : "热门艺人"}
+            <Badge variant="apple" className="bg-[#fa2d48]/80 text-white border-0">认证音乐人</Badge>
+            <span className="text-xs text-white/80 flex items-center gap-1">
+              <Users className="w-3.5 h-3.5" /> 空间音频精选
             </span>
           </div>
 
-          <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight drop-shadow-md">
+          <h1 className="text-3xl sm:text-4xl font-black tracking-tight drop-shadow-md">
             {artist.name}
           </h1>
 
-          {artist.bio && (
-            <p className="text-xs sm:text-sm text-white/80 line-clamp-2 leading-relaxed max-w-xl">
-              {artist.bio}
-            </p>
-          )}
-
-          {/* Action Buttons */}
-          <div className="pt-2 flex items-center gap-3">
-            <button
-              onClick={handlePlayAll}
-              disabled={topTracks.length === 0}
-              className="px-6 py-2.5 rounded-full bg-[#fa2d48] hover:bg-[#ff3b56] text-white font-semibold text-sm flex items-center gap-2 shadow-lg shadow-[#fa2d48]/30 hover:scale-105 active:scale-95 transition-all cursor-pointer disabled:opacity-50"
-            >
-              <Play className="w-4 h-4 fill-current ml-0.5" /> 播放热门歌曲
-            </button>
-            <button
-              onClick={handleShufflePlay}
-              disabled={topTracks.length === 0}
-              className="px-5 py-2.5 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-md text-white font-semibold text-sm flex items-center gap-2 transition-all cursor-pointer disabled:opacity-50"
-            >
-              <Shuffle className="w-4 h-4" /> 随机播放
-            </button>
+          <div className="flex items-center gap-3 pt-1">
+            <Button onClick={handlePlayAll} size="pill" className="px-5 font-semibold text-xs h-9 bg-white text-black hover:bg-white/90 shadow-md">
+              <Play className="w-3.5 h-3.5 fill-current ml-0.5 mr-1.5" /> 播放热门
+            </Button>
+            <Button onClick={handleShufflePlay} size="pill" variant="glass" className="px-4 font-semibold text-xs h-9 bg-white/20 hover:bg-white/30 text-white border-white/20">
+              <Shuffle className="w-3.5 h-3.5 mr-1.5" /> 随机播放
+            </Button>
           </div>
         </div>
-      </section>
+      </div>
 
-      {/* Top 5 Songs Section */}
-      <section className="space-y-3">
+      {/* Popular Tracks Section */}
+      <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-bold tracking-tight text-neutral-900 dark:text-white">
-            热门歌曲 Top 5
+          <h2 className="text-lg font-bold tracking-tight text-neutral-900 dark:text-white">
+            热门曲目
           </h2>
-          <span className="text-xs text-neutral-400 font-medium">官方精选热播</span>
+          <span className="text-xs text-neutral-400">共 {topTracks.length} 首</span>
         </div>
 
-        <div className="rounded-2xl apple-glass border border-black/5 dark:border-white/5 overflow-hidden">
+        <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="space-y-1">
           {topTracks.map((track, idx) => {
             const isCurrent = currentTrack?.id === track.id || currentTrack?.url === track.url;
             const isFav = isFavorite(track.id);
 
             return (
-              <div
-                key={track.id + idx}
-                onClick={() => playTrack(track, topTracks)}
-                className={`flex items-center justify-between px-4 py-3 hover:bg-black/5 dark:hover:bg-white/5 transition-colors group cursor-pointer border-b border-black/[0.04] dark:border-white/[0.04] last:border-none ${
-                  isCurrent
-                    ? "bg-[#fa2d48]/10 text-[#fa2d48] font-semibold"
-                    : "text-neutral-800 dark:text-neutral-200"
-                }`}
-              >
-                <div className="flex items-center gap-3.5 flex-1 overflow-hidden pr-4">
-                  <span className="text-xs font-semibold text-neutral-400 w-6 text-center tabular-nums">
-                    {isCurrent && isPlaying ? (
-                      <Volume2 className="w-4 h-4 text-[#fa2d48] animate-pulse mx-auto" />
-                    ) : (
-                      idx + 1
-                    )}
-                  </span>
-                  <img
-                    src={track.pic}
-                    alt={track.name}
-                    className="w-10 h-10 rounded-lg object-cover shadow-sm flex-shrink-0"
-                  />
-                  <div className="overflow-hidden">
-                    <div className={`text-sm truncate ${isCurrent ? "text-[#fa2d48] font-bold" : "group-hover:text-[#fa2d48]"}`}>
-                      {track.name}
-                    </div>
-                    <div className="text-xs text-neutral-500 dark:text-neutral-400 truncate">
-                      {track.album || "精选单曲"}
+              <motion.div key={track.id} variants={staggerItem}>
+                <div
+                  onClick={() => playTrack(track, topTracks)}
+                  className={`flex items-center justify-between px-3 py-2.5 rounded-xl transition-all group cursor-pointer ${
+                    isCurrent
+                      ? "bg-[#fa2d48]/10 text-[#fa2d48]"
+                      : "hover:bg-black/[0.04] dark:hover:bg-white/[0.06] text-neutral-800 dark:text-neutral-200"
+                  }`}
+                >
+                  <div className="flex items-center gap-3.5 overflow-hidden pr-2">
+                    <span className="text-xs font-semibold text-neutral-400 w-5 text-center tabular-nums">
+                      {isCurrent && isPlaying ? (
+                        <Volume2 className="w-3.5 h-3.5 text-[#fa2d48] animate-pulse" />
+                      ) : (
+                        idx + 1
+                      )}
+                    </span>
+                    <img src={track.pic} alt={track.name} className="w-9 h-9 rounded-lg object-cover shadow-sm flex-shrink-0" />
+                    <div className="overflow-hidden">
+                      <div className={`text-xs font-semibold truncate ${isCurrent ? "text-[#fa2d48]" : "group-hover:text-[#fa2d48]"}`}>
+                        {track.name}
+                      </div>
+                      <div className="text-[11px] text-neutral-400 truncate">{track.album || "精选单曲"}</div>
                     </div>
                   </div>
-                </div>
 
-                <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
-                  <button
-                    onClick={() => toggleFavorite(track)}
-                    className={`p-1.5 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer ${
-                      isFav ? "text-[#fa2d48]" : "text-neutral-400 opacity-0 group-hover:opacity-100"
-                    }`}
-                    title={isFav ? "取消喜爱" : "添加到喜爱"}
-                  >
-                    <Heart className={`w-4 h-4 ${isFav ? "fill-current" : ""}`} />
-                  </button>
-                  <span className="text-xs tabular-nums text-neutral-400 w-12 text-right">
-                    {formatDuration(track.duration)}
-                  </span>
+                  <div className="flex items-center gap-3 text-xs text-neutral-400" onClick={(e) => e.stopPropagation()}>
+                    <button
+                      onClick={() => toggleFavorite(track)}
+                      className={`p-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors ${
+                        isFav ? "text-[#fa2d48]" : "text-neutral-400 opacity-0 group-hover:opacity-100"
+                      }`}
+                    >
+                      <Heart className={`w-3.5 h-3.5 ${isFav ? "fill-current" : ""}`} />
+                    </button>
+                    <span className="tabular-nums font-mono text-[11px] w-10 text-right">
+                      {formatDuration(track.duration)}
+                    </span>
+                  </div>
                 </div>
-              </div>
+              </motion.div>
             );
           })}
-        </div>
-      </section>
+        </motion.div>
+      </div>
 
       {/* Albums Grid Section */}
-      <section className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-bold tracking-tight text-neutral-900 dark:text-white">
-            全部专辑
+      {albums.length > 0 && (
+        <div className="space-y-3 pt-2">
+          <h2 className="text-lg font-bold tracking-tight text-neutral-900 dark:text-white">
+            专辑与精选集
           </h2>
-          <span className="text-xs text-neutral-400 font-medium">共 {albums.length} 张录音室专辑</span>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
-          {albums.map((album, idx) => (
-            <div
-              key={album.id + idx}
-              onClick={() => setActiveView("album", album.id)}
-              className="group cursor-pointer space-y-2"
-            >
-              <div className="aspect-square rounded-2xl overflow-hidden bg-neutral-200 dark:bg-neutral-800 relative shadow-md group-hover:shadow-xl transition-all duration-300 border border-black/5 dark:border-white/10">
-                <img
-                  src={album.cover}
-                  alt={album.name}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-                <div className="absolute right-3 bottom-3 w-10 h-10 rounded-full bg-[#fa2d48] text-white flex items-center justify-center shadow-lg opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 hover:scale-110 cursor-pointer">
-                  <ArrowRight className="w-4 h-4 ml-0.5" />
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            {albums.map((album) => (
+              <Card
+                key={album.id}
+                onClick={() => setActiveView("album", album.id)}
+                className="group cursor-pointer p-2 border-0 bg-transparent shadow-none space-y-2"
+              >
+                <div className="aspect-square rounded-2xl overflow-hidden shadow-sm group-hover:shadow-lg transition-all duration-300 relative">
+                  <img src={album.cover} alt={album.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                 </div>
-              </div>
-              <div>
-                <h3 className="text-sm font-semibold truncate group-hover:text-[#fa2d48] transition-colors text-neutral-900 dark:text-neutral-100">
-                  {album.name}
-                </h3>
-                <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate">
-                  {album.publishYear ? `${album.publishYear} · 专辑` : "录音室专辑"}
-                </p>
-              </div>
-            </div>
-          ))}
+                <div>
+                  <h3 className="text-xs font-semibold truncate group-hover:text-[#fa2d48] transition-colors">{album.name}</h3>
+                  <p className="text-[11px] text-neutral-400 truncate">{album.publishYear || "专辑"}</p>
+                </div>
+              </Card>
+            ))}
+          </div>
         </div>
-      </section>
+      )}
     </div>
   );
 };
+
 export default ArtistPage;

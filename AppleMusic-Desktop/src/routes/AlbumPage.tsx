@@ -1,8 +1,13 @@
 import React from "react";
-import { Play, Shuffle, Heart, Music, Clock, Disc, Volume2 } from "lucide-react";
+import { Play, Shuffle, Heart, Clock, Disc, Volume2 } from "lucide-react";
 import { useAlbum } from "@/hooks/useAlbum";
 import { usePlayerStore } from "@/stores/playerStore";
 import { usePlaylistStore } from "@/stores/playlistStore";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { motion } from "motion/react";
+import { staggerContainer, staggerItem } from "@/lib/motion";
+import { toast } from "@/stores/toastStore";
 
 interface AlbumPageProps {
   albumId?: string | null;
@@ -25,6 +30,7 @@ export const AlbumPage: React.FC<AlbumPageProps> = ({ albumId }) => {
   const handlePlayAll = () => {
     if (tracks.length > 0) {
       playTrack(tracks[0], tracks);
+      toast.success("开始播放专辑", album?.name);
     }
   };
 
@@ -32,23 +38,23 @@ export const AlbumPage: React.FC<AlbumPageProps> = ({ albumId }) => {
     if (tracks.length > 0) {
       const randomIndex = Math.floor(Math.random() * tracks.length);
       playTrack(tracks[randomIndex], tracks);
+      toast.success("随机播放专辑", album?.name);
     }
   };
 
   if (isLoading) {
     return (
-      <div className="p-8 space-y-6 animate-pulse">
-        <div className="flex gap-8 items-end">
-          <div className="w-56 h-56 rounded-3xl bg-black/10 dark:bg-white/10" />
+      <div className="space-y-6 animate-pulse max-w-5xl mx-auto pb-16">
+        <div className="flex gap-6 items-end">
+          <div className="w-48 h-48 rounded-2xl bg-black/5 dark:bg-white/5" />
           <div className="space-y-3 flex-1">
-            <div className="w-24 h-4 bg-black/10 dark:bg-white/10 rounded" />
-            <div className="w-64 h-8 bg-black/10 dark:bg-white/10 rounded-lg" />
-            <div className="w-40 h-4 bg-black/10 dark:bg-white/10 rounded" />
-            <div className="w-32 h-10 bg-black/10 dark:bg-white/10 rounded-full" />
+            <div className="w-24 h-4 bg-black/5 dark:bg-white/5 rounded" />
+            <div className="w-64 h-8 bg-black/5 dark:bg-white/5 rounded-lg" />
+            <div className="w-40 h-4 bg-black/5 dark:bg-white/5 rounded" />
           </div>
         </div>
-        <div className="space-y-3 pt-6">
-          {[1, 2, 3, 4].map((i) => (
+        <div className="space-y-2 pt-4">
+          {[1, 2, 3, 4, 5].map((i) => (
             <div key={i} className="h-12 bg-black/5 dark:bg-white/5 rounded-xl" />
           ))}
         </div>
@@ -58,159 +64,112 @@ export const AlbumPage: React.FC<AlbumPageProps> = ({ albumId }) => {
 
   if (!album) {
     return (
-      <div className="h-full flex flex-col items-center justify-center text-center p-8 space-y-3 text-neutral-400">
-        <Disc className="w-12 h-12 opacity-30" />
-        <h2 className="text-lg font-bold">专辑不存在或已下架</h2>
+      <div className="py-24 text-center text-neutral-400 space-y-2 max-w-md mx-auto">
+        <Disc className="w-12 h-12 mx-auto opacity-20" />
+        <div className="text-sm font-semibold">未找到专辑信息</div>
+        <div className="text-xs">请返回首页或搜索探索选择其他精选专辑</div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8 p-1 sm:p-2 animate-in fade-in duration-300">
-      {/* Album Header Banner */}
-      <section className="flex flex-col sm:flex-row items-center sm:items-end gap-7 p-6 sm:p-8 rounded-3xl apple-glass border border-black/5 dark:border-white/10 shadow-xl relative overflow-hidden">
-        {/* Ambient Blur Backdrop */}
-        <div
-          className="absolute -right-20 -bottom-20 w-80 h-80 opacity-30 blur-3xl pointer-events-none -z-10 rounded-full"
-          style={{ backgroundImage: `radial-gradient(circle, #fa2d48, transparent)` }}
-        />
-
-        {/* Large Album Artwork */}
-        <div className="w-48 sm:w-56 h-48 sm:h-56 rounded-2xl overflow-hidden shadow-2xl flex-shrink-0 border border-black/10 dark:border-white/15 group relative">
-          <img src={album.cover} alt={album.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-          <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-            <button
-              onClick={handlePlayAll}
-              className="w-12 h-12 rounded-full bg-[#fa2d48] text-white flex items-center justify-center shadow-lg hover:scale-110 active:scale-95 transition-all cursor-pointer"
-            >
-              <Play className="w-5 h-5 fill-current ml-0.5" />
-            </button>
-          </div>
+    <div className="space-y-8 max-w-5xl mx-auto pb-20 select-none animate-in fade-in duration-300">
+      {/* iOS 27 / macOS Style Album Header */}
+      <div className="flex flex-col sm:flex-row gap-6 items-center sm:items-end">
+        <div className="w-48 h-48 rounded-2xl overflow-hidden shadow-2xl flex-shrink-0 border border-black/5 dark:border-white/10">
+          <img src={album.cover} alt={album.name} className="w-full h-full object-cover" />
         </div>
 
-        {/* Metadata Details */}
-        <div className="space-y-3.5 text-center sm:text-left flex-1">
+        <div className="space-y-3 flex-1 text-center sm:text-left">
           <div className="flex items-center justify-center sm:justify-start gap-2">
-            <span className="text-[11px] font-bold text-[#fa2d48] bg-[#fa2d48]/10 px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-              专辑 · Album
-            </span>
-            <span className="text-xs text-neutral-400 font-medium">无损高保真 · 杜比全景声</span>
+            <Badge variant="apple">录音室专辑</Badge>
+            <Badge variant="secondary">无损音质 · ALAC</Badge>
           </div>
 
-          <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
             {album.name}
           </h1>
 
-          <div className="text-sm font-semibold text-neutral-700 dark:text-neutral-200 hover:text-[#fa2d48] transition-colors cursor-pointer inline-block">
-            {album.artist}
+          <div className="text-xs text-neutral-500 dark:text-neutral-400">
+            <span className="font-semibold text-neutral-800 dark:text-neutral-200">{album.artist}</span> · {album.publishYear || "精选发行"} · {tracks.length} 首歌曲
           </div>
 
-          <p className="text-xs text-neutral-500 dark:text-neutral-400 max-w-xl line-clamp-2 leading-relaxed">
-            {album.description}
-          </p>
-
-          <div className="text-xs text-neutral-400 flex items-center justify-center sm:justify-start gap-3 pt-0.5">
-            <span>{album.publishYear || "2004"} 年发行</span>
-            <span>•</span>
-            <span>共 {tracks.length} 首歌曲</span>
-            {album.company && (
-              <>
-                <span>•</span>
-                <span className="truncate max-w-[160px]">{album.company}</span>
-              </>
-            )}
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex items-center justify-center sm:justify-start gap-3 pt-2">
-            <button
-              onClick={handlePlayAll}
-              disabled={tracks.length === 0}
-              className="px-6 py-2.5 rounded-full bg-[#fa2d48] hover:bg-[#ff3b56] text-white font-semibold text-sm flex items-center gap-2 shadow-lg shadow-[#fa2d48]/25 hover:scale-105 active:scale-95 transition-all disabled:opacity-50 cursor-pointer"
-            >
-              <Play className="w-4 h-4 fill-current ml-0.5" /> 播放全部
-            </button>
-            <button
-              onClick={handleShufflePlay}
-              disabled={tracks.length === 0}
-              className="px-5 py-2.5 rounded-full apple-glass hover:bg-black/10 dark:hover:bg-white/15 text-neutral-800 dark:text-neutral-200 font-semibold text-sm flex items-center gap-2 transition-all disabled:opacity-50 cursor-pointer"
-            >
-              <Shuffle className="w-4 h-4" /> 随机播放
-            </button>
+          {/* Actions */}
+          <div className="flex items-center justify-center sm:justify-start gap-3 pt-1">
+            <Button onClick={handlePlayAll} size="pill" className="px-5 font-semibold text-xs h-9">
+              <Play className="w-3.5 h-3.5 fill-current ml-0.5 mr-1.5" /> 播放全部
+            </Button>
+            <Button onClick={handleShufflePlay} size="pill" variant="glass" className="px-4 font-semibold text-xs h-9">
+              <Shuffle className="w-3.5 h-3.5 mr-1.5" /> 随机播放
+            </Button>
           </div>
         </div>
-      </section>
+      </div>
 
-      {/* Tracks Table */}
-      <section className="space-y-2">
-        <div className="flex items-center justify-between px-4 text-xs font-semibold text-neutral-400 uppercase tracking-wider">
-          <span className="w-8">#</span>
-          <span className="flex-1">歌曲标题</span>
-          <span className="w-16 text-right flex items-center justify-end gap-1">
-            <Clock className="w-3.5 h-3.5" /> 时长
-          </span>
+      {/* Tracks Table / List */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between pb-2 border-b border-black/[0.06] dark:border-white/[0.08] text-[11px] font-semibold text-neutral-400 px-3 uppercase tracking-wider">
+          <div className="flex items-center gap-4">
+            <span className="w-5 text-center">#</span>
+            <span>歌曲标题</span>
+          </div>
+          <div className="flex items-center gap-6">
+            <Clock className="w-3.5 h-3.5" />
+          </div>
         </div>
 
-        <div className="rounded-2xl apple-glass border border-black/5 dark:border-white/5 overflow-hidden">
-          {tracks.length === 0 ? (
-            <div className="py-12 text-center text-neutral-400 space-y-2">
-              <Music className="w-8 h-8 mx-auto opacity-30" />
-              <div className="text-sm">暂无歌曲信息</div>
-            </div>
-          ) : (
-            tracks.map((track, idx) => {
-              const isCurrent = currentTrack?.id === track.id || currentTrack?.url === track.url;
-              const isFav = isFavorite(track.id);
+        <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="space-y-1">
+          {tracks.map((track, idx) => {
+            const isCurrent = currentTrack?.id === track.id || currentTrack?.url === track.url;
+            const isFav = isFavorite(track.id);
 
-              return (
+            return (
+              <motion.div key={track.id} variants={staggerItem}>
                 <div
-                  key={track.id + idx}
                   onClick={() => playTrack(track, tracks)}
-                  className={`flex items-center justify-between px-4 py-3 hover:bg-black/5 dark:hover:bg-white/5 transition-colors group cursor-pointer border-b border-black/[0.04] dark:border-white/[0.04] last:border-none ${
+                  className={`flex items-center justify-between px-3 py-2.5 rounded-xl transition-all group cursor-pointer ${
                     isCurrent
-                      ? "bg-[#fa2d48]/10 text-[#fa2d48] font-semibold"
-                      : "text-neutral-800 dark:text-neutral-200"
+                      ? "bg-[#fa2d48]/10 text-[#fa2d48]"
+                      : "hover:bg-black/[0.04] dark:hover:bg-white/[0.06] text-neutral-800 dark:text-neutral-200"
                   }`}
                 >
-                  <div className="flex items-center gap-3.5 flex-1 overflow-hidden pr-4">
-                    <span className="text-xs font-semibold text-neutral-400 w-6 text-center tabular-nums">
+                  <div className="flex items-center gap-4 overflow-hidden pr-2">
+                    <span className="text-xs font-semibold text-neutral-400 w-5 text-center tabular-nums">
                       {isCurrent && isPlaying ? (
-                        <Volume2 className="w-4 h-4 text-[#fa2d48] animate-pulse mx-auto" />
+                        <Volume2 className="w-3.5 h-3.5 text-[#fa2d48] animate-pulse" />
                       ) : (
                         idx + 1
                       )}
                     </span>
                     <div className="overflow-hidden">
-                      <div className={`text-sm truncate ${isCurrent ? "text-[#fa2d48] font-bold" : "group-hover:text-[#fa2d48]"}`}>
+                      <div className={`text-xs font-semibold truncate ${isCurrent ? "text-[#fa2d48]" : "group-hover:text-[#fa2d48]"}`}>
                         {track.name}
                       </div>
-                      <div className="text-xs text-neutral-500 dark:text-neutral-400 truncate">
-                        {track.artist}
-                      </div>
+                      <div className="text-[11px] text-neutral-400 truncate">{track.artist}</div>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
+                  <div className="flex items-center gap-3 text-xs text-neutral-400" onClick={(e) => e.stopPropagation()}>
                     <button
                       onClick={() => toggleFavorite(track)}
-                      className={`p-1.5 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer ${
+                      className={`p-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors ${
                         isFav ? "text-[#fa2d48]" : "text-neutral-400 opacity-0 group-hover:opacity-100"
                       }`}
-                      title={isFav ? "取消喜爱" : "添加到喜爱"}
                     >
-                      <Heart className={`w-4 h-4 ${isFav ? "fill-current" : ""}`} />
+                      <Heart className={`w-3.5 h-3.5 ${isFav ? "fill-current" : ""}`} />
                     </button>
-                    <span className="text-xs tabular-nums text-neutral-400 w-12 text-right">
+                    <span className="tabular-nums font-mono text-[11px] w-10 text-right">
                       {formatDuration(track.duration)}
                     </span>
                   </div>
                 </div>
-              );
-            })
-          )}
-        </div>
-      </section>
+              </motion.div>
+            );
+          })}
+        </motion.div>
+      </div>
     </div>
   );
 };
+
 export default AlbumPage;

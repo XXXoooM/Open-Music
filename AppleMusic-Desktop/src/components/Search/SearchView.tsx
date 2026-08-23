@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Search, Play, Heart, Plus, Music, Sparkles, TrendingUp } from "lucide-react";
+import { Search, Play, Pause, Heart, Plus, Music, Sparkles, TrendingUp, Volume2 } from "lucide-react";
 import { Track } from "@/types/music";
 import { usePlayerStore } from "@/stores/playerStore";
 import { usePlaylistStore } from "@/stores/playlistStore";
@@ -8,6 +8,7 @@ import { searchOnlineTracks } from "@/api/musicClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
+import { SegmentedTabs } from "@/components/ui/tabs";
 import { motion } from "motion/react";
 import { staggerContainer, staggerItem } from "@/lib/motion";
 import { toast } from "@/stores/toastStore";
@@ -15,7 +16,7 @@ import { toast } from "@/stores/toastStore";
 const POPULAR_TAGS = ["周杰伦", "Taylor Swift", "The Weeknd", "林俊杰", "陈奕迅", "空间音频", "华语经典", "爵士微醺"];
 
 export const SearchView: React.FC = () => {
-  const { playTrack, currentTrack } = usePlayerStore();
+  const { playTrack, togglePlay, currentTrack, isPlaying } = usePlayerStore();
   const { toggleFavorite, isFavorite, customPlaylists, addTrackToPlaylist } = usePlaylistStore();
   const { apiSource, musicServer, setMusicServer, setApiSource } = useSettingsStore();
 
@@ -49,96 +50,85 @@ export const SearchView: React.FC = () => {
     performSearch(tag);
   };
 
-  const handleServerChange = (server: MusicServer) => {
-    setMusicServer(server);
-    performSearch(keyword, server);
+  const handleServerChange = (server: string) => {
+    const s = server as MusicServer;
+    setMusicServer(s);
+    performSearch(keyword, s);
   };
 
-  const handleSourceChange = (src: ApiSource) => {
-    setApiSource(src);
-    performSearch(keyword, musicServer, src);
+  const handleSourceChange = (src: string) => {
+    const s = src as ApiSource;
+    setApiSource(s);
+    performSearch(keyword, musicServer, s);
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-300">
-      {/* Search Header and Input */}
-      <div className="max-w-2xl space-y-4">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-extrabold tracking-tight">探索音乐世界</h1>
+    <div className="space-y-6 max-w-5xl mx-auto pb-16 select-none animate-in fade-in duration-300">
+      {/* Search Header & Controls */}
+      <div className="space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
+              搜索探索
+            </h1>
+            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+              跨源实时检索网易云与 QQ 音乐高保真曲库
+            </p>
+          </div>
 
-          {/* Route & Platform Selector Chips */}
-          <div className="flex items-center gap-2">
-            <div className="flex items-center bg-black/5 dark:bg-white/5 p-1 rounded-xl border border-black/5 dark:border-white/5 text-xs">
-              <Button
-                size="sm"
-                variant={apiSource === "qijieya" ? "default" : "ghost"}
-                onClick={() => handleSourceChange("qijieya")}
-                className="h-7 px-2.5 text-xs rounded-lg"
-              >
-                祈杰VIP源
-              </Button>
-              <Button
-                size="sm"
-                variant={apiSource === "mikus" ? "default" : "ghost"}
-                onClick={() => handleSourceChange("mikus")}
-                className="h-7 px-2.5 text-xs rounded-lg"
-              >
-                Mikus官方源
-              </Button>
-            </div>
-
-            <div className="flex items-center bg-black/5 dark:bg-white/5 p-1 rounded-xl border border-black/5 dark:border-white/5 text-xs">
-              <Button
-                size="sm"
-                variant={musicServer === "netease" ? "destructive" : "ghost"}
-                onClick={() => handleServerChange("netease")}
-                className="h-7 px-2.5 text-xs rounded-lg"
-              >
-                网易云
-              </Button>
-              <Button
-                size="sm"
-                variant={musicServer === "tencent" ? "default" : "ghost"}
-                onClick={() => handleServerChange("tencent")}
-                className={`h-7 px-2.5 text-xs rounded-lg ${musicServer === "tencent" ? "bg-emerald-500 hover:bg-emerald-600" : ""}`}
-              >
-                QQ音乐
-              </Button>
-            </div>
+          {/* Segmented Filter Pills */}
+          <div className="flex items-center gap-2 flex-wrap">
+            <SegmentedTabs
+              value={apiSource}
+              onValueChange={handleSourceChange}
+              items={[
+                { value: "qijieya", label: "祈杰 VIP源" },
+                { value: "mikus", label: "Mikus 官方源" },
+              ]}
+            />
+            <SegmentedTabs
+              value={musicServer}
+              onValueChange={handleServerChange}
+              items={[
+                { value: "netease", label: "网易云" },
+                { value: "tencent", label: "QQ 音乐" },
+              ]}
+            />
           </div>
         </div>
 
+        {/* Large Apple Search Input */}
         <form onSubmit={handleFormSubmit} className="relative flex items-center">
-          <Search className="w-5 h-5 text-neutral-400 absolute left-4 pointer-events-none" />
+          <Search className="w-4 h-4 text-neutral-400 absolute left-4 pointer-events-none" />
           <Input
             type="text"
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
-            placeholder="搜索歌曲、艺人、专辑（支持网易云 / QQ音乐多源实时搜索）..."
-            className="h-12 pl-12 pr-28 rounded-2xl text-sm"
+            placeholder="搜索歌曲、艺人、专辑..."
+            className="h-11 pl-11 pr-24 rounded-2xl text-xs glass border-black/10 dark:border-white/10"
           />
           <Button
             type="submit"
             size="sm"
             disabled={isSearching}
-            className="absolute right-2 rounded-xl"
+            className="absolute right-1.5 h-8 px-4 rounded-xl text-xs"
           >
-            {isSearching ? "正在检索..." : "探索"}
+            {isSearching ? "检索中..." : "搜索"}
           </Button>
         </form>
 
         {/* Hot Search Tags */}
-        <div className="flex items-center gap-2 flex-wrap pt-1">
+        <div className="flex items-center gap-2 flex-wrap pt-0.5">
           <span className="text-xs font-semibold text-neutral-400 flex items-center gap-1">
-            <TrendingUp className="w-3.5 h-3.5 text-[#fa2d48]" /> 热门探索：
+            <TrendingUp className="w-3.5 h-3.5 text-[#fa2d48]" /> 热门搜索：
           </span>
           {POPULAR_TAGS.map((tag) => (
             <Button
               key={tag}
               size="sm"
-              variant="secondary"
+              variant="ghost"
               onClick={() => handleTagClick(tag)}
-              className="h-7 px-3 rounded-full text-xs"
+              className="h-6 px-2.5 rounded-full text-xs bg-black/[0.03] dark:bg-white/[0.05] hover:bg-[#fa2d48]/10 hover:text-[#fa2d48] text-neutral-600 dark:text-neutral-300"
             >
               {tag}
             </Button>
@@ -147,37 +137,37 @@ export const SearchView: React.FC = () => {
       </div>
 
       {/* Results Section */}
-      <div className="space-y-4">
+      <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold tracking-tight flex items-center gap-2">
+          <h2 className="text-base font-bold tracking-tight flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-[#fa2d48]" />
             {isSearching ? "正在连接云端多线路搜索..." : `搜索匹配结果 (${results.length})`}
           </h2>
-          <span className="text-xs text-neutral-400">
-            数据源: {apiSource === "qijieya" ? "祈杰源 (支持VIP)" : "Mikus官方源"} · {musicServer === "netease" ? "网易云音乐" : "QQ音乐"}
+          <span className="text-xs text-neutral-400 font-mono">
+            {apiSource === "qijieya" ? "祈杰 VIP 解析" : "Mikus 镜像"} · {musicServer === "netease" ? "网易云" : "QQ 音乐"}
           </span>
         </div>
 
         {isSearching ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
             {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="h-16 rounded-2xl bg-black/5 dark:bg-white/5 animate-pulse" />
+              <div key={i} className="h-14 rounded-2xl bg-black/5 dark:bg-white/5 animate-pulse" />
             ))}
           </div>
         ) : results.length === 0 ? (
-          <div className="py-16 text-center text-neutral-400 space-y-2">
-            <Music className="w-10 h-10 mx-auto opacity-30" />
+          <div className="py-20 text-center text-neutral-400 space-y-2">
+            <Music className="w-10 h-10 mx-auto opacity-20" />
             <div className="text-sm font-medium">
-              {hasSearched ? "未找到相关音乐结果" : "输入关键词或点击热门标签探索音乐"}
+              {hasSearched ? "未找到相关音乐结果" : "输入关键词或点击上方热门标签开始探索"}
             </div>
-            <div className="text-xs">支持网易云与QQ音乐双源自动解析播放</div>
+            <div className="text-xs text-neutral-500">支持网易云与 QQ 音乐双源自动解析与高保真流媒体加载</div>
           </div>
         ) : (
           <motion.div
             variants={staggerContainer}
             initial="hidden"
             animate="visible"
-            className="grid grid-cols-1 md:grid-cols-2 gap-3"
+            className="grid grid-cols-1 md:grid-cols-2 gap-2.5"
           >
             {results.map((track, idx) => {
               const isCurrent = currentTrack?.id === track.id || currentTrack?.url === track.url;
@@ -186,22 +176,26 @@ export const SearchView: React.FC = () => {
               return (
                 <motion.div key={track.id + idx} variants={staggerItem}>
                   <Card
-                    enableHover
                     onClick={() => playTrack(track, results)}
-                    className={`flex items-center justify-between p-3 rounded-2xl border transition-all group cursor-pointer ${
+                    className={`flex items-center justify-between p-2.5 rounded-2xl border transition-all group cursor-pointer ${
                       isCurrent
-                        ? "border-[#fa2d48]/40 bg-[#fa2d48]/5 dark:bg-[#fa2d48]/10"
-                        : "border-black/5 dark:border-white/5 hover:bg-black/5 dark:hover:bg-white/10"
+                        ? "border-[#fa2d48]/40 bg-[#fa2d48]/5 dark:bg-[#fa2d48]/10 shadow-sm"
+                        : "border-black/[0.04] dark:border-white/[0.06] bg-white/60 dark:bg-white/[0.03] hover:bg-white/90 dark:hover:bg-white/[0.07]"
                     }`}
                   >
-                    <div className="flex items-center gap-3.5 overflow-hidden pr-2">
+                    {/* Track Info */}
+                    <div className="flex items-center gap-3 overflow-hidden pr-2">
                       <span className="text-xs font-semibold text-neutral-400 w-5 text-center tabular-nums">
-                        {idx + 1}
+                        {isCurrent && isPlaying ? (
+                          <Volume2 className="w-3.5 h-3.5 text-[#fa2d48] animate-pulse" />
+                        ) : (
+                          idx + 1
+                        )}
                       </span>
                       <img
                         src={track.pic}
                         alt={track.name}
-                        className="w-11 h-11 rounded-xl object-cover shadow-sm flex-shrink-0"
+                        className="w-10 h-10 rounded-xl object-cover shadow-sm flex-shrink-0"
                       />
                       <div className="overflow-hidden">
                         <div
@@ -217,7 +211,8 @@ export const SearchView: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+                    {/* Action Buttons */}
+                    <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
                       <Button
                         size="icon"
                         variant="ghost"
@@ -254,11 +249,25 @@ export const SearchView: React.FC = () => {
 
                       <Button
                         size="icon"
-                        variant="apple"
-                        onClick={() => playTrack(track, results)}
-                        className="w-8 h-8 rounded-full ml-1"
+                        variant="default"
+                        onClick={() => {
+                          if (isCurrent) {
+                            togglePlay();
+                          } else {
+                            playTrack(track, results);
+                          }
+                        }}
+                        className={`w-8 h-8 rounded-full ml-0.5 transition-all ${
+                          isCurrent
+                            ? "bg-[#fa2d48] text-white hover:bg-[#fa2d48]/90 shadow-md shadow-[#fa2d48]/30"
+                            : "bg-black/5 dark:bg-white/10 text-neutral-700 dark:text-neutral-200 hover:bg-[#fa2d48] hover:text-white"
+                        }`}
                       >
-                        <Play className="w-3.5 h-3.5 fill-current ml-0.5" />
+                        {isCurrent && isPlaying ? (
+                          <Pause className="w-3.5 h-3.5 fill-current" />
+                        ) : (
+                          <Play className="w-3.5 h-3.5 fill-current ml-0.5" />
+                        )}
                       </Button>
                     </div>
                   </Card>
@@ -271,3 +280,5 @@ export const SearchView: React.FC = () => {
     </div>
   );
 };
+
+export default SearchView;

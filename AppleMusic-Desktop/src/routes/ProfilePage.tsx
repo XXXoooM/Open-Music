@@ -3,17 +3,20 @@ import {
   Heart,
   Clock,
   LogOut,
-  Trash2,
-  UserCheck,
-  ShieldCheck,
-  Calendar,
-  Volume2
+  Trash2
 } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 import { usePlayerStore } from "@/stores/playerStore";
 import { useFavoritesQuery, useToggleFavoriteMutation, useHistoryQuery } from "@/hooks/useProfile";
 import { useHistoryStore } from "@/stores/historyStore";
 import { LoginModal } from "@/components/Auth/LoginModal";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { SegmentedTabs } from "@/components/ui/tabs";
+import { motion } from "motion/react";
+import { staggerContainer, staggerItem } from "@/lib/motion";
+import { toast } from "@/stores/toastStore";
 
 const formatDuration = (seconds?: number) => {
   if (!seconds || isNaN(seconds) || seconds <= 0) return "--:--";
@@ -22,278 +25,195 @@ const formatDuration = (seconds?: number) => {
   return `${mins}:${secs.toString().padStart(2, "0")}`;
 };
 
-const formatTimeAgo = (isoString: string) => {
-  try {
-    const diff = (Date.now() - new Date(isoString).getTime()) / 1000;
-    if (diff < 60) return "刚刚播放";
-    if (diff < 3600) return `${Math.floor(diff / 60)} 分钟前`;
-    if (diff < 86400) return `${Math.floor(diff / 3600)} 小时前`;
-    return `${Math.floor(diff / 86400)} 天前`;
-  } catch (_) {
-    return "最近播放";
-  }
-};
-
 export const ProfilePage: React.FC = () => {
   const { user, isAuthenticated, logout } = useAuthStore();
-  const { playTrack, currentTrack, isPlaying } = usePlayerStore();
+  const { playTrack, currentTrack } = usePlayerStore();
   const { clearHistory } = useHistoryStore();
 
-  const [activeTab, setActiveTab] = useState<"favorites" | "history">("favorites");
+  const [activeTab, setActiveTab] = useState<string>("favorites");
   const [isLoginOpen, setIsLoginOpen] = useState(false);
 
-  const { data: favorites = [], isLoading: isFavLoading } = useFavoritesQuery();
-  const { data: history = [], isLoading: isHistLoading } = useHistoryQuery(50);
+  const { data: favorites = [] } = useFavoritesQuery();
+  const { data: history = [] } = useHistoryQuery(50);
   const toggleFavMutation = useToggleFavoriteMutation();
 
   const defaultAvatar =
     "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80";
 
   return (
-    <div className="space-y-8 p-1 sm:p-2 animate-in fade-in duration-300">
+    <div className="max-w-4xl mx-auto space-y-6 pb-20 select-none animate-in fade-in duration-300">
       {/* Profile Header Hero Card */}
-      <section className="p-6 sm:p-8 rounded-3xl apple-glass border border-black/5 dark:border-white/10 shadow-xl relative overflow-hidden flex flex-col sm:flex-row items-center sm:items-start gap-6">
-        <div className="relative group">
-          <img
-            src={user?.avatarUrl || defaultAvatar}
-            alt={user?.nickname || "User"}
-            className="w-24 h-24 sm:w-28 sm:h-28 rounded-full object-cover shadow-2xl border-2 border-[#fa2d48]/40"
-          />
-          {isAuthenticated && (
-            <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-[#fa2d48] text-white flex items-center justify-center shadow-md">
-              <UserCheck className="w-4 h-4" />
+      <Card className="p-6 rounded-3xl glass flex flex-col sm:flex-row items-center sm:items-start gap-5">
+        <img
+          src={user?.avatarUrl || defaultAvatar}
+          alt={user?.nickname || "User"}
+          className="w-20 h-20 rounded-full object-cover shadow-lg border-2 border-[#fa2d48]/40 flex-shrink-0"
+        />
+
+        <div className="flex-1 text-center sm:text-left space-y-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <h1 className="text-xl font-bold text-neutral-900 dark:text-white flex items-center justify-center sm:justify-start gap-2">
+                {isAuthenticated ? user?.nickname : "访客体验用户"}
+                {isAuthenticated && <Badge variant="apple">Apple ID 认证</Badge>}
+              </h1>
+              <p className="text-xs text-neutral-400">
+                {isAuthenticated ? "已激活 Apple Music 空间音频订阅" : "登录后可跨设备同步喜爱歌曲与专属歌单"}
+              </p>
             </div>
-          )}
-        </div>
 
-        <div className="space-y-2 text-center sm:text-left flex-1">
-          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
-              {isAuthenticated && user ? user.nickname : "访客体验用户"}
-            </h1>
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#fa2d48]/10 text-[#fa2d48] text-xs font-semibold">
-              <ShieldCheck className="w-3.5 h-3.5" />
-              {isAuthenticated ? "Apple Music 订阅尊享" : "未登录状态"}
+            <div>
+              {isAuthenticated ? (
+                <Button
+                  onClick={logout}
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs text-red-500 hover:bg-red-500/10 rounded-xl"
+                >
+                  <LogOut className="w-3.5 h-3.5 mr-1.5" /> 退出登录
+                </Button>
+              ) : (
+                <Button
+                  onClick={() => setIsLoginOpen(true)}
+                  size="sm"
+                  className="rounded-xl font-semibold text-xs"
+                >
+                  登录 Apple ID
+                </Button>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center justify-center sm:justify-start gap-3 pt-1 text-xs text-neutral-500">
+            <span className="font-semibold text-neutral-800 dark:text-neutral-200">
+              {favorites.length} 首喜爱曲目
             </span>
-          </div>
-
-          <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400">
-            {isAuthenticated && user ? user.email : "登录 Apple ID 可同步云端歌单与跨设备听歌记录"}
-          </p>
-
-          <div className="text-xs text-neutral-400 flex items-center justify-center sm:justify-start gap-4 pt-1">
-            <span className="flex items-center gap-1">
-              <Calendar className="w-3.5 h-3.5" />
-              {isAuthenticated && user?.joinedAt
-                ? `加入于 ${new Date(user.joinedAt).toLocaleDateString()}`
-                : "体验版客户端"}
-            </span>
-            <span>•</span>
-            <span>已收藏 {favorites.length} 首歌曲</span>
-            <span>•</span>
-            <span>最近收听 {history.length} 首</span>
-          </div>
-
-          <div className="pt-2 flex items-center justify-center sm:justify-start gap-3">
-            {isAuthenticated ? (
-              <button
-                onClick={logout}
-                className="px-4 py-2 rounded-full bg-red-500/10 hover:bg-red-500/20 text-red-500 font-semibold text-xs flex items-center gap-1.5 transition-all cursor-pointer"
-              >
-                <LogOut className="w-3.5 h-3.5" /> 退出登录
-              </button>
-            ) : (
-              <button
-                onClick={() => setIsLoginOpen(true)}
-                className="px-5 py-2 rounded-full bg-[#fa2d48] hover:bg-[#ff3b56] text-white font-semibold text-xs flex items-center gap-1.5 shadow-md shadow-[#fa2d48]/25 hover:scale-105 active:scale-95 transition-all cursor-pointer"
-              >
-                <UserCheck className="w-3.5 h-3.5" /> 登录 Apple ID
-              </button>
-            )}
+            <span>·</span>
+            <span>{history.length} 条播放足迹</span>
           </div>
         </div>
-      </section>
+      </Card>
 
-      {/* Tabs Switcher: Favorites vs History */}
-      <section className="space-y-4">
-        <div className="flex items-center justify-between border-b border-black/5 dark:border-white/10 pb-3">
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setActiveTab("favorites")}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
-                activeTab === "favorites"
-                  ? "bg-[#fa2d48] text-white shadow-sm shadow-[#fa2d48]/25"
-                  : "text-neutral-600 dark:text-neutral-400 hover:bg-black/5 dark:hover:bg-white/5"
-              }`}
-            >
-              <Heart className="w-4 h-4" /> 我的收藏 ({favorites.length})
-            </button>
-            <button
-              onClick={() => setActiveTab("history")}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
-                activeTab === "history"
-                  ? "bg-[#fa2d48] text-white shadow-sm shadow-[#fa2d48]/25"
-                  : "text-neutral-600 dark:text-neutral-400 hover:bg-black/5 dark:hover:bg-white/5"
-              }`}
-            >
-              <Clock className="w-4 h-4" /> 播放历史 ({history.length})
-            </button>
+      {/* Tabs Switcher */}
+      <div className="flex items-center justify-between">
+        <SegmentedTabs
+          value={activeTab}
+          onValueChange={setActiveTab}
+          items={[
+            { value: "favorites", label: `喜爱歌曲 (${favorites.length})`, icon: <Heart className="w-3.5 h-3.5" /> },
+            { value: "history", label: `最近播放 (${history.length})`, icon: <Clock className="w-3.5 h-3.5" /> },
+          ]}
+        />
+
+        {activeTab === "history" && history.length > 0 && (
+          <Button
+            onClick={() => {
+              clearHistory();
+              toast.info("已清空最近播放历史");
+            }}
+            variant="ghost"
+            size="sm"
+            className="text-xs text-neutral-400 hover:text-red-500 rounded-xl"
+          >
+            <Trash2 className="w-3.5 h-3.5 mr-1" /> 清空历史
+          </Button>
+        )}
+      </div>
+
+      {/* Content List */}
+      {activeTab === "favorites" ? (
+        favorites.length === 0 ? (
+          <div className="py-20 text-center text-neutral-400 space-y-2">
+            <Heart className="w-10 h-10 mx-auto opacity-20" />
+            <div className="text-sm font-semibold">暂无喜爱歌曲</div>
+            <div className="text-xs">在搜索或发现页面点击红心图标即可收藏</div>
           </div>
-
-          {activeTab === "history" && history.length > 0 && (
-            <button
-              onClick={clearHistory}
-              className="text-xs font-semibold text-neutral-400 hover:text-red-500 flex items-center gap-1 transition-colors cursor-pointer"
-            >
-              <Trash2 className="w-3.5 h-3.5" /> 清空历史
-            </button>
-          )}
-        </div>
-
-        {/* Tab 1: Favorites List */}
-        {activeTab === "favorites" && (
-          <div className="space-y-2">
-            {isFavLoading ? (
-              <div className="space-y-2">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="h-14 bg-black/5 dark:bg-white/5 rounded-2xl animate-pulse" />
-                ))}
-              </div>
-            ) : favorites.length === 0 ? (
-              <div className="py-16 text-center text-neutral-400 space-y-2">
-                <Heart className="w-10 h-10 mx-auto opacity-30" />
-                <div className="text-sm font-medium">你还没有收藏任何歌曲</div>
-                <div className="text-xs">在探索或歌单页面点击红心即可将喜爱的歌曲珍藏在此</div>
-              </div>
-            ) : (
-              <div className="rounded-2xl apple-glass border border-black/5 dark:border-white/5 overflow-hidden">
-                {favorites.map((track, idx) => {
-                  const isCurrent = currentTrack?.id === track.id || currentTrack?.url === track.url;
-
-                  return (
-                    <div
-                      key={track.id + idx}
-                      onClick={() => playTrack(track, favorites)}
-                      className={`flex items-center justify-between px-4 py-3 hover:bg-black/5 dark:hover:bg-white/5 transition-colors group cursor-pointer border-b border-black/[0.04] dark:border-white/[0.04] last:border-none ${
-                        isCurrent
-                          ? "bg-[#fa2d48]/10 text-[#fa2d48] font-semibold"
-                          : "text-neutral-800 dark:text-neutral-200"
-                      }`}
-                    >
-                      <div className="flex items-center gap-3.5 flex-1 overflow-hidden pr-4">
-                        <span className="text-xs font-semibold text-neutral-400 w-6 text-center tabular-nums">
-                          {isCurrent && isPlaying ? (
-                            <Volume2 className="w-4 h-4 text-[#fa2d48] animate-pulse mx-auto" />
-                          ) : (
-                            idx + 1
-                          )}
-                        </span>
-                        <img
-                          src={track.pic}
-                          alt={track.name}
-                          className="w-10 h-10 rounded-lg object-cover shadow-sm flex-shrink-0"
-                        />
-                        <div className="overflow-hidden">
-                          <div className={`text-sm truncate ${isCurrent ? "text-[#fa2d48] font-bold" : "group-hover:text-[#fa2d48]"}`}>
-                            {track.name}
-                          </div>
-                          <div className="text-xs text-neutral-500 dark:text-neutral-400 truncate">
-                            {track.artist} · {track.album || "单曲"}
-                          </div>
+        ) : (
+          <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+            {favorites.map((track) => {
+              const isCurrent = currentTrack?.id === track.id || currentTrack?.url === track.url;
+              return (
+                <motion.div key={track.id} variants={staggerItem}>
+                  <Card
+                    onClick={() => playTrack(track, favorites)}
+                    className={`flex items-center justify-between p-2.5 rounded-2xl border transition-all group cursor-pointer ${
+                      isCurrent
+                        ? "border-[#fa2d48]/40 bg-[#fa2d48]/5 dark:bg-[#fa2d48]/10"
+                        : "border-black/[0.04] dark:border-white/[0.06] bg-white/60 dark:bg-white/[0.03] hover:bg-white/90 dark:hover:bg-white/[0.07]"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3 overflow-hidden pr-2">
+                      <img src={track.pic} alt={track.name} className="w-10 h-10 rounded-xl object-cover shadow-sm flex-shrink-0" />
+                      <div className="overflow-hidden">
+                        <div className={`text-xs font-semibold truncate ${isCurrent ? "text-[#fa2d48]" : "group-hover:text-[#fa2d48]"}`}>
+                          {track.name}
                         </div>
-                      </div>
-
-                      <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
-                        <button
-                          onClick={() => toggleFavMutation.mutate(track)}
-                          className="p-1.5 rounded-full hover:bg-black/5 dark:hover:bg-white/10 text-[#fa2d48] transition-colors cursor-pointer"
-                          title="取消收藏"
-                        >
-                          <Heart className="w-4 h-4 fill-current" />
-                        </button>
-                        <span className="text-xs tabular-nums text-neutral-400 w-12 text-right">
-                          {formatDuration(track.duration)}
-                        </span>
+                        <div className="text-[11px] text-neutral-400 truncate">{track.artist}</div>
                       </div>
                     </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Tab 2: History List */}
-        {activeTab === "history" && (
-          <div className="space-y-2">
-            {isHistLoading ? (
-              <div className="space-y-2">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="h-14 bg-black/5 dark:bg-white/5 rounded-2xl animate-pulse" />
-                ))}
-              </div>
-            ) : history.length === 0 ? (
-              <div className="py-16 text-center text-neutral-400 space-y-2">
-                <Clock className="w-10 h-10 mx-auto opacity-30" />
-                <div className="text-sm font-medium">还没有播放记录</div>
-                <div className="text-xs">播放任意歌曲后将自动为你记录在这里</div>
-              </div>
-            ) : (
-              <div className="rounded-2xl apple-glass border border-black/5 dark:border-white/5 overflow-hidden">
-                {history.map((item, idx) => {
-                  const isCurrent = currentTrack?.id === item.track.id || currentTrack?.url === item.track.url;
-
-                  return (
-                    <div
-                      key={item.track.id + idx}
-                      onClick={() => playTrack(item.track, history.map((h) => h.track))}
-                      className={`flex items-center justify-between px-4 py-3 hover:bg-black/5 dark:hover:bg-white/5 transition-colors group cursor-pointer border-b border-black/[0.04] dark:border-white/[0.04] last:border-none ${
-                        isCurrent
-                          ? "bg-[#fa2d48]/10 text-[#fa2d48] font-semibold"
-                          : "text-neutral-800 dark:text-neutral-200"
-                      }`}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleFavMutation.mutate(track);
+                        toast.info("已移出喜爱歌曲", track.name);
+                      }}
+                      className="p-1.5 text-[#fa2d48] hover:bg-[#fa2d48]/10 rounded-lg transition-colors cursor-pointer"
                     >
-                      <div className="flex items-center gap-3.5 flex-1 overflow-hidden pr-4">
-                        <span className="text-xs font-semibold text-neutral-400 w-6 text-center tabular-nums">
-                          {isCurrent && isPlaying ? (
-                            <Volume2 className="w-4 h-4 text-[#fa2d48] animate-pulse mx-auto" />
-                          ) : (
-                            idx + 1
-                          )}
-                        </span>
-                        <img
-                          src={item.track.pic}
-                          alt={item.track.name}
-                          className="w-10 h-10 rounded-lg object-cover shadow-sm flex-shrink-0"
-                        />
-                        <div className="overflow-hidden">
-                          <div className={`text-sm truncate ${isCurrent ? "text-[#fa2d48] font-bold" : "group-hover:text-[#fa2d48]"}`}>
-                            {item.track.name}
-                          </div>
-                          <div className="text-xs text-neutral-500 dark:text-neutral-400 truncate">
-                            {item.track.artist}
-                          </div>
+                      <Heart className="w-3.5 h-3.5 fill-current" />
+                    </button>
+                  </Card>
+                </motion.div>
+              );
+            })}
+          </motion.div>
+        )
+      ) : (
+        history.length === 0 ? (
+          <div className="py-20 text-center text-neutral-400 space-y-2">
+            <Clock className="w-10 h-10 mx-auto opacity-20" />
+            <div className="text-sm font-semibold">暂无播放记录</div>
+            <div className="text-xs">播放任意歌曲后将在此自动记录</div>
+          </div>
+        ) : (
+          <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="space-y-1">
+            {history.map((item, idx) => {
+              const isCurrent = currentTrack?.id === item.track.id || currentTrack?.url === item.track.url;
+              return (
+                <motion.div key={item.track.id + idx} variants={staggerItem}>
+                  <div
+                    onClick={() => playTrack(item.track, history.map((h) => h.track))}
+                    className={`flex items-center justify-between px-3 py-2.5 rounded-xl transition-all group cursor-pointer ${
+                      isCurrent
+                        ? "bg-[#fa2d48]/10 text-[#fa2d48]"
+                        : "hover:bg-black/[0.04] dark:hover:bg-white/[0.06] text-neutral-800 dark:text-neutral-200"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3 overflow-hidden pr-2">
+                      <span className="text-xs font-semibold text-neutral-400 w-5 text-center tabular-nums">
+                        {idx + 1}
+                      </span>
+                      <img src={item.track.pic} alt={item.track.name} className="w-9 h-9 rounded-lg object-cover flex-shrink-0" />
+                      <div className="overflow-hidden">
+                        <div className={`text-xs font-semibold truncate ${isCurrent ? "text-[#fa2d48]" : "group-hover:text-[#fa2d48]"}`}>
+                          {item.track.name}
                         </div>
-                      </div>
-
-                      <div className="flex items-center gap-4 text-xs text-neutral-400">
-                        <span>{formatTimeAgo(item.playedAt)}</span>
-                        <span className="tabular-nums w-12 text-right">
-                          {formatDuration(item.track.duration)}
-                        </span>
+                        <div className="text-[11px] text-neutral-400 truncate">{item.track.artist}</div>
                       </div>
                     </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        )}
-      </section>
+                    <span className="text-[11px] text-neutral-400 font-mono">
+                      {formatDuration(item.track.duration)}
+                    </span>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </motion.div>
+        )
+      )}
 
-      {/* Login Modal */}
       <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
     </div>
   );
 };
+
 export default ProfilePage;

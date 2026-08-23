@@ -1,24 +1,33 @@
 import React, { useState, useEffect } from "react";
 import {
-  Settings,
   Sparkles,
   Sliders,
   Keyboard,
   Trash2,
-  CheckCircle2,
   Server,
   ListMusic,
   Volume2,
   HardDrive,
   Info,
   RefreshCw,
-  ExternalLink
+  ExternalLink,
+  Sun,
+  Moon,
+  Laptop
 } from "lucide-react";
 import { useThemeStore } from "@/stores/themeStore";
 import { useSettingsStore, ApiSource, MusicServer, AudioQuality } from "@/stores/settingsStore";
 import { usePlayerStore } from "@/stores/playerStore";
 import { invoke } from "@tauri-apps/api/core";
 import { useQueryClient } from "@tanstack/react-query";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { Slider } from "@/components/ui/slider";
+import { SegmentedTabs } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { toast } from "@/stores/toastStore";
 
 export const SettingsPage: React.FC = () => {
   const { mode, setMode } = useThemeStore();
@@ -42,10 +51,8 @@ export const SettingsPage: React.FC = () => {
   const [isClearing, setIsClearing] = useState<boolean>(false);
   const [isCheckingUpdate, setIsCheckingUpdate] = useState<boolean>(false);
   const [updateMsg, setUpdateMsg] = useState<string | null>(null);
-  const [saveNotice, setSaveNotice] = useState<boolean>(false);
   const [customIdInput, setCustomIdInput] = useState<string>(defaultPlaylistId);
 
-  // Fetch cache size on mount
   useEffect(() => {
     const fetchCache = async () => {
       const isTauri = typeof window !== "undefined" && !!(window as any).__TAURI__;
@@ -74,8 +81,7 @@ export const SettingsPage: React.FC = () => {
     setTimeout(() => {
       setCacheSize("0.0 MB");
       setIsClearing(false);
-      setSaveNotice(true);
-      setTimeout(() => setSaveNotice(false), 1500);
+      toast.success("本地缓存已成功清理", "已释放磁盘占用");
     }, 600);
   };
 
@@ -105,118 +111,81 @@ export const SettingsPage: React.FC = () => {
     const id = customIdInput.trim() || "17910751956";
     setDefaultPlaylistId(id);
     queryClient.invalidateQueries({ queryKey: ["playlist"] });
-    setSaveNotice(true);
-    setTimeout(() => setSaveNotice(false), 1500);
+    toast.success("默认歌单 ID 已更新", id);
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 p-1 sm:p-2 animate-in fade-in duration-300 pb-16">
-      {/* Header */}
-      <div className="flex items-center justify-between border-b border-black/5 dark:border-white/10 pb-4">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#fa2d48] to-[#ff758c] flex items-center justify-center text-white shadow-lg shadow-[#fa2d48]/25">
-            <Settings className="w-6 h-6" />
-          </div>
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
-              偏好设置 (Settings)
-            </h1>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              定制你的 Apple Music 桌面端视觉外观、音频流线路与缓存维护
-            </p>
-          </div>
+    <div className="max-w-3xl mx-auto space-y-6 pb-20 select-none">
+      {/* Settings Header */}
+      <div className="flex items-center justify-between pb-2 border-b border-black/[0.06] dark:border-white/[0.08]">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
+            偏好设置
+          </h1>
+          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+            管理播放器外观、音质体验、网络数据线路与本地存储
+          </p>
         </div>
-
-        {saveNotice && (
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-xs font-semibold animate-in fade-in">
-            <CheckCircle2 className="w-3.5 h-3.5" />
-            <span>设置已即时保存</span>
-          </div>
-        )}
+        <Badge variant="apple">macOS Liquid Glass</Badge>
       </div>
 
       {/* Section 1: Appearance & Theme */}
-      <section className="p-6 rounded-3xl apple-glass border border-black/5 dark:border-white/10 space-y-4 shadow-sm">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-[#fa2d48]" />
-            <h2 className="text-base font-bold text-neutral-900 dark:text-white">外观与主题</h2>
+      <Card className="p-5 rounded-2xl glass space-y-4">
+        <div className="flex items-center gap-2">
+          <Sparkles className="w-4 h-4 text-[#fa2d48]" />
+          <h2 className="text-sm font-bold text-neutral-900 dark:text-white">外观与主题</h2>
+        </div>
+
+        <div className="flex items-center justify-between py-1">
+          <div>
+            <div className="text-xs font-semibold text-neutral-800 dark:text-neutral-200">
+              色彩模式
+            </div>
+            <div className="text-[11px] text-neutral-400">
+              选择适合当前环境的视觉配色方案
+            </div>
           </div>
-          <span className="text-xs text-neutral-400">Apple Design 磨砂毛玻璃</span>
+          <SegmentedTabs
+            value={mode}
+            onValueChange={(v) => setMode(v as any)}
+            items={[
+              { value: "system", label: "跟随系统", icon: <Laptop className="w-3.5 h-3.5" /> },
+              { value: "light", label: "浅色", icon: <Sun className="w-3.5 h-3.5" /> },
+              { value: "dark", label: "深色", icon: <Moon className="w-3.5 h-3.5" /> },
+            ]}
+          />
         </div>
 
-        <div className="grid grid-cols-3 gap-3">
-          {[
-            { label: "跟随系统", value: "system", desc: "自动同步系统色彩模式" },
-            { label: "浅色模式", value: "light", desc: "纯净明亮的苹果灰白" },
-            { label: "深色模式", value: "dark", desc: "沉浸深邃的暗夜质感" },
-          ].map((t) => (
-            <button
-              key={t.value}
-              onClick={() => setMode(t.value as any)}
-              className={`p-3.5 rounded-2xl text-left border transition-all cursor-pointer ${
-                mode === t.value
-                  ? "bg-[#fa2d48] text-white border-[#fa2d48] shadow-md shadow-[#fa2d48]/25"
-                  : "apple-glass hover:bg-black/5 dark:hover:bg-white/5 border-black/5 dark:border-white/5 text-neutral-700 dark:text-neutral-300"
-              }`}
-            >
-              <div className="text-xs font-bold">{t.label}</div>
-              <div className={`text-[10px] mt-0.5 ${mode === t.value ? "text-white/80" : "text-neutral-400"}`}>
-                {t.desc}
-              </div>
-            </button>
-          ))}
-        </div>
-
-        <div className="flex items-center justify-between pt-2 border-t border-black/5 dark:border-white/5">
+        <div className="flex items-center justify-between pt-3 border-t border-black/[0.04] dark:border-white/[0.06]">
           <div>
             <div className="text-xs font-semibold text-neutral-800 dark:text-neutral-200">
               启动时自动播放精选曲目
             </div>
             <div className="text-[11px] text-neutral-400">应用打开后自动从第一首歌曲开始流媒体加载</div>
           </div>
-          <button
-            onClick={() => setAutoPlayOnStart(!autoPlayOnStart)}
-            className={`w-11 h-6 rounded-full transition-colors relative cursor-pointer ${
-              autoPlayOnStart ? "bg-[#fa2d48]" : "bg-neutral-300 dark:bg-neutral-700"
-            }`}
-          >
-            <div
-              className={`w-4 h-4 rounded-full bg-white shadow-md absolute top-1 transition-transform ${
-                autoPlayOnStart ? "left-6" : "left-1"
-              }`}
-            />
-          </button>
+          <Switch checked={autoPlayOnStart} onCheckedChange={setAutoPlayOnStart} />
         </div>
-      </section>
+      </Card>
 
       {/* Section 2: Audio Quality & Engine */}
-      <section className="p-6 rounded-3xl apple-glass border border-black/5 dark:border-white/10 space-y-4 shadow-sm">
+      <Card className="p-5 rounded-2xl glass space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Sliders className="w-4 h-4 text-[#fa2d48]" />
-            <h2 className="text-base font-bold text-neutral-900 dark:text-white">音频与音质</h2>
+            <h2 className="text-sm font-bold text-neutral-900 dark:text-white">音频与音质</h2>
           </div>
-          <span className="text-xs text-neutral-400">ALAC / Dolby Atmos 母带级解码</span>
+          <span className="text-[11px] text-neutral-400 font-mono">ALAC / Dolby Atmos 母带级</span>
         </div>
 
         {/* Volume Slider */}
-        <div className="space-y-2 p-3.5 rounded-2xl apple-glass border border-black/5 dark:border-white/5">
+        <div className="space-y-1.5 p-3 rounded-xl bg-black/[0.02] dark:bg-white/[0.03] border border-black/[0.04] dark:border-white/[0.06]">
           <div className="flex items-center justify-between text-xs font-semibold">
             <span className="flex items-center gap-1.5 text-neutral-700 dark:text-neutral-300">
-              <Volume2 className="w-4 h-4 text-[#fa2d48]" /> 默认输出音量
+              <Volume2 className="w-3.5 h-3.5 text-[#fa2d48]" /> 默认音量调节
             </span>
-            <span className="tabular-nums text-[#fa2d48] font-bold">{Math.round(volume * 100)}%</span>
+            <span className="tabular-nums text-[#fa2d48] font-bold text-xs">{Math.round(volume * 100)}%</span>
           </div>
-          <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.01"
-            value={volume}
-            onChange={(e) => setVolume(parseFloat(e.target.value))}
-            className="w-full accent-[#fa2d48] cursor-pointer"
-          />
+          <Slider value={volume} onValueChange={setVolume} />
         </div>
 
         {/* Audio Quality Grid */}
@@ -224,30 +193,30 @@ export const SettingsPage: React.FC = () => {
           {[
             {
               id: "spatial" as AudioQuality,
-              label: "杜比全景声 (Spatial Audio)",
-              desc: "360度沉浸环绕音频",
-              badge: "PRO",
+              label: "杜比全景声",
+              desc: "360° 空间音频",
+              badge: "Spatial",
             },
             {
               id: "lossless" as AudioQuality,
-              label: "无损高保真 (ALAC 24-bit)",
-              desc: "48kHz 录音室母带音质",
-              badge: "Hi-Res",
+              label: "无损高保真 (ALAC)",
+              desc: "48kHz 录音室母带",
+              badge: "24-bit",
             },
             {
               id: "standard" as AudioQuality,
-              label: "标准高效 (AAC 256kbps)",
-              desc: "极速秒开省带宽流量",
-              badge: "Fast",
+              label: "标准高效 (AAC)",
+              desc: "256kbps 秒开低延迟",
+              badge: "Standard",
             },
           ].map((q) => (
             <div
               key={q.id}
               onClick={() => setAudioQuality(q.id)}
-              className={`p-3.5 rounded-2xl apple-glass border transition-all cursor-pointer space-y-1 ${
+              className={`p-3 rounded-xl border transition-all cursor-pointer space-y-1 ${
                 audioQuality === q.id
                   ? "border-[#fa2d48] bg-[#fa2d48]/5 dark:bg-[#fa2d48]/10 shadow-sm"
-                  : "border-black/5 dark:border-white/5 hover:bg-black/5 dark:hover:bg-white/5"
+                  : "border-black/[0.04] dark:border-white/[0.06] bg-black/[0.02] dark:bg-white/[0.03] hover:bg-black/[0.04] dark:hover:bg-white/[0.05]"
               }`}
             >
               <div className="flex items-center justify-between">
@@ -260,30 +229,30 @@ export const SettingsPage: React.FC = () => {
             </div>
           ))}
         </div>
-      </section>
+      </Card>
 
-      {/* Section 3: Meting API Dual Routes */}
-      <section className="p-6 rounded-3xl apple-glass border border-black/5 dark:border-white/10 space-y-4 shadow-sm">
+      {/* Section 3: Online Music Source */}
+      <Card className="p-5 rounded-2xl glass space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Server className="w-4 h-4 text-[#fa2d48]" />
-            <h2 className="text-base font-bold text-neutral-900 dark:text-white">在线数据源与线路</h2>
+            <h2 className="text-sm font-bold text-neutral-900 dark:text-white">在线数据源与线路</h2>
           </div>
-          <span className="text-xs text-emerald-500 font-medium">双源智能容灾中</span>
+          <Badge variant="success">双线路智能容灾</Badge>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
           {[
             {
               id: "qijieya" as ApiSource,
-              name: "线路一 (祈杰のMeting / VIP解析)",
+              name: "线路一 · 祈杰 Meting",
               desc: "支持网易云VIP无损解析与歌单极速拉取",
               url: "api.qijieya.cn/meting/",
             },
             {
               id: "mikus" as ApiSource,
-              name: "线路二 (Meting-API / 官方镜像)",
-              desc: "mikus.ink 分布式高可用服务线路",
+              name: "线路二 · Mikus 官方镜像",
+              desc: "分布式多节点高可用容灾备选线路",
               url: "meting.mikus.ink/api",
             },
           ].map((route) => (
@@ -293,10 +262,10 @@ export const SettingsPage: React.FC = () => {
                 setApiSource(route.id);
                 queryClient.invalidateQueries({ queryKey: ["playlist"] });
               }}
-              className={`p-4 rounded-2xl apple-glass border transition-all cursor-pointer space-y-1.5 ${
+              className={`p-3.5 rounded-xl border transition-all cursor-pointer space-y-1 ${
                 apiSource === route.id
                   ? "border-[#fa2d48] bg-[#fa2d48]/5 dark:bg-[#fa2d48]/10 shadow-sm"
-                  : "border-black/5 dark:border-white/5 hover:bg-black/5 dark:hover:bg-white/5"
+                  : "border-black/[0.04] dark:border-white/[0.06] bg-black/[0.02] dark:bg-white/[0.03] hover:bg-black/[0.04] dark:hover:bg-white/[0.05]"
               }`}
             >
               <div className="flex items-center justify-between">
@@ -316,7 +285,7 @@ export const SettingsPage: React.FC = () => {
         </div>
 
         {/* Music Server Selection */}
-        <div className="grid grid-cols-2 gap-3 pt-1">
+        <div className="grid grid-cols-2 gap-2.5 pt-1">
           {[
             { id: "netease" as MusicServer, label: "网易云音乐 (Netease)", desc: "支持歌单与VIP单曲解析" },
             { id: "tencent" as MusicServer, label: "QQ音乐 (Tencent)", desc: "QQ音乐公开歌单与曲库" },
@@ -327,10 +296,10 @@ export const SettingsPage: React.FC = () => {
                 setMusicServer(p.id);
                 queryClient.invalidateQueries({ queryKey: ["playlist"] });
               }}
-              className={`p-3 rounded-2xl text-left border transition-all cursor-pointer ${
+              className={`p-3 rounded-xl text-left border transition-all cursor-pointer ${
                 musicServer === p.id
-                  ? "border-[#fa2d48] bg-[#fa2d48]/5 dark:bg-[#fa2d48]/10"
-                  : "border-black/5 dark:border-white/5 hover:bg-black/5 dark:hover:bg-white/5"
+                  ? "border-[#fa2d48] bg-[#fa2d48]/5 dark:bg-[#fa2d48]/10 font-medium"
+                  : "border-black/[0.04] dark:border-white/[0.06] bg-black/[0.02] dark:bg-white/[0.03] hover:bg-black/[0.04] dark:hover:bg-white/[0.05]"
               }`}
             >
               <div className="text-xs font-bold text-neutral-900 dark:text-neutral-100">{p.label}</div>
@@ -341,40 +310,37 @@ export const SettingsPage: React.FC = () => {
 
         {/* Custom Playlist Import */}
         <form onSubmit={handleSavePlaylistId} className="space-y-1.5 pt-1">
-          <label className="text-[11px] text-neutral-500 dark:text-neutral-400 flex items-center gap-1">
+          <label className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400 flex items-center gap-1">
             <ListMusic className="w-3.5 h-3.5 text-[#fa2d48]" /> 导入默认歌单 ID (当前: {defaultPlaylistId})
           </label>
           <div className="flex items-center gap-2">
-            <input
+            <Input
               type="text"
               value={customIdInput}
               onChange={(e) => setCustomIdInput(e.target.value)}
               placeholder="输入歌单 ID (如: 17910751956 或 2619366284)"
-              className="flex-1 h-10 px-3.5 rounded-xl apple-glass border border-black/10 dark:border-white/10 text-xs focus:outline-none focus:border-[#fa2d48] text-neutral-900 dark:text-white"
+              className="h-10 text-xs rounded-xl"
             />
-            <button
-              type="submit"
-              className="h-10 px-5 rounded-xl bg-[#fa2d48] text-white text-xs font-semibold hover:bg-[#ff3b56] transition-colors cursor-pointer"
-            >
+            <Button type="submit" size="sm" className="h-10 px-5 rounded-xl flex-shrink-0">
               载入歌单
-            </button>
+            </Button>
           </div>
         </form>
-      </section>
+      </Card>
 
       {/* Section 4: Cache & Maintenance */}
-      <section className="p-6 rounded-3xl apple-glass border border-black/5 dark:border-white/10 space-y-4 shadow-sm">
+      <Card className="p-5 rounded-2xl glass space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <HardDrive className="w-4 h-4 text-[#fa2d48]" />
-            <h2 className="text-base font-bold text-neutral-900 dark:text-white">存储与本地缓存</h2>
+            <h2 className="text-sm font-bold text-neutral-900 dark:text-white">存储与本地缓存</h2>
           </div>
           <span className="text-xs font-mono font-semibold text-neutral-700 dark:text-neutral-300">
             占用容量：{cacheSize}
           </span>
         </div>
 
-        <div className="flex items-center justify-between p-3.5 rounded-2xl apple-glass border border-black/5 dark:border-white/5">
+        <div className="flex items-center justify-between p-3.5 rounded-xl bg-black/[0.02] dark:bg-white/[0.03] border border-black/[0.04] dark:border-white/[0.06]">
           <div className="space-y-0.5">
             <div className="text-xs font-semibold text-neutral-800 dark:text-neutral-200">
               清除歌单与临时音频缓存
@@ -384,26 +350,28 @@ export const SettingsPage: React.FC = () => {
             </div>
           </div>
 
-          <button
+          <Button
             onClick={handleClearCache}
             disabled={isClearing}
-            className="px-4 py-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-500 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
+            variant="ghost"
+            size="sm"
+            className="text-red-500 hover:bg-red-500/10 hover:text-red-600 rounded-xl"
           >
             {isClearing ? (
-              <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+              <RefreshCw className="w-3.5 h-3.5 animate-spin mr-1.5" />
             ) : (
-              <Trash2 className="w-3.5 h-3.5" />
+              <Trash2 className="w-3.5 h-3.5 mr-1.5" />
             )}
             <span>{isClearing ? "正在清理..." : "一键清理缓存"}</span>
-          </button>
+          </Button>
         </div>
-      </section>
+      </Card>
 
       {/* Section 5: Keyboard Shortcuts Cheatsheet */}
-      <section className="p-6 rounded-3xl apple-glass border border-black/5 dark:border-white/10 space-y-4 shadow-sm">
+      <Card className="p-5 rounded-2xl glass space-y-3">
         <div className="flex items-center gap-2">
           <Keyboard className="w-4 h-4 text-[#fa2d48]" />
-          <h2 className="text-base font-bold text-neutral-900 dark:text-white">全局快捷键速查表</h2>
+          <h2 className="text-sm font-bold text-neutral-900 dark:text-white">全局快捷键速查</h2>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
@@ -419,7 +387,7 @@ export const SettingsPage: React.FC = () => {
           ].map((item, idx) => (
             <div
               key={idx}
-              className="p-2.5 rounded-xl apple-glass border border-black/5 dark:border-white/5 flex items-center justify-between"
+              className="p-2 rounded-xl bg-black/[0.02] dark:bg-white/[0.03] border border-black/[0.04] dark:border-white/[0.06] flex items-center justify-between"
             >
               <span className="text-neutral-500 dark:text-neutral-400 text-[11px]">{item.label}</span>
               <kbd className="px-2 py-0.5 rounded bg-black/10 dark:bg-white/10 font-mono text-[10px] font-bold">
@@ -428,20 +396,20 @@ export const SettingsPage: React.FC = () => {
             </div>
           ))}
         </div>
-      </section>
+      </Card>
 
       {/* Section 6: About Apple Music Desktop */}
-      <section className="p-6 rounded-3xl apple-glass border border-black/5 dark:border-white/10 space-y-4 shadow-sm">
+      <Card className="p-5 rounded-2xl glass space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Info className="w-4 h-4 text-[#fa2d48]" />
-            <h2 className="text-base font-bold text-neutral-900 dark:text-white">关于 Apple Music Desktop</h2>
+            <h2 className="text-sm font-bold text-neutral-900 dark:text-white">关于 Apple Music Desktop</h2>
           </div>
           <span className="text-xs font-semibold text-neutral-400">版本 v1.0.0 (Tauri 2 + React 19)</span>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-2xl apple-glass border border-black/5 dark:border-white/5">
-          <div className="space-y-1 text-center sm:text-left">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-3.5 rounded-xl bg-black/[0.02] dark:bg-white/[0.03] border border-black/[0.04] dark:border-white/[0.06]">
+          <div className="space-y-0.5 text-center sm:text-left">
             <div className="text-xs font-semibold text-neutral-800 dark:text-neutral-200">
               开源跨平台桌面音乐播放器
             </div>
@@ -449,34 +417,36 @@ export const SettingsPage: React.FC = () => {
               基于 Tauri v2 (Rust) + React 19 + TypeScript + Tailwind CSS v4 打造
             </div>
             {updateMsg && (
-              <div className="text-xs text-emerald-500 font-semibold pt-1 animate-in fade-in">
+              <div className="text-xs text-emerald-500 font-semibold pt-1">
                 {updateMsg}
               </div>
             )}
           </div>
 
           <div className="flex items-center gap-2">
-            <button
+            <Button
               onClick={handleCheckUpdate}
               disabled={isCheckingUpdate}
-              className="px-4 py-2 rounded-xl bg-[#fa2d48] hover:bg-[#ff3b56] text-white text-xs font-semibold flex items-center gap-1.5 shadow-md shadow-[#fa2d48]/20 transition-all cursor-pointer disabled:opacity-50"
+              size="sm"
+              className="rounded-xl"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${isCheckingUpdate ? "animate-spin" : ""}`} />
+              <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${isCheckingUpdate ? "animate-spin" : ""}`} />
               <span>{isCheckingUpdate ? "正在检查..." : "检查更新"}</span>
-            </button>
+            </Button>
             <a
               href="https://github.com/injahow/meting-api"
               target="_blank"
               rel="noreferrer"
-              className="p-2 rounded-xl apple-glass hover:bg-black/5 dark:hover:bg-white/10 text-neutral-500 transition-colors cursor-pointer"
+              className="p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-neutral-500 transition-colors cursor-pointer"
               title="GitHub 开源主页"
             >
               <ExternalLink className="w-4 h-4" />
             </a>
           </div>
         </div>
-      </section>
+      </Card>
     </div>
   );
 };
+
 export default SettingsPage;
