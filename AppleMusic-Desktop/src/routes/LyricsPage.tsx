@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState, useMemo } from "react";
 import { usePlayerStore } from "@/stores/playerStore";
 import { useLyrics } from "@/hooks/useLyrics";
 import { Music2, Disc3, Mic2, AlertCircle, Loader2, Sparkles } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
 
 export const LyricsPage: React.FC = () => {
   const { currentTrack, currentTime, isPlaying, seek } = usePlayerStore();
@@ -26,7 +27,7 @@ export const LyricsPage: React.FC = () => {
     return index;
   }, [lyrics, currentTime]);
 
-  // Smooth Auto-scroll to center active line
+  // Smooth Auto-scroll to center active line with easing
   useEffect(() => {
     if (isUserScrolling || activeIndex < 0) return;
 
@@ -38,7 +39,7 @@ export const LyricsPage: React.FC = () => {
     }
   }, [activeIndex, isUserScrolling]);
 
-  // User manual scroll detection: disable auto-scroll for 2 seconds
+  // User manual scroll detection: disable auto-scroll for 2.5 seconds
   const handleScroll = () => {
     setIsUserScrolling(true);
     if (scrollTimeoutRef.current) {
@@ -46,7 +47,7 @@ export const LyricsPage: React.FC = () => {
     }
     scrollTimeoutRef.current = setTimeout(() => {
       setIsUserScrolling(false);
-    }, 2000);
+    }, 2500);
   };
 
   const handleLineClick = (time: number) => {
@@ -73,12 +74,21 @@ export const LyricsPage: React.FC = () => {
   }
 
   return (
-    <div className="relative h-full flex flex-col items-center justify-between p-6 sm:p-10 select-none overflow-hidden animate-in fade-in duration-500">
-      {/* Background Ambient Glow matching album art */}
-      <div
-        className="absolute inset-0 opacity-25 dark:opacity-20 blur-3xl pointer-events-none -z-10 scale-125 transition-all duration-1000"
+    <div className="relative h-full flex flex-col items-center justify-between p-6 sm:p-10 select-none overflow-hidden">
+      {/* Dynamic Apple Music Ambient Aurora / Stage Glow */}
+      <motion.div
+        animate={{
+          scale: isPlaying ? [1, 1.15, 1.05, 1.18, 1] : 1,
+          opacity: isPlaying ? [0.25, 0.35, 0.28, 0.38, 0.25] : 0.15,
+        }}
+        transition={{
+          duration: 8,
+          repeat: Infinity,
+          ease: "easeInOut",
+        }}
+        className="absolute inset-0 blur-3xl pointer-events-none -z-10"
         style={{
-          backgroundImage: `radial-gradient(circle at center, #fa2d48 0%, transparent 70%)`,
+          background: `radial-gradient(circle at 50% 40%, #fa2d48 0%, rgba(147, 51, 234, 0.3) 40%, transparent 75%)`,
         }}
       />
 
@@ -88,7 +98,7 @@ export const LyricsPage: React.FC = () => {
           <img
             src={currentTrack.pic}
             alt={currentTrack.name}
-            className="w-12 h-12 rounded-xl object-cover shadow-lg border border-black/5 dark:border-white/10"
+            className="w-12 h-12 rounded-2xl object-cover shadow-lg border border-black/5 dark:border-white/10"
           />
           <div className="overflow-hidden">
             <h1 className="text-base font-bold text-neutral-900 dark:text-white truncate flex items-center gap-2">
@@ -101,9 +111,9 @@ export const LyricsPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-2 text-xs font-semibold text-[#fa2d48] bg-[#fa2d48]/10 px-3 py-1.5 rounded-full backdrop-blur-md">
+        <div className="flex items-center gap-2 text-xs font-semibold text-[#fa2d48] bg-[#fa2d48]/10 px-3.5 py-1.5 rounded-full backdrop-blur-md">
           <Mic2 className="w-3.5 h-3.5" />
-          <span>动态实时歌词</span>
+          <span>Apple 沉浸式动态歌词</span>
         </div>
       </header>
 
@@ -111,12 +121,12 @@ export const LyricsPage: React.FC = () => {
       <main
         ref={containerRef}
         onScroll={handleScroll}
-        className="w-full max-w-2xl flex-1 overflow-y-auto py-32 space-y-7 text-center no-scrollbar mask-radial-fade scroll-smooth"
+        className="w-full max-w-2xl flex-1 overflow-y-auto py-36 space-y-6 text-center no-scrollbar mask-radial-fade scroll-smooth"
       >
         {isLoading ? (
           <div className="h-full flex flex-col items-center justify-center space-y-3 text-neutral-400">
             <Loader2 className="w-6 h-6 animate-spin text-[#fa2d48]" />
-            <span className="text-sm font-medium">加载歌词中...</span>
+            <span className="text-sm font-medium">正在解析同步歌词...</span>
           </div>
         ) : isError ? (
           <div className="h-full flex flex-col items-center justify-center space-y-2 text-neutral-400">
@@ -129,37 +139,61 @@ export const LyricsPage: React.FC = () => {
         ) : lyrics.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center space-y-2 text-neutral-400">
             <Music2 className="w-8 h-8 opacity-30" />
-            <span className="text-sm font-medium">暂无歌词</span>
-            <span className="text-xs">纯音乐或暂未收录歌词文本</span>
+            <span className="text-sm font-medium">纯音乐 / 暂无歌词</span>
+            <span className="text-xs">请尽情享受美妙旋律</span>
           </div>
         ) : (
           lyrics.map((line, idx) => {
             const isActive = idx === activeIndex;
+            const distance = Math.abs(idx - activeIndex);
 
             return (
-              <div
+              <motion.div
                 key={idx}
                 ref={isActive ? activeLineRef : null}
                 onClick={() => handleLineClick(line.time)}
-                className={`transition-all duration-300 cursor-pointer select-none px-4 py-2 rounded-2xl ${
+                initial={false}
+                animate={{
+                  scale: isActive ? 1.08 : distance <= 2 ? 0.98 : 0.94,
+                  opacity: isActive ? 1 : distance === 1 ? 0.45 : 0.28,
+                  filter: isActive ? "blur(0px)" : distance >= 3 ? "blur(0.6px)" : "blur(0px)",
+                  y: 0,
+                }}
+                transition={{
+                  duration: 0.35,
+                  ease: [0.16, 1, 0.3, 1],
+                }}
+                whileHover={{
+                  scale: isActive ? 1.1 : 1.02,
+                  opacity: isActive ? 1 : 0.8,
+                }}
+                className={`cursor-pointer select-none px-6 py-2.5 rounded-2xl transition-colors duration-200 ${
                   isActive
-                    ? "text-[#fa2d48] text-2xl sm:text-3xl font-extrabold scale-105 drop-shadow-md"
-                    : "text-neutral-400/80 dark:text-neutral-500/80 hover:text-neutral-800 dark:hover:text-neutral-200 text-lg sm:text-xl font-medium hover:scale-[1.02]"
+                    ? "text-[#fa2d48] text-2xl sm:text-3xl font-extrabold tracking-tight drop-shadow-[0_4px_16px_rgba(250,45,72,0.3)]"
+                    : "text-neutral-800 dark:text-neutral-200 text-lg sm:text-xl font-semibold"
                 }`}
               >
                 {line.text}
-              </div>
+              </motion.div>
             );
           })
         )}
       </main>
 
       {/* Floating prompt when user scrolls manually */}
-      {isUserScrolling && (
-        <div className="absolute bottom-6 px-4 py-1.5 rounded-full bg-black/60 dark:bg-white/10 backdrop-blur-md text-white text-xs font-medium animate-in fade-in duration-200">
-          已暂停自动跟随 · 2 秒后恢复
-        </div>
-      )}
+      <AnimatePresence>
+        {isUserScrolling && (
+          <motion.div
+            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 8, scale: 0.95 }}
+            transition={{ duration: 0.2 }}
+            className="absolute bottom-6 px-4 py-1.5 rounded-full bg-black/70 dark:bg-white/15 backdrop-blur-md text-white text-xs font-medium shadow-lg"
+          >
+            已暂停自动跟随 · 2.5 秒后恢复
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
