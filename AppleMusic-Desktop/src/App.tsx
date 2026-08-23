@@ -17,6 +17,8 @@ import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { Play, Pause, Sparkles, Flame, Disc3, Volume2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { motion, AnimatePresence } from "motion/react";
+import { pageTransition } from "@/lib/motion";
 
 export function App() {
   const { data: spatialPlaylist, isLoading } = usePlaylistQuery("spatial-top");
@@ -72,31 +74,40 @@ export function App() {
         {/* Apple Style Glass Sidebar */}
         <Sidebar />
 
-        {/* Main Content Area */}
-        <main className="flex-1 h-[calc(100vh-44px-80px)] overflow-y-auto p-8 space-y-8">
-          {activeView === "lyrics" ? (
-            <LyricsPage />
-          ) : activeView === "album" ? (
-            <AlbumPage albumId={selectedAlbumId} />
-          ) : activeView === "artist" ? (
-            <ArtistPage artistId={selectedArtistId} />
-          ) : activeView === "profile" ? (
-            <ProfilePage />
-          ) : activeView === "settings" ? (
-            <SettingsPage />
-          ) : activeView === "search" ? (
-            <SearchView />
-          ) : activeView === "playlist-detail" || activeView === "favorites" ? (
-            currentDetailPlaylist ? (
-              <PlaylistDetailView playlist={currentDetailPlaylist} />
-            ) : (
-              <div className="text-center py-20 text-neutral-400">歌单不存在或已被移除</div>
-            )
-          ) : (
-            <>
-              {/* Hero Banner Section */}
-              <section className="relative rounded-2xl overflow-hidden bg-gradient-to-r from-violet-600 via-pink-600 to-[#fa2d48] p-8 text-white shadow-xl shadow-[#fa2d48]/15">
-                <div className="max-w-xl space-y-3 relative z-10">
+        {/* Main Content Area with AnimatePresence */}
+        <main className="flex-1 h-[calc(100vh-44px-80px)] overflow-y-auto p-8">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeView + (selectedPlaylistId || selectedAlbumId || selectedArtistId || "")}
+              variants={pageTransition}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              className="space-y-8"
+            >
+              {activeView === "lyrics" ? (
+                <LyricsPage />
+              ) : activeView === "album" ? (
+                <AlbumPage albumId={selectedAlbumId} />
+              ) : activeView === "artist" ? (
+                <ArtistPage artistId={selectedArtistId} />
+              ) : activeView === "profile" ? (
+                <ProfilePage />
+              ) : activeView === "settings" ? (
+                <SettingsPage />
+              ) : activeView === "search" ? (
+                <SearchView />
+              ) : activeView === "playlist-detail" || activeView === "favorites" ? (
+                currentDetailPlaylist ? (
+                  <PlaylistDetailView playlist={currentDetailPlaylist} />
+                ) : (
+                  <div className="text-center py-20 text-neutral-400">歌单不存在或已被移除</div>
+                )
+              ) : (
+                <>
+                  {/* Hero Banner Section */}
+                  <section className="relative rounded-2xl overflow-hidden bg-gradient-to-r from-violet-600 via-pink-600 to-[#fa2d48] p-8 text-white shadow-xl shadow-[#fa2d48]/15">
+                    <div className="max-w-xl space-y-3 relative z-10">
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-xs font-semibold tracking-wide uppercase">
                     <Sparkles className="w-3.5 h-3.5" /> 今日聚焦 · 杜比全景声
                   </span>
@@ -280,6 +291,8 @@ export function App() {
               </section>
             </>
           )}
+            </motion.div>
+          </AnimatePresence>
         </main>
       </div>
 
