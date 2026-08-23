@@ -11,7 +11,8 @@ import {
   LogIn,
   LogOut,
   UserCheck,
-  Search
+  Search,
+  Mic2
 } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 import { usePlaylistStore } from "@/stores/playlistStore";
@@ -67,6 +68,12 @@ export const Sidebar = () => {
               label="搜索探索"
               active={activeView === "search"}
               onClick={() => setActiveView("search")}
+            />
+            <NavItem
+              icon={<Mic2 className="w-4 h-4" />}
+              label="歌词舞台"
+              active={activeView === "lyrics"}
+              onClick={() => setActiveView("lyrics")}
             />
           </div>
 

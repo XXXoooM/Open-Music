@@ -11,9 +11,11 @@ import {
   VolumeX,
   ListMusic,
   Heart,
-  Airplay
+  Airplay,
+  Mic2
 } from "lucide-react";
 import { usePlayerStore } from "@/stores/playerStore";
+import { usePlaylistStore } from "@/stores/playlistStore";
 
 const formatTime = (seconds: number) => {
   if (!seconds || isNaN(seconds) || !isFinite(seconds)) return "00:00";
@@ -39,6 +41,8 @@ export const PlayerBar: React.FC = () => {
     prev,
     togglePlayMode,
   } = usePlayerStore();
+
+  const { activeView, setActiveView } = usePlaylistStore();
 
   const progressRef = useRef<HTMLDivElement>(null);
   const volumeRef = useRef<HTMLDivElement>(null);
@@ -169,8 +173,19 @@ export const PlayerBar: React.FC = () => {
         </div>
       </div>
 
-      {/* Right Controls (Volume, Airplay, Queue) */}
+      {/* Right Controls (Lyrics Mic, Volume, Airplay, Queue) */}
       <div className="flex items-center justify-end gap-3 w-1/4 min-w-[220px]">
+        <button
+          onClick={() => setActiveView(activeView === "lyrics" ? "listen-now" : "lyrics")}
+          className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+            activeView === "lyrics"
+              ? "text-[#fa2d48] bg-[#fa2d48]/15"
+              : "text-neutral-500 hover:text-neutral-800 dark:hover:text-white"
+          }`}
+          title="沉浸式动态歌词舞台"
+        >
+          <Mic2 className="w-4 h-4" />
+        </button>
         <button className="p-1.5 text-neutral-500 hover:text-neutral-800 dark:hover:text-white transition-colors cursor-pointer">
           <Airplay className="w-4 h-4" />
         </button>

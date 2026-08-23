@@ -4,6 +4,8 @@ import { Sidebar } from "@/components/Sidebar/Sidebar";
 import { PlayerBar } from "@/components/Player/PlayerBar";
 import { SearchView } from "@/components/Search/SearchView";
 import { PlaylistDetailView } from "@/components/Playlist/PlaylistDetailView";
+import { LyricsPage } from "@/routes/LyricsPage";
+import { AlbumPage } from "@/routes/AlbumPage";
 import { usePlaylistQuery } from "@/hooks/useMusicQuery";
 import { usePlayerStore } from "@/stores/playerStore";
 import { usePlaylistStore } from "@/stores/playlistStore";
@@ -14,7 +16,7 @@ import { Play, Pause, Sparkles, Flame, Disc3, Volume2 } from "lucide-react";
 export function App() {
   const { data: spatialPlaylist, isLoading } = usePlaylistQuery("spatial-top");
   const { currentTrack, isPlaying, playTrack, togglePlay, initAudio } = usePlayerStore();
-  const { activeView, selectedPlaylistId, customPlaylists, favoriteTracks, setActiveView } = usePlaylistStore();
+  const { activeView, selectedPlaylistId, selectedAlbumId, customPlaylists, favoriteTracks, setActiveView } = usePlaylistStore();
 
   // Phase 5 System Integrations
   useMediaSession();
@@ -59,7 +61,11 @@ export function App() {
 
         {/* Main Content Area */}
         <main className="flex-1 h-[calc(100vh-44px-80px)] overflow-y-auto p-8 space-y-8">
-          {activeView === "search" ? (
+          {activeView === "lyrics" ? (
+            <LyricsPage />
+          ) : activeView === "album" ? (
+            <AlbumPage albumId={selectedAlbumId} />
+          ) : activeView === "search" ? (
             <SearchView />
           ) : activeView === "playlist-detail" || activeView === "favorites" ? (
             currentDetailPlaylist ? (
@@ -219,7 +225,7 @@ export function App() {
                   ].map((item, idx) => (
                     <div
                       key={idx}
-                      onClick={() => setActiveView("search")}
+                      onClick={() => setActiveView("album", "17910751956")}
                       className="group cursor-pointer space-y-2"
                     >
                       <div className="aspect-square rounded-xl overflow-hidden bg-neutral-200 dark:bg-neutral-800 relative shadow-md group-hover:shadow-xl transition-all duration-300">

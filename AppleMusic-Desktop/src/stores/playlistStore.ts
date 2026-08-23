@@ -5,11 +5,12 @@ interface PlaylistState {
   customPlaylists: Playlist[];
   favoriteTracks: Track[];
   selectedPlaylistId: string | null;
-  activeView: "listen-now" | "radio" | "charts" | "favorites" | "search" | "playlist-detail";
+  selectedAlbumId: string | null;
+  activeView: "listen-now" | "radio" | "charts" | "favorites" | "search" | "playlist-detail" | "lyrics" | "album";
   searchQuery: string;
 
   // Actions
-  setActiveView: (view: "listen-now" | "radio" | "charts" | "favorites" | "search" | "playlist-detail", playlistId?: string) => void;
+  setActiveView: (view: "listen-now" | "radio" | "charts" | "favorites" | "search" | "playlist-detail" | "lyrics" | "album", resourceId?: string) => void;
   setSearchQuery: (query: string) => void;
   createPlaylist: (title: string, description?: string) => Playlist;
   addTrackToPlaylist: (playlistId: string, track: Track) => void;
@@ -74,11 +75,16 @@ export const usePlaylistStore = create<PlaylistState>((set, get) => {
     customPlaylists: savedPlaylists ? JSON.parse(savedPlaylists) : defaultPlaylists,
     favoriteTracks: savedFavorites ? JSON.parse(savedFavorites) : [],
     selectedPlaylistId: null,
+    selectedAlbumId: null,
     activeView: "listen-now",
     searchQuery: "",
 
-    setActiveView: (view, playlistId) => {
-      set({ activeView: view, selectedPlaylistId: playlistId || null });
+    setActiveView: (view, resourceId) => {
+      set({
+        activeView: view,
+        selectedPlaylistId: view === "playlist-detail" ? resourceId || null : null,
+        selectedAlbumId: view === "album" ? resourceId || null : null,
+      });
     },
 
     setSearchQuery: (query) => set({ searchQuery: query }),
