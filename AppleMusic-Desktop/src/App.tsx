@@ -1,24 +1,26 @@
-import { useEffect } from "react";
+import { useEffect, lazy, Suspense } from "react";
 import { TitleBar } from "@/components/TitleBar/TitleBar";
 import { Sidebar } from "@/components/Sidebar/Sidebar";
 import { PlayerBar } from "@/components/Player/PlayerBar";
 import { SearchView } from "@/components/Search/SearchView";
 import { PlaylistDetailView } from "@/components/Playlist/PlaylistDetailView";
-import { LyricsPage } from "@/routes/LyricsPage";
-import { AlbumPage } from "@/routes/AlbumPage";
-import { ArtistPage } from "@/routes/ArtistPage";
-import { ProfilePage } from "@/routes/ProfilePage";
-import { SettingsPage } from "@/routes/SettingsPage";
+import { ToastContainer } from "@/components/ui/toast";
 import { usePlaylistQuery } from "@/hooks/useMusicQuery";
 import { usePlayerStore } from "@/stores/playerStore";
 import { usePlaylistStore } from "@/stores/playlistStore";
 import { useMediaSession } from "@/hooks/useMediaSession";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
-import { Play, Pause, Sparkles, Flame, Disc3, Volume2 } from "lucide-react";
+import { Play, Pause, Sparkles, Flame, Disc3, Volume2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { motion, AnimatePresence } from "motion/react";
 import { pageTransition, staggerContainer, staggerItem } from "@/lib/motion";
+
+const LyricsPage = lazy(() => import("@/routes/LyricsPage"));
+const AlbumPage = lazy(() => import("@/routes/AlbumPage"));
+const ArtistPage = lazy(() => import("@/routes/ArtistPage"));
+const ProfilePage = lazy(() => import("@/routes/ProfilePage"));
+const SettingsPage = lazy(() => import("@/routes/SettingsPage"));
 
 export function App() {
   const { data: spatialPlaylist, isLoading } = usePlaylistQuery("spatial-top");
@@ -85,33 +87,41 @@ export function App() {
               exit="exit"
               className="space-y-8"
             >
-              {activeView === "lyrics" ? (
-                <LyricsPage />
-              ) : activeView === "album" ? (
-                <AlbumPage albumId={selectedAlbumId} />
-              ) : activeView === "artist" ? (
-                <ArtistPage artistId={selectedArtistId} />
-              ) : activeView === "profile" ? (
-                <ProfilePage />
-              ) : activeView === "settings" ? (
-                <SettingsPage />
-              ) : activeView === "search" ? (
-                <SearchView />
-              ) : activeView === "playlist-detail" || activeView === "favorites" ? (
-                currentDetailPlaylist ? (
-                  <PlaylistDetailView playlist={currentDetailPlaylist} />
+              <Suspense
+                fallback={
+                  <div className="h-96 flex flex-col items-center justify-center space-y-3 text-neutral-400">
+                    <Loader2 className="w-8 h-8 animate-spin text-[#fa2d48]" />
+                    <span className="text-sm font-medium">加载中...</span>
+                  </div>
+                }
+              >
+                {activeView === "lyrics" ? (
+                  <LyricsPage />
+                ) : activeView === "album" ? (
+                  <AlbumPage albumId={selectedAlbumId} />
+                ) : activeView === "artist" ? (
+                  <ArtistPage artistId={selectedArtistId} />
+                ) : activeView === "profile" ? (
+                  <ProfilePage />
+                ) : activeView === "settings" ? (
+                  <SettingsPage />
+                ) : activeView === "search" ? (
+                  <SearchView />
+                ) : activeView === "playlist-detail" || activeView === "favorites" ? (
+                  currentDetailPlaylist ? (
+                    <PlaylistDetailView playlist={currentDetailPlaylist} />
+                  ) : (
+                    <div className="text-center py-20 text-neutral-400">歌单不存在或已被移除</div>
+                  )
                 ) : (
-                  <div className="text-center py-20 text-neutral-400">歌单不存在或已被移除</div>
-                )
-              ) : (
-                <>
-                  {/* Hero Banner Section */}
-                  <motion.section
-                    initial={{ opacity: 0, y: 16 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                    className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-violet-600 via-pink-600 to-[#fa2d48] p-8 text-white shadow-xl shadow-[#fa2d48]/15"
-                  >
+                  <>
+                    {/* Hero Banner Section */}
+                    <motion.section
+                      initial={{ opacity: 0, y: 16 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                      className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-violet-600 via-pink-600 to-[#fa2d48] p-8 text-white shadow-xl shadow-[#fa2d48]/15"
+                    >
                     <div className="max-w-xl space-y-3 relative z-10">
                       <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-xs font-semibold tracking-wide uppercase">
                         <Sparkles className="w-3.5 h-3.5" /> 今日聚焦 · 杜比全景声
@@ -308,6 +318,7 @@ export function App() {
                   </section>
                 </>
               )}
+              </Suspense>
             </motion.div>
           </AnimatePresence>
         </main>
@@ -315,6 +326,9 @@ export function App() {
 
       {/* Floating Apple Music Player Bar */}
       <PlayerBar />
+
+      {/* Apple Glass Toast Notifications */}
+      <ToastContainer />
     </div>
   );
 }

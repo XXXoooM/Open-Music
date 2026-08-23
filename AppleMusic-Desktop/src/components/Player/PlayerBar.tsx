@@ -17,6 +17,7 @@ import {
 import { usePlayerStore } from "@/stores/playerStore";
 import { usePlaylistStore } from "@/stores/playlistStore";
 import { Button } from "@/components/ui/button";
+import { AudioVisualizer } from "@/components/Player/AudioVisualizer";
 import { motion } from "motion/react";
 
 const formatTime = (seconds: number) => {
@@ -82,8 +83,9 @@ export const PlayerBar: React.FC = () => {
           />
         </div>
         <div className="overflow-hidden pr-2">
-          <div className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 truncate hover:underline cursor-pointer">
-            {currentTrack?.name || "未播放歌曲"}
+          <div className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 truncate hover:underline cursor-pointer flex items-center gap-2">
+            <span>{currentTrack?.name || "未播放歌曲"}</span>
+            {currentTrack && isPlaying && <AudioVisualizer isPlaying={isPlaying} />}
           </div>
           <div className="text-xs text-neutral-500 dark:text-neutral-400 truncate hover:underline cursor-pointer mt-0.5">
             {currentTrack ? `${currentTrack.artist} · ${currentTrack.album || "单曲"}` : "点击歌单或卡片开始聆听"}

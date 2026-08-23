@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { motion } from "motion/react";
 import { staggerContainer, staggerItem } from "@/lib/motion";
+import { toast } from "@/stores/toastStore";
 
 const POPULAR_TAGS = ["周杰伦", "Taylor Swift", "The Weeknd", "林俊杰", "陈奕迅", "空间音频", "华语经典", "爵士微醺"];
 
@@ -220,7 +221,14 @@ export const SearchView: React.FC = () => {
                       <Button
                         size="icon"
                         variant="ghost"
-                        onClick={() => toggleFavorite(track)}
+                        onClick={() => {
+                          toggleFavorite(track);
+                          if (isFav) {
+                            toast.info("已移出喜爱歌曲", track.name);
+                          } else {
+                            toast.success("已添加到喜爱歌曲", track.name);
+                          }
+                        }}
                         className={`h-8 w-8 rounded-full ${
                           isFav ? "text-[#fa2d48]" : "text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200"
                         }`}
@@ -233,7 +241,10 @@ export const SearchView: React.FC = () => {
                         <Button
                           size="icon"
                           variant="ghost"
-                          onClick={() => addTrackToPlaylist(customPlaylists[0].id, track)}
+                          onClick={() => {
+                            addTrackToPlaylist(customPlaylists[0].id, track);
+                            toast.success(`已添加到歌单「${customPlaylists[0].title}」`, track.name);
+                          }}
                           className="h-8 w-8 rounded-full text-neutral-400 hover:text-neutral-800 dark:hover:text-white"
                           title={`添加到歌单: ${customPlaylists[0].title}`}
                         >

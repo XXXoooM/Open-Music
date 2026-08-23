@@ -1,12 +1,15 @@
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import { usePlayerStore } from "@/stores/playerStore";
 import { useLyrics } from "@/hooks/useLyrics";
-import { Music2, Disc3, Mic2, AlertCircle, Loader2, Sparkles } from "lucide-react";
+import { useDominantColor } from "@/hooks/useDominantColor";
+import { AudioVisualizer } from "@/components/Player/AudioVisualizer";
+import { Music2, Disc3, Mic2, AlertCircle, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
 export const LyricsPage: React.FC = () => {
   const { currentTrack, currentTime, isPlaying, seek } = usePlayerStore();
   const { data: lyrics = [], isLoading, isError } = useLyrics(currentTrack);
+  const { primary, secondary, glow } = useDominantColor(currentTrack?.pic);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const activeLineRef = useRef<HTMLDivElement>(null);
@@ -75,20 +78,21 @@ export const LyricsPage: React.FC = () => {
 
   return (
     <div className="relative h-full flex flex-col items-center justify-between p-6 sm:p-10 select-none overflow-hidden">
-      {/* Dynamic Apple Music Ambient Aurora / Stage Glow */}
+      {/* Dynamic Apple Music Ambient Aurora / Stage Glow using extracted album art colors */}
       <motion.div
         animate={{
-          scale: isPlaying ? [1, 1.15, 1.05, 1.18, 1] : 1,
-          opacity: isPlaying ? [0.25, 0.35, 0.28, 0.38, 0.25] : 0.15,
+          scale: isPlaying ? [1, 1.18, 1.06, 1.2, 1] : 1,
+          opacity: isPlaying ? [0.35, 0.5, 0.4, 0.55, 0.35] : 0.2,
+          rotate: isPlaying ? [0, 5, -5, 3, 0] : 0,
         }}
         transition={{
-          duration: 8,
+          duration: 9,
           repeat: Infinity,
           ease: "easeInOut",
         }}
         className="absolute inset-0 blur-3xl pointer-events-none -z-10"
         style={{
-          background: `radial-gradient(circle at 50% 40%, #fa2d48 0%, rgba(147, 51, 234, 0.3) 40%, transparent 75%)`,
+          background: `radial-gradient(circle at 50% 45%, ${primary} 0%, ${secondary} 45%, transparent 80%)`,
         }}
       />
 
@@ -98,12 +102,12 @@ export const LyricsPage: React.FC = () => {
           <img
             src={currentTrack.pic}
             alt={currentTrack.name}
-            className="w-12 h-12 rounded-2xl object-cover shadow-lg border border-black/5 dark:border-white/10"
+            className="w-12 h-12 rounded-2xl object-cover shadow-xl border border-black/5 dark:border-white/10"
           />
           <div className="overflow-hidden">
             <h1 className="text-base font-bold text-neutral-900 dark:text-white truncate flex items-center gap-2">
               {currentTrack.name}
-              {isPlaying && <Sparkles className="w-3.5 h-3.5 text-[#fa2d48] animate-pulse" />}
+              <AudioVisualizer isPlaying={isPlaying} color={primary} className="ml-1" />
             </h1>
             <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate">
               {currentTrack.artist} · {currentTrack.album || "单曲精选"}
@@ -111,7 +115,10 @@ export const LyricsPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-2 text-xs font-semibold text-[#fa2d48] bg-[#fa2d48]/10 px-3.5 py-1.5 rounded-full backdrop-blur-md">
+        <div
+          className="flex items-center gap-2 text-xs font-semibold px-3.5 py-1.5 rounded-full backdrop-blur-md transition-colors"
+          style={{ backgroundColor: glow, color: primary }}
+        >
           <Mic2 className="w-3.5 h-3.5" />
           <span>Apple 沉浸式动态歌词</span>
         </div>
@@ -157,7 +164,7 @@ export const LyricsPage: React.FC = () => {
                   scale: isActive ? 1.08 : distance <= 2 ? 0.98 : 0.94,
                   opacity: isActive ? 1 : distance === 1 ? 0.45 : 0.28,
                   filter: isActive ? "blur(0px)" : distance >= 3 ? "blur(0.6px)" : "blur(0px)",
-                  y: 0,
+                  color: isActive ? primary : undefined,
                 }}
                 transition={{
                   duration: 0.35,
@@ -169,7 +176,7 @@ export const LyricsPage: React.FC = () => {
                 }}
                 className={`cursor-pointer select-none px-6 py-2.5 rounded-2xl transition-colors duration-200 ${
                   isActive
-                    ? "text-[#fa2d48] text-2xl sm:text-3xl font-extrabold tracking-tight drop-shadow-[0_4px_16px_rgba(250,45,72,0.3)]"
+                    ? "text-2xl sm:text-3xl font-extrabold tracking-tight drop-shadow-[0_4px_18px_rgba(0,0,0,0.2)]"
                     : "text-neutral-800 dark:text-neutral-200 text-lg sm:text-xl font-semibold"
                 }`}
               >
