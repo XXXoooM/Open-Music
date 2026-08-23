@@ -7,6 +7,7 @@ import { PlaylistDetailView } from "@/components/Playlist/PlaylistDetailView";
 import { LyricsPage } from "@/routes/LyricsPage";
 import { AlbumPage } from "@/routes/AlbumPage";
 import { ArtistPage } from "@/routes/ArtistPage";
+import { ProfilePage } from "@/routes/ProfilePage";
 import { usePlaylistQuery } from "@/hooks/useMusicQuery";
 import { usePlayerStore } from "@/stores/playerStore";
 import { usePlaylistStore } from "@/stores/playlistStore";
@@ -76,6 +77,8 @@ export function App() {
             <AlbumPage albumId={selectedAlbumId} />
           ) : activeView === "artist" ? (
             <ArtistPage artistId={selectedArtistId} />
+          ) : activeView === "profile" ? (
+            <ProfilePage />
           ) : activeView === "search" ? (
             <SearchView />
           ) : activeView === "playlist-detail" || activeView === "favorites" ? (

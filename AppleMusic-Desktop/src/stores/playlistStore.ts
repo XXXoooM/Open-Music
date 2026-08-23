@@ -7,11 +7,11 @@ interface PlaylistState {
   selectedPlaylistId: string | null;
   selectedAlbumId: string | null;
   selectedArtistId: string | null;
-  activeView: "listen-now" | "radio" | "charts" | "favorites" | "search" | "playlist-detail" | "lyrics" | "album" | "artist";
+  activeView: "listen-now" | "radio" | "charts" | "favorites" | "search" | "playlist-detail" | "lyrics" | "album" | "artist" | "profile";
   searchQuery: string;
 
   // Actions
-  setActiveView: (view: "listen-now" | "radio" | "charts" | "favorites" | "search" | "playlist-detail" | "lyrics" | "album" | "artist", resourceId?: string) => void;
+  setActiveView: (view: "listen-now" | "radio" | "charts" | "favorites" | "search" | "playlist-detail" | "lyrics" | "album" | "artist" | "profile", resourceId?: string) => void;
   setSearchQuery: (query: string) => void;
   createPlaylist: (title: string, description?: string) => Playlist;
   addTrackToPlaylist: (playlistId: string, track: Track) => void;

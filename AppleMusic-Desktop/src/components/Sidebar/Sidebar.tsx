@@ -12,7 +12,8 @@ import {
   LogOut,
   UserCheck,
   Search,
-  Mic2
+  Mic2,
+  User
 } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 import { usePlaylistStore } from "@/stores/playlistStore";
@@ -110,13 +111,19 @@ export const Sidebar = () => {
             </div>
             <div className="space-y-0.5">
               <NavItem
+                icon={<User className="w-4 h-4" />}
+                label="个人中心"
+                active={activeView === "profile"}
+                onClick={() => setActiveView("profile")}
+              />
+              <NavItem
                 icon={<Heart className="w-4 h-4" />}
                 label="喜爱歌曲"
                 count={favoriteTracks.length}
                 active={activeView === "favorites"}
                 onClick={() => setActiveView("favorites")}
               />
-              <NavItem icon={<Clock className="w-4 h-4" />} label="最近播放" />
+              <NavItem icon={<Clock className="w-4 h-4" />} label="最近播放" onClick={() => setActiveView("profile")} />
               <NavItem icon={<FolderHeart className="w-4 h-4" />} label="已存专辑" />
             </div>
           </div>
@@ -152,7 +159,10 @@ export const Sidebar = () => {
         {/* User / Authentication Area */}
         <div className="pt-3 border-t border-black/[0.06] dark:border-white/[0.08]">
           {isAuthenticated && user ? (
-            <div className="flex items-center justify-between px-2 group">
+            <div
+              onClick={() => setActiveView("profile")}
+              className="flex items-center justify-between px-2 py-1 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-all cursor-pointer group"
+            >
               <div className="flex items-center gap-2 overflow-hidden pr-1">
                 <img
                   src={user.avatarUrl}
@@ -168,9 +178,12 @@ export const Sidebar = () => {
                 </div>
               </div>
               <button
-                onClick={logout}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  logout();
+                }}
                 title="退出登录"
-                className="p-1 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 text-neutral-400 hover:text-red-500 transition-colors cursor-pointer"
+                className="p-1 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 text-neutral-400 hover:text-red-500 transition-colors cursor-pointer"
               >
                 <LogOut className="w-3.5 h-3.5" />
               </button>

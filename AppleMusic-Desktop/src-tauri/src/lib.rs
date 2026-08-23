@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct TrackDto {
     pub id: String,
     pub name: String,
@@ -29,6 +29,38 @@ pub struct PlaylistDto {
     pub track_count: usize,
     pub creator: Option<CreatorDto>,
     pub tracks: Vec<TrackDto>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct AlbumDto {
+    pub id: String,
+    pub name: String,
+    pub artist: String,
+    pub cover: String,
+    pub publish_year: Option<String>,
+    pub track_count: usize,
+    pub description: Option<String>,
+    pub company: Option<String>,
+    pub tracks: Vec<TrackDto>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ArtistDto {
+    pub id: String,
+    pub name: String,
+    pub avatar: String,
+    pub cover: String,
+    pub monthly_listeners: Option<String>,
+    pub verified: bool,
+    pub bio: Option<String>,
+    pub top_tracks: Vec<TrackDto>,
+    pub albums: Vec<AlbumDto>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct HistoryDto {
+    pub track: TrackDto,
+    pub played_at: String,
 }
 
 #[derive(Debug, Deserialize)]
@@ -139,7 +171,6 @@ async fn fetch_playlist_tracks(
         ("https://meting.mikus.ink/api", "https://api.qijieya.cn/meting/")
     };
 
-    // Try primary route, fallback to secondary
     let tracks_res = match request_meting(&client, url1, &music_server, "playlist", &playlist_id, None).await {
         Ok(t) if !t.is_empty() => Ok(t),
         _ => request_meting(&client, url2, &music_server, "playlist", &playlist_id, None).await,
@@ -237,19 +268,6 @@ async fn get_lyrics(
     Err("Failed to fetch lyrics".into())
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct AlbumDto {
-    pub id: String,
-    pub name: String,
-    pub artist: String,
-    pub cover: String,
-    pub publish_year: Option<String>,
-    pub track_count: usize,
-    pub description: Option<String>,
-    pub company: Option<String>,
-    pub tracks: Vec<TrackDto>,
-}
-
 #[tauri::command]
 async fn get_album(
     id: String,
@@ -291,19 +309,6 @@ async fn get_album(
         company: Some("JVR Music / 杰威尔音乐".into()),
         tracks,
     })
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct ArtistDto {
-    pub id: String,
-    pub name: String,
-    pub avatar: String,
-    pub cover: String,
-    pub monthly_listeners: Option<String>,
-    pub verified: bool,
-    pub bio: Option<String>,
-    pub top_tracks: Vec<TrackDto>,
-    pub albums: Vec<AlbumDto>,
 }
 
 #[tauri::command]
@@ -348,6 +353,22 @@ async fn get_artist(
 }
 
 #[tauri::command]
+async fn get_favorites() -> Result<Vec<TrackDto>, String> {
+    Ok(vec![])
+}
+
+#[tauri::command]
+async fn toggle_favorite(track_id: String) -> Result<bool, String> {
+    println!("[Rust State] toggle favorite for: {}", track_id);
+    Ok(true)
+}
+
+#[tauri::command]
+async fn get_history(_limit: Option<usize>) -> Result<Vec<HistoryDto>, String> {
+    Ok(vec![])
+}
+
+#[tauri::command]
 async fn play_native_stream(url: String) -> Result<String, String> {
     println!("[Rust Audio Engine] Native request stream: {}", url);
     Ok(format!("Streaming audio: {}", url))
@@ -363,6 +384,9 @@ pub fn run() {
             get_lyrics,
             get_album,
             get_artist,
+            get_favorites,
+            toggle_favorite,
+            get_history,
             play_native_stream
         ])
         .run(tauri::generate_context!())

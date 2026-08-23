@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { Track } from "@/types/music";
 import { invoke } from "@tauri-apps/api/core";
+import { useHistoryStore } from "@/stores/historyStore";
 
 export type PlayMode = "list-loop" | "single-loop" | "shuffle";
 
@@ -93,6 +94,11 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
         isPlaying: true,
         currentTime: 0,
       });
+
+      // Record to playback history
+      try {
+        useHistoryStore.getState().addHistory(track);
+      } catch (_) {}
 
       // Try invoking native Tauri audio command if available
       const isTauri = typeof window !== "undefined" && !!(window as any).__TAURI__;
