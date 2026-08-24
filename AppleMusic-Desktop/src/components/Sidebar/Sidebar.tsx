@@ -6,7 +6,6 @@ import {
   Clock,
   Heart,
   ListMusic,
-  FolderHeart,
   Plus,
   LogIn,
   LogOut,
@@ -32,21 +31,21 @@ interface NavItemProps {
 const NavItem = ({ icon, label, active, count, onClick }: NavItemProps) => (
   <button
     onClick={onClick}
-    className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-[13px] font-medium transition-all cursor-pointer select-none group ${
+    className={`w-full h-8 flex items-center justify-between px-2.5 rounded-lg text-xs font-medium transition-colors cursor-pointer select-none group ${
       active
         ? "bg-[#fa2d48]/12 text-[#fa2d48] dark:bg-[#fa2d48]/20 font-semibold"
-        : "text-neutral-600 dark:text-neutral-300 hover:bg-black/[0.04] dark:hover:bg-white/[0.06] hover:text-neutral-900 dark:hover:text-white"
+        : "text-neutral-600 dark:text-neutral-300 hover:bg-black/[0.04] dark:hover:bg-white/[0.05] hover:text-neutral-900 dark:hover:text-white"
     }`}
   >
     <div className="flex items-center gap-2.5 overflow-hidden pr-1">
-      <span className={`flex-shrink-0 transition-colors ${active ? "text-[#fa2d48]" : "text-neutral-500 dark:text-neutral-400 group-hover:text-neutral-800 dark:group-hover:text-neutral-200"}`}>
+      <span className={`flex-shrink-0 transition-colors ${active ? "text-[#fa2d48]" : "text-neutral-400 group-hover:text-neutral-700 dark:group-hover:text-neutral-200"}`}>
         {icon}
       </span>
       <span className="truncate">{label}</span>
     </div>
-    {count !== undefined && (
-      <span className={`text-[11px] tabular-nums font-medium flex-shrink-0 ml-1.5 px-1.5 py-0.5 rounded-full ${
-        active ? "text-[#fa2d48] bg-[#fa2d48]/10" : "text-neutral-400 dark:text-neutral-500"
+    {count !== undefined && count > 0 && (
+      <span className={`text-[10px] tabular-nums font-mono flex-shrink-0 px-1.5 py-0.5 rounded-md ${
+        active ? "text-[#fa2d48] bg-[#fa2d48]/10" : "text-neutral-400"
       }`}>
         {count}
       </span>
@@ -63,102 +62,104 @@ export const Sidebar = () => {
 
   return (
     <>
-      <aside className="w-60 h-[calc(100vh-44px-80px)] apple-sidebar-glass flex flex-col justify-between select-none p-3.5 flex-shrink-0">
-        <div className="space-y-4 overflow-y-auto pr-1.5 custom-sidebar-scroll">
-          {/* Quick Access Items */}
+      <aside className="w-56 h-[calc(100vh-44px-72px)] apple-sidebar-glass flex flex-col justify-between select-none p-3 flex-shrink-0 border-r border-black/[0.06] dark:border-white/[0.08]">
+        <div className="space-y-4 overflow-y-auto pr-1 custom-sidebar-scroll">
+          {/* Quick Access */}
           <div className="space-y-0.5">
             <NavItem
-              icon={<Search className="w-4 h-4" />}
+              icon={<Search className="w-3.5 h-3.5" />}
               label="搜索探索"
               active={activeView === "search"}
               onClick={() => setActiveView("search")}
             />
             <NavItem
-              icon={<Mic2 className="w-4 h-4" />}
+              icon={<Mic2 className="w-3.5 h-3.5" />}
               label="歌词舞台"
               active={activeView === "lyrics"}
               onClick={() => setActiveView("lyrics")}
             />
             <NavItem
-              icon={<Settings className="w-4 h-4" />}
+              icon={<Settings className="w-3.5 h-3.5" />}
               label="偏好设置"
               active={activeView === "settings"}
               onClick={() => setActiveView("settings")}
             />
           </div>
 
-          {/* Apple Music Navigation */}
-          <div>
-            <div className="px-3 mb-1 text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">
-              发现
+          {/* Section: Discover */}
+          <div className="space-y-1">
+            <div className="px-2.5 text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">
+              Apple Music
             </div>
             <div className="space-y-0.5">
               <NavItem
-                icon={<Compass className="w-4 h-4" />}
+                icon={<Compass className="w-3.5 h-3.5" />}
                 label="现在就听"
                 active={activeView === "listen-now"}
                 onClick={() => setActiveView("listen-now")}
               />
               <NavItem
-                icon={<Radio className="w-4 h-4" />}
+                icon={<Radio className="w-3.5 h-3.5" />}
                 label="广播电台"
                 active={activeView === "radio"}
                 onClick={() => setActiveView("radio")}
               />
               <NavItem
-                icon={<Music2 className="w-4 h-4" />}
-                label="浏览排行榜"
+                icon={<Music2 className="w-3.5 h-3.5" />}
+                label="排行榜"
                 active={activeView === "charts"}
                 onClick={() => setActiveView("charts")}
               />
             </div>
           </div>
 
-          <div>
-            <div className="px-3 mb-1 text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">
+          {/* Section: Library */}
+          <div className="space-y-1">
+            <div className="px-2.5 text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">
               资料库
             </div>
             <div className="space-y-0.5">
               <NavItem
-                icon={<User className="w-4 h-4" />}
-                label="个人中心"
-                active={activeView === "profile"}
-                onClick={() => setActiveView("profile")}
-              />
-              <NavItem
-                icon={<Heart className="w-4 h-4" />}
+                icon={<Heart className="w-3.5 h-3.5" />}
                 label="喜爱歌曲"
                 count={favoriteTracks.length}
                 active={activeView === "favorites"}
                 onClick={() => setActiveView("favorites")}
               />
               <NavItem
-                icon={<Clock className="w-4 h-4" />}
+                icon={<Clock className="w-3.5 h-3.5" />}
                 label="最近播放"
+                active={activeView === "profile"}
                 onClick={() => setActiveView("profile")}
               />
-              <NavItem icon={<FolderHeart className="w-4 h-4" />} label="已存专辑" />
+              <NavItem
+                icon={<User className="w-3.5 h-3.5" />}
+                label="个人中心"
+                active={activeView === "profile"}
+                onClick={() => setActiveView("profile")}
+              />
             </div>
           </div>
 
-          <div>
-            <div className="flex items-center justify-between px-3 mb-1">
+          {/* Section: Playlists */}
+          <div className="space-y-1">
+            <div className="flex items-center justify-between px-2.5">
               <span className="text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">
-                我的歌单
+                自建歌单
               </span>
               <button
                 onClick={() => setIsCreatePlaylistOpen(true)}
-                className="text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 transition-colors cursor-pointer p-0.5 rounded-md hover:bg-black/5 dark:hover:bg-white/5"
-                title="创建新歌单"
+                className="text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 transition-colors p-0.5 rounded-md hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer"
+                title="新建歌单"
               >
-                <Plus className="w-3.5 h-3.5" />
+                <Plus className="w-3 h-3" />
               </button>
             </div>
             <div className="space-y-0.5">
               {customPlaylists.map((pl) => (
                 <NavItem
                   key={pl.id}
-                  icon={<ListMusic className="w-4 h-4" />}
+                  icon={<ListMusic className="w-3.5 h-3.5" />}
                   label={pl.title}
                   count={pl.trackCount || pl.tracks?.length || 0}
                   active={activeView === "playlist-detail" && selectedPlaylistId === pl.id}
@@ -169,18 +170,18 @@ export const Sidebar = () => {
           </div>
         </div>
 
-        {/* User / Authentication Area */}
-        <div className="pt-3 border-t border-black/[0.06] dark:border-white/[0.08]">
+        {/* User Card */}
+        <div className="pt-2 border-t border-black/[0.06] dark:border-white/[0.08]">
           {isAuthenticated && user ? (
             <div
               onClick={() => setActiveView("profile")}
-              className="flex items-center justify-between p-2 rounded-2xl hover:bg-black/5 dark:hover:bg-white/5 transition-all cursor-pointer group"
+              className="flex items-center justify-between p-1.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer group"
             >
-              <div className="flex items-center gap-2.5 overflow-hidden pr-1">
+              <div className="flex items-center gap-2 overflow-hidden pr-1">
                 <img
                   src={user.avatarUrl}
                   alt={user.nickname}
-                  className="w-8 h-8 rounded-full object-cover border border-black/10 dark:border-white/15 shadow-sm"
+                  className="w-7 h-7 rounded-full object-cover border border-black/10 dark:border-white/15"
                 />
                 <div className="text-left overflow-hidden">
                   <div className="text-xs font-semibold text-neutral-800 dark:text-neutral-200 truncate flex items-center gap-1">
@@ -196,7 +197,7 @@ export const Sidebar = () => {
                   logout();
                 }}
                 title="退出登录"
-                className="p-1.5 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 text-neutral-400 hover:text-red-500 transition-colors cursor-pointer"
+                className="p-1 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 text-neutral-400 hover:text-red-500 transition-colors cursor-pointer"
               >
                 <LogOut className="w-3.5 h-3.5" />
               </button>
@@ -204,7 +205,7 @@ export const Sidebar = () => {
           ) : (
             <button
               onClick={() => setIsLoginOpen(true)}
-              className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-black/5 dark:bg-white/5 hover:bg-[#fa2d48] hover:text-white dark:hover:bg-[#fa2d48] text-neutral-700 dark:text-neutral-300 text-xs font-semibold transition-all shadow-sm cursor-pointer group"
+              className="w-full flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg bg-black/[0.04] dark:bg-white/[0.06] hover:bg-[#fa2d48] hover:text-white dark:hover:bg-[#fa2d48] text-neutral-700 dark:text-neutral-300 text-xs font-medium transition-colors cursor-pointer group"
             >
               <LogIn className="w-3.5 h-3.5 text-[#fa2d48] group-hover:text-white transition-colors" />
               <span>登录 Apple ID</span>
@@ -213,7 +214,6 @@ export const Sidebar = () => {
         </div>
       </aside>
 
-      {/* Modals */}
       <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
       <CreatePlaylistModal isOpen={isCreatePlaylistOpen} onClose={() => setIsCreatePlaylistOpen(false)} />
     </>

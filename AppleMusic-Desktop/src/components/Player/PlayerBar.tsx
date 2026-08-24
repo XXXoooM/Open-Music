@@ -11,7 +11,6 @@ import {
   VolumeX,
   ListMusic,
   Heart,
-  Airplay,
   Mic2
 } from "lucide-react";
 import { usePlayerStore } from "@/stores/playerStore";
@@ -19,12 +18,13 @@ import { usePlaylistStore } from "@/stores/playlistStore";
 import { Button } from "@/components/ui/button";
 import { AudioVisualizer } from "@/components/Player/AudioVisualizer";
 import { motion } from "motion/react";
+import { toast } from "@/stores/toastStore";
 
 const formatTime = (seconds: number) => {
-  if (!seconds || isNaN(seconds) || !isFinite(seconds)) return "00:00";
+  if (!seconds || isNaN(seconds) || !isFinite(seconds)) return "0:00";
   const mins = Math.floor(seconds / 60);
   const secs = Math.floor(seconds % 60);
-  return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+  return `${mins}:${secs.toString().padStart(2, "0")}`;
 };
 
 export const PlayerBar: React.FC = () => {
@@ -45,12 +45,13 @@ export const PlayerBar: React.FC = () => {
     togglePlayMode,
   } = usePlayerStore();
 
-  const { activeView, setActiveView } = usePlaylistStore();
+  const { activeView, setActiveView, isFavorite, toggleFavorite } = usePlaylistStore();
 
   const progressRef = useRef<HTMLDivElement>(null);
   const volumeRef = useRef<HTMLDivElement>(null);
 
   const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
+  const isFav = currentTrack ? isFavorite(currentTrack.id) : false;
 
   const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!progressRef.current || duration <= 0) return;
@@ -69,10 +70,10 @@ export const PlayerBar: React.FC = () => {
   };
 
   return (
-    <footer className="h-20 w-full apple-player-glass fixed bottom-0 left-0 right-0 z-40 flex items-center justify-between px-5 select-none">
-      {/* Current Playing Track Info */}
-      <div className="flex items-center gap-3.5 w-1/4 min-w-[220px]">
-        <div className="w-12 h-12 rounded-xl bg-neutral-200 dark:bg-neutral-800 shadow-md overflow-hidden relative group border border-black/5 dark:border-white/10 flex-shrink-0">
+    <footer className="h-18 w-full apple-player-glass fixed bottom-0 left-0 right-0 z-40 flex items-center justify-between px-6 select-none border-t border-black/[0.06] dark:border-white/[0.08]">
+      {/* Cluster 1: Track Information (Left 260px) */}
+      <div className="flex items-center gap-3 w-64 min-w-[200px] overflow-hidden">
+        <div className="w-11 h-11 rounded-xl bg-neutral-200 dark:bg-neutral-800 shadow-sm overflow-hidden relative flex-shrink-0 border border-black/5 dark:border-white/10">
           <img
             src={
               currentTrack?.pic ||
@@ -82,48 +83,57 @@ export const PlayerBar: React.FC = () => {
             className="w-full h-full object-cover"
           />
         </div>
-        <div className="overflow-hidden pr-2">
-          <div className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 truncate hover:underline cursor-pointer flex items-center gap-2">
-            <span>{currentTrack?.name || "未播放歌曲"}</span>
-            {currentTrack && isPlaying && <AudioVisualizer isPlaying={isPlaying} />}
+        <div className="overflow-hidden flex-1 min-w-0 pr-1">
+          <div className="text-xs font-semibold text-neutral-900 dark:text-neutral-100 truncate flex items-center gap-1.5">
+            <span className="truncate">{currentTrack?.name || "未播放歌曲"}</span>
+            {currentTrack && isPlaying && <AudioVisualizer isPlaying={isPlaying} className="flex-shrink-0" />}
           </div>
-          <div className="text-xs text-neutral-500 dark:text-neutral-400 truncate hover:underline cursor-pointer mt-0.5">
-            {currentTrack ? `${currentTrack.artist} · ${currentTrack.album || "单曲"}` : "点击歌单或卡片开始聆听"}
+          <div className="text-[11px] text-neutral-500 dark:text-neutral-400 truncate mt-0.5">
+            {currentTrack ? `${currentTrack.artist}` : "从歌单挑选歌曲开始聆听"}
           </div>
         </div>
         {currentTrack && (
-          <Button size="icon" variant="ghost" className="h-8 w-8 text-neutral-400 hover:text-[#fa2d48]">
-            <Heart className="w-4 h-4 stroke-[2]" />
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={() => {
+              toggleFavorite(currentTrack);
+              if (isFav) {
+                toast.info("已移出喜爱歌曲", currentTrack.name);
+              } else {
+                toast.success("已添加到喜爱歌曲", currentTrack.name);
+              }
+            }}
+            className={`h-7 w-7 rounded-full flex-shrink-0 ${
+              isFav ? "text-[#fa2d48]" : "text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200"
+            }`}
+          >
+            <Heart className={`w-3.5 h-3.5 ${isFav ? "fill-current" : ""}`} />
           </Button>
         )}
       </div>
 
-      {/* Center Controls & Progress Bar */}
-      <div className="flex-1 max-w-xl flex flex-col items-center gap-1.5 px-4">
-        <div className="flex items-center gap-4">
+      {/* Cluster 2: Center Controls & Apple LCD Timeline Capsule (Center 440px) */}
+      <div className="flex flex-col items-center gap-1 max-w-md w-full px-4">
+        {/* Playback Button Group with Relaxed Spacing */}
+        <div className="flex items-center gap-3">
           <Button
             size="icon"
             variant="ghost"
             onClick={togglePlayMode}
-            className={`h-8 w-8 ${
-              playMode === "shuffle"
+            className={`h-7 w-7 ${
+              playMode !== "list-loop"
                 ? "text-[#fa2d48]"
-                : "text-neutral-400 hover:text-neutral-800 dark:hover:text-white"
+                : "text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200"
             }`}
-            title={
-              playMode === "list-loop"
-                ? "列表循环"
-                : playMode === "single-loop"
-                ? "单曲循环"
-                : "随机播放"
-            }
+            title={playMode === "single-loop" ? "单曲循环" : playMode === "shuffle" ? "随机播放" : "列表循环"}
           >
             {playMode === "single-loop" ? (
-              <Repeat1 className="w-4 h-4 text-[#fa2d48]" />
+              <Repeat1 className="w-3.5 h-3.5" />
             ) : playMode === "shuffle" ? (
-              <Shuffle className="w-4 h-4" />
+              <Shuffle className="w-3.5 h-3.5" />
             ) : (
-              <Repeat className="w-4 h-4" />
+              <Repeat className="w-3.5 h-3.5" />
             )}
           </Button>
 
@@ -131,23 +141,23 @@ export const PlayerBar: React.FC = () => {
             size="icon"
             variant="ghost"
             onClick={prev}
-            className="h-8 w-8 text-neutral-700 dark:text-neutral-200"
+            className="h-7 w-7 text-neutral-700 dark:text-neutral-200"
             title="上一首"
           >
-            <SkipBack className="w-5 h-5 fill-current" />
+            <SkipBack className="w-4 h-4 fill-current" />
           </Button>
 
           <Button
             size="icon"
             variant="apple"
             onClick={togglePlay}
-            className="w-10 h-10 rounded-full"
+            className="w-8 h-8 rounded-full shadow-md"
             title={isPlaying ? "暂停" : "播放"}
           >
             {isPlaying ? (
-              <Pause className="w-4 h-4 fill-current" />
+              <Pause className="w-3.5 h-3.5 fill-current" />
             ) : (
-              <Play className="w-4 h-4 fill-current ml-0.5" />
+              <Play className="w-3.5 h-3.5 fill-current ml-0.5" />
             )}
           </Button>
 
@@ -155,86 +165,93 @@ export const PlayerBar: React.FC = () => {
             size="icon"
             variant="ghost"
             onClick={next}
-            className="h-8 w-8 text-neutral-700 dark:text-neutral-200"
+            className="h-7 w-7 text-neutral-700 dark:text-neutral-200"
             title="下一首"
           >
-            <SkipForward className="w-5 h-5 fill-current" />
+            <SkipForward className="w-4 h-4 fill-current" />
           </Button>
-
-          <div className="w-4" />
         </div>
 
-        {/* Progress Timeline */}
-        <div className="w-full flex items-center gap-2.5">
-          <span className="text-[11px] tabular-nums text-neutral-400 dark:text-neutral-500 font-medium w-9 text-right">
+        {/* Apple Sleek Scrubber Bar with Time Labels */}
+        <div className="w-full flex items-center gap-2">
+          <span className="text-[10px] tabular-nums text-neutral-400 dark:text-neutral-500 font-mono w-7 text-right">
             {formatTime(currentTime)}
           </span>
           <div
             ref={progressRef}
             onClick={handleProgressClick}
-            className="flex-1 h-1.5 bg-black/10 dark:bg-white/15 rounded-full relative group cursor-pointer overflow-hidden"
+            className="flex-1 h-1 bg-black/10 dark:bg-white/15 rounded-full relative group cursor-pointer overflow-hidden py-1 -my-1"
           >
-            <motion.div
-              className="h-full bg-[#fa2d48] rounded-full"
-              initial={false}
-              animate={{ width: `${progressPercent}%` }}
-              transition={{ duration: 0.1, ease: "linear" }}
-            />
+            <div className="h-1 w-full bg-black/[0.06] dark:bg-white/[0.08] rounded-full overflow-hidden">
+              <motion.div
+                className="h-full bg-neutral-800 dark:bg-neutral-200 group-hover:bg-[#fa2d48] rounded-full transition-colors"
+                initial={false}
+                animate={{ width: `${progressPercent}%` }}
+                transition={{ duration: 0.1, ease: "linear" }}
+              />
+            </div>
           </div>
-          <span className="text-[11px] tabular-nums text-neutral-400 dark:text-neutral-500 font-medium w-9 text-left">
+          <span className="text-[10px] tabular-nums text-neutral-400 dark:text-neutral-500 font-mono w-7 text-left">
             {formatTime(duration)}
           </span>
         </div>
       </div>
 
-      {/* Right Controls (Lyrics Mic, Volume, Airplay, Queue) */}
-      <div className="flex items-center justify-end gap-1.5 w-1/4 min-w-[220px]">
+      {/* Cluster 3: Secondary Controls & Volume (Right 260px) */}
+      <div className="flex items-center justify-end gap-2 w-64 min-w-[200px]">
         <Button
           size="icon"
           variant="ghost"
           onClick={() => setActiveView(activeView === "lyrics" ? "listen-now" : "lyrics")}
-          className={`h-8 w-8 rounded-lg ${
+          className={`h-7 w-7 rounded-lg ${
             activeView === "lyrics"
-              ? "text-[#fa2d48] bg-[#fa2d48]/15"
+              ? "text-[#fa2d48] bg-[#fa2d48]/12"
               : "text-neutral-500 hover:text-neutral-800 dark:hover:text-white"
           }`}
-          title="沉浸式动态歌词舞台"
+          title="歌词舞台"
         >
-          <Mic2 className="w-4 h-4" />
+          <Mic2 className="w-3.5 h-3.5" />
         </Button>
-        <Button size="icon" variant="ghost" className="h-8 w-8 text-neutral-500 hover:text-neutral-800 dark:hover:text-white">
-          <Airplay className="w-4 h-4" />
+        <Button
+          size="icon"
+          variant="ghost"
+          onClick={() => setActiveView(activeView === "search" ? "listen-now" : "search")}
+          className="h-7 w-7 text-neutral-500 hover:text-neutral-800 dark:hover:text-white"
+          title="搜索探索"
+        >
+          <ListMusic className="w-3.5 h-3.5" />
         </Button>
-        <Button size="icon" variant="ghost" className="h-8 w-8 text-neutral-500 hover:text-neutral-800 dark:hover:text-white">
-          <ListMusic className="w-4 h-4" />
-        </Button>
-        <div className="flex items-center gap-2 w-28 pl-1">
-          <Button
-            size="icon"
-            variant="ghost"
+
+        {/* Compact Volume Control */}
+        <div className="flex items-center gap-1.5 w-24 pl-1">
+          <button
             onClick={toggleMute}
-            className="h-7 w-7 text-neutral-500 hover:text-neutral-800 dark:hover:text-white"
+            className="p-1 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 transition-colors cursor-pointer rounded-md"
           >
             {isMuted || volume === 0 ? (
-              <VolumeX className="w-4 h-4 text-red-500" />
+              <VolumeX className="w-3.5 h-3.5 text-red-500" />
             ) : (
-              <Volume2 className="w-4 h-4" />
+              <Volume2 className="w-3.5 h-3.5" />
             )}
-          </Button>
+          </button>
           <div
             ref={volumeRef}
             onClick={handleVolumeClick}
-            className="flex-1 h-1.5 bg-black/10 dark:bg-white/15 rounded-full relative group cursor-pointer overflow-hidden"
+            className="flex-1 h-1 bg-black/10 dark:bg-white/15 rounded-full relative group cursor-pointer overflow-hidden py-1 -my-1"
           >
-            <motion.div
-              className="h-full bg-neutral-700 dark:bg-neutral-200 rounded-full"
-              initial={false}
-              animate={{ width: `${isMuted ? 0 : volume * 100}%` }}
-              transition={{ duration: 0.15, ease: "easeOut" }}
-            />
+            <div className="h-1 w-full bg-black/[0.06] dark:bg-white/[0.08] rounded-full overflow-hidden">
+              <motion.div
+                className="h-full bg-neutral-700 dark:bg-neutral-300 rounded-full"
+                initial={false}
+                animate={{ width: `${isMuted ? 0 : volume * 100}%` }}
+                transition={{ duration: 0.12, ease: "easeOut" }}
+              />
+            </div>
           </div>
         </div>
       </div>
     </footer>
   );
 };
+
+export default PlayerBar;
