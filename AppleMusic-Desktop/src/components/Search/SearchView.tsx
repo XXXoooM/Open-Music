@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Search, Play, Pause, Heart, Plus, Music, Sparkles, TrendingUp, Volume2 } from "lucide-react";
+import { Search, Play, Pause, Heart, Plus, Sparkles, TrendingUp, Volume2, Compass } from "lucide-react";
 import { Track } from "@/types/music";
 import { usePlayerStore } from "@/stores/playerStore";
 import { usePlaylistStore } from "@/stores/playlistStore";
@@ -7,13 +7,23 @@ import { useSettingsStore, MusicServer, ApiSource } from "@/stores/settingsStore
 import { searchOnlineTracks } from "@/api/musicClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
 import { SegmentedTabs } from "@/components/ui/tabs";
 import { motion } from "motion/react";
 import { staggerContainer, staggerItem } from "@/lib/motion";
 import { toast } from "@/stores/toastStore";
 
 const POPULAR_TAGS = ["周杰伦", "Taylor Swift", "The Weeknd", "林俊杰", "陈奕迅", "空间音频", "华语经典", "爵士微醺"];
+
+const DISCOVERY_CATEGORIES = [
+  { title: "华语流行", subtitle: "Mandopop Hits", gradient: "from-rose-500 to-red-600", query: "华语流行" },
+  { title: "欧美金曲", subtitle: "Global Pop", gradient: "from-blue-600 to-indigo-700", query: "欧美流行" },
+  { title: "杜比全景声", subtitle: "Spatial Audio", gradient: "from-purple-600 to-pink-600", query: "空间音频" },
+  { title: "微醺爵士", subtitle: "Late Night Jazz", gradient: "from-amber-600 to-orange-700", query: "爵士" },
+  { title: "嘻哈潮流", subtitle: "Hip-Hop & Rap", gradient: "from-emerald-600 to-teal-700", query: "说唱" },
+  { title: "影视原声", subtitle: "OST & Soundtracks", gradient: "from-cyan-600 to-blue-700", query: "影视原声" },
+  { title: "电子律动", subtitle: "Electronic Dance", gradient: "from-fuchsia-600 to-purple-800", query: "电子音乐" },
+  { title: "ACG 动漫", subtitle: "Anime & Gaming", gradient: "from-pink-500 to-rose-600", query: "动漫原声" },
+];
 
 export const SearchView: React.FC = () => {
   const { playTrack, togglePlay, currentTrack, isPlaying } = usePlayerStore();
@@ -31,7 +41,7 @@ export const SearchView: React.FC = () => {
     setIsSearching(true);
     setHasSearched(true);
     try {
-      const data = await searchOnlineTracks(trimmed, src, server, 25);
+      const data = await searchOnlineTracks(trimmed, src, server, 24);
       setResults(data);
     } catch (e) {
       console.warn("Search failed:", e);
@@ -50,45 +60,48 @@ export const SearchView: React.FC = () => {
     performSearch(tag);
   };
 
-  const handleServerChange = (server: string) => {
-    const s = server as MusicServer;
-    setMusicServer(s);
-    performSearch(keyword, s);
-  };
-
-  const handleSourceChange = (src: string) => {
-    const s = src as ApiSource;
-    setApiSource(s);
-    performSearch(keyword, musicServer, s);
+  const handleCategoryClick = (query: string) => {
+    setKeyword(query);
+    performSearch(query);
   };
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto pb-16 select-none animate-in fade-in duration-300">
+    <div className="space-y-8 max-w-5xl mx-auto pb-20 select-none animate-in fade-in duration-300">
       {/* Search Header & Controls */}
-      <div className="space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
+            <h1 className="text-2xl font-bold apple-title text-neutral-900 dark:text-white">
               搜索探索
             </h1>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
-              跨源实时检索网易云与 QQ 音乐高保真曲库
+            <p className="apple-caption mt-0.5">
+              跨源实时检索网易云与 QQ 音乐千万级高保真母带曲库
             </p>
           </div>
 
           {/* Segmented Filter Pills */}
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-2.5 flex-wrap">
             <SegmentedTabs
+              layoutId="search-api-source-pill"
               value={apiSource}
-              onValueChange={handleSourceChange}
+              onValueChange={(s) => {
+                const src = s as ApiSource;
+                setApiSource(src);
+                performSearch(keyword, musicServer, src);
+              }}
               items={[
-                { value: "qijieya", label: "祈杰 VIP源" },
-                { value: "mikus", label: "Mikus 官方源" },
+                { value: "qijieya", label: "祈杰 VIP" },
+                { value: "mikus", label: "Mikus 官方" },
               ]}
             />
             <SegmentedTabs
+              layoutId="search-music-server-pill"
               value={musicServer}
-              onValueChange={handleServerChange}
+              onValueChange={(s) => {
+                const srv = s as MusicServer;
+                setMusicServer(srv);
+                performSearch(keyword, srv);
+              }}
               items={[
                 { value: "netease", label: "网易云" },
                 { value: "tencent", label: "QQ 音乐" },
@@ -97,38 +110,38 @@ export const SearchView: React.FC = () => {
           </div>
         </div>
 
-        {/* Large Apple Search Input */}
+        {/* Large Apple Search Bar */}
         <form onSubmit={handleFormSubmit} className="relative flex items-center">
-          <Search className="w-4 h-4 text-neutral-400 absolute left-4 pointer-events-none" />
+          <Search className="w-4 h-4 text-[#86868b] absolute left-4 pointer-events-none" />
           <Input
             type="text"
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
-            placeholder="搜索歌曲、艺人、专辑..."
-            className="h-11 pl-11 pr-24 rounded-2xl text-xs glass border-black/10 dark:border-white/10"
+            placeholder="搜索歌曲、艺人、专辑或歌单..."
+            className="h-11 pl-11 pr-24 rounded-2xl text-xs bg-white dark:bg-[#1C1C1E] border border-black/[0.08] dark:border-white/[0.1] shadow-sm"
           />
           <Button
             type="submit"
-            size="sm"
+            size="default"
             disabled={isSearching}
-            className="absolute right-1.5 h-8 px-4 rounded-xl text-xs"
+            className="absolute right-1.5 h-8 px-4 rounded-xl text-xs font-semibold"
           >
             {isSearching ? "检索中..." : "搜索"}
           </Button>
         </form>
 
         {/* Hot Search Tags */}
-        <div className="flex items-center gap-2 flex-wrap pt-0.5">
-          <span className="text-xs font-semibold text-neutral-400 flex items-center gap-1">
-            <TrendingUp className="w-3.5 h-3.5 text-[#fa2d48]" /> 热门搜索：
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-xs font-semibold text-[#86868b] flex items-center gap-1">
+            <TrendingUp className="w-3.5 h-3.5 text-[#FA2D48]" /> 热门搜索：
           </span>
           {POPULAR_TAGS.map((tag) => (
             <Button
               key={tag}
               size="sm"
-              variant="ghost"
+              variant="secondary"
               onClick={() => handleTagClick(tag)}
-              className="h-6 px-2.5 rounded-full text-xs bg-black/[0.03] dark:bg-white/[0.05] hover:bg-[#fa2d48]/10 hover:text-[#fa2d48] text-neutral-600 dark:text-neutral-300"
+              className="h-6 px-3 rounded-full text-xs font-medium"
             >
               {tag}
             </Button>
@@ -136,38 +149,63 @@ export const SearchView: React.FC = () => {
         </div>
       </div>
 
+      {/* Discovery Bento Categories (Show when no active results or browsing) */}
+      {(!hasSearched || results.length === 0) && !isSearching && (
+        <section className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-bold apple-title flex items-center gap-2">
+              <Compass className="w-4 h-4 text-[#FA2D48]" /> 浏览分类 (Browse by Category)
+            </h2>
+            <span className="apple-caption">探索海量主题风格</span>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {DISCOVERY_CATEGORIES.map((cat, idx) => (
+              <motion.div
+                key={idx}
+                whileHover={{ scale: 1.03, y: -2 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => handleCategoryClick(cat.query)}
+                className={`h-24 rounded-2xl p-4 bg-gradient-to-br ${cat.gradient} text-white shadow-md cursor-pointer flex flex-col justify-between relative overflow-hidden group select-none`}
+              >
+                <div className="relative z-10">
+                  <h3 className="text-sm font-bold tracking-tight">{cat.title}</h3>
+                  <p className="text-[10px] text-white/80 font-medium">{cat.subtitle}</p>
+                </div>
+                <div className="self-end relative z-10 opacity-80 group-hover:opacity-100 transition-opacity">
+                  <Play className="w-4 h-4 fill-current ml-0.5" />
+                </div>
+                <div className="absolute -right-4 -bottom-4 w-16 h-16 bg-white/10 rounded-full blur-lg pointer-events-none" />
+              </motion.div>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* Results Section */}
-      <div className="space-y-3">
+      <section className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-base font-bold tracking-tight flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-[#fa2d48]" />
+          <h2 className="text-lg font-bold apple-title flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-[#FA2D48]" />
             {isSearching ? "正在连接云端多线路搜索..." : `搜索匹配结果 (${results.length})`}
           </h2>
-          <span className="text-xs text-neutral-400 font-mono">
-            {apiSource === "qijieya" ? "祈杰 VIP 解析" : "Mikus 镜像"} · {musicServer === "netease" ? "网易云" : "QQ 音乐"}
+          <span className="apple-caption font-mono">
+            {apiSource === "qijieya" ? "祈杰 VIP 解析" : "Mikus 官方镜像"} · {musicServer === "netease" ? "网易云" : "QQ 音乐"}
           </span>
         </div>
 
         {isSearching ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
             {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="h-14 rounded-2xl bg-black/5 dark:bg-white/5 animate-pulse" />
+              <div key={i} className="h-16 rounded-2xl bg-black/5 dark:bg-white/5 animate-pulse" />
             ))}
           </div>
-        ) : results.length === 0 ? (
-          <div className="py-20 text-center text-neutral-400 space-y-2">
-            <Music className="w-10 h-10 mx-auto opacity-20" />
-            <div className="text-sm font-medium">
-              {hasSearched ? "未找到相关音乐结果" : "输入关键词或点击上方热门标签开始探索"}
-            </div>
-            <div className="text-xs text-neutral-500">支持网易云与 QQ 音乐双源自动解析与高保真流媒体加载</div>
-          </div>
-        ) : (
+        ) : results.length > 0 ? (
           <motion.div
             variants={staggerContainer}
             initial="hidden"
             animate="visible"
-            className="grid grid-cols-1 md:grid-cols-2 gap-2.5"
+            className="grid grid-cols-1 md:grid-cols-2 gap-3.5"
           >
             {results.map((track, idx) => {
               const isCurrent = currentTrack?.id === track.id || currentTrack?.url === track.url;
@@ -175,19 +213,19 @@ export const SearchView: React.FC = () => {
 
               return (
                 <motion.div key={track.id + idx} variants={staggerItem}>
-                  <Card
+                  <div
                     onClick={() => playTrack(track, results)}
-                    className={`flex items-center justify-between p-2.5 rounded-2xl border transition-all group cursor-pointer ${
+                    className={`bento-card flex items-center justify-between p-3 transition-all group cursor-pointer ${
                       isCurrent
-                        ? "border-[#fa2d48]/40 bg-[#fa2d48]/5 dark:bg-[#fa2d48]/10 shadow-sm"
-                        : "border-black/[0.04] dark:border-white/[0.06] bg-white/60 dark:bg-white/[0.03] hover:bg-white/90 dark:hover:bg-white/[0.07]"
+                        ? "ring-2 ring-[#FA2D48]/40 bg-[#FA2D48]/5 dark:bg-[#FA2D48]/10 shadow-sm"
+                        : "hover:scale-[1.01]"
                     }`}
                   >
                     {/* Track Info */}
                     <div className="flex items-center gap-3 overflow-hidden pr-2">
                       <span className="text-xs font-semibold text-neutral-400 w-5 text-center tabular-nums">
                         {isCurrent && isPlaying ? (
-                          <Volume2 className="w-3.5 h-3.5 text-[#fa2d48] animate-pulse" />
+                          <Volume2 className="w-3.5 h-3.5 text-[#FA2D48] animate-pulse" />
                         ) : (
                           idx + 1
                         )}
@@ -195,24 +233,24 @@ export const SearchView: React.FC = () => {
                       <img
                         src={track.pic}
                         alt={track.name}
-                        className="w-10 h-10 rounded-xl object-cover shadow-sm flex-shrink-0"
+                        className="w-11 h-11 rounded-xl object-cover shadow-sm flex-shrink-0"
                       />
                       <div className="overflow-hidden">
                         <div
                           className={`text-sm font-semibold truncate transition-colors ${
-                            isCurrent ? "text-[#fa2d48]" : "group-hover:text-[#fa2d48]"
+                            isCurrent ? "text-[#FA2D48]" : "group-hover:text-[#FA2D48]"
                           }`}
                         >
                           {track.name}
                         </div>
-                        <div className="text-xs text-neutral-500 dark:text-neutral-400 truncate">
+                        <div className="apple-caption truncate">
                           {track.artist} · {track.album || "在线音乐"}
                         </div>
                       </div>
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
                       <Button
                         size="icon"
                         variant="ghost"
@@ -224,12 +262,10 @@ export const SearchView: React.FC = () => {
                             toast.success("已添加到喜爱歌曲", track.name);
                           }
                         }}
-                        className={`h-8 w-8 rounded-full ${
-                          isFav ? "text-[#fa2d48]" : "text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200"
-                        }`}
+                        className={`h-7.5 w-7.5 ${isFav ? "text-[#FA2D48]" : "text-neutral-400"}`}
                         title={isFav ? "取消喜爱" : "添加到喜爱歌曲"}
                       >
-                        <Heart className={`w-4 h-4 ${isFav ? "fill-current" : ""}`} />
+                        <Heart className={`w-3.5 h-3.5 ${isFav ? "fill-current" : ""}`} />
                       </Button>
 
                       {customPlaylists.length > 0 && (
@@ -240,16 +276,16 @@ export const SearchView: React.FC = () => {
                             addTrackToPlaylist(customPlaylists[0].id, track);
                             toast.success(`已添加到歌单「${customPlaylists[0].title}」`, track.name);
                           }}
-                          className="h-8 w-8 rounded-full text-neutral-400 hover:text-neutral-800 dark:hover:text-white"
+                          className="h-7.5 w-7.5 text-neutral-400"
                           title={`添加到歌单: ${customPlaylists[0].title}`}
                         >
-                          <Plus className="w-4 h-4" />
+                          <Plus className="w-3.5 h-3.5" />
                         </Button>
                       )}
 
                       <Button
                         size="icon"
-                        variant="default"
+                        variant={isCurrent ? "default" : "secondary"}
                         onClick={() => {
                           if (isCurrent) {
                             togglePlay();
@@ -257,11 +293,7 @@ export const SearchView: React.FC = () => {
                             playTrack(track, results);
                           }
                         }}
-                        className={`w-8 h-8 rounded-full ml-0.5 transition-all ${
-                          isCurrent
-                            ? "bg-[#fa2d48] text-white hover:bg-[#fa2d48]/90 shadow-md shadow-[#fa2d48]/30"
-                            : "bg-black/5 dark:bg-white/10 text-neutral-700 dark:text-neutral-200 hover:bg-[#fa2d48] hover:text-white"
-                        }`}
+                        className={`w-8 h-8 rounded-full ${isCurrent ? "shadow-md shadow-[#FA2D48]/30" : ""}`}
                       >
                         {isCurrent && isPlaying ? (
                           <Pause className="w-3.5 h-3.5 fill-current" />
@@ -270,13 +302,13 @@ export const SearchView: React.FC = () => {
                         )}
                       </Button>
                     </div>
-                  </Card>
+                  </div>
                 </motion.div>
               );
             })}
           </motion.div>
-        )}
-      </div>
+        ) : null}
+      </section>
     </div>
   );
 };

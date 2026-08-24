@@ -11,7 +11,6 @@ import { useFavoritesQuery, useToggleFavoriteMutation, useHistoryQuery } from "@
 import { useHistoryStore } from "@/stores/historyStore";
 import { LoginModal } from "@/components/Auth/LoginModal";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { SegmentedTabs } from "@/components/ui/tabs";
 import { motion } from "motion/react";
@@ -41,24 +40,24 @@ export const ProfilePage: React.FC = () => {
     "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80";
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 pb-20 select-none animate-in fade-in duration-300">
-      {/* Profile Header Hero Card */}
-      <Card className="p-6 rounded-3xl glass flex flex-col sm:flex-row items-center sm:items-start gap-5">
+    <div className="max-w-4xl mx-auto space-y-8 pb-20 select-none animate-in fade-in duration-300">
+      {/* Bento Profile Header */}
+      <div className="bento-card p-7 flex flex-col sm:flex-row items-center sm:items-start gap-6 relative overflow-hidden">
         <img
           src={user?.avatarUrl || defaultAvatar}
           alt={user?.nickname || "User"}
-          className="w-20 h-20 rounded-full object-cover shadow-lg border-2 border-[#fa2d48]/40 flex-shrink-0"
+          className="w-20 h-20 rounded-full object-cover shadow-xl border-2 border-[#FA2D48]/40 flex-shrink-0"
         />
 
-        <div className="flex-1 text-center sm:text-left space-y-2">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div className="flex-1 text-center sm:text-left space-y-2.5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h1 className="text-xl font-bold text-neutral-900 dark:text-white flex items-center justify-center sm:justify-start gap-2">
+              <h1 className="text-2xl font-bold apple-title text-neutral-900 dark:text-white flex items-center justify-center sm:justify-start gap-2">
                 {isAuthenticated ? user?.nickname : "访客体验用户"}
                 {isAuthenticated && <Badge variant="apple">Apple ID 认证</Badge>}
               </h1>
-              <p className="text-xs text-neutral-400">
-                {isAuthenticated ? "已激活 Apple Music 空间音频订阅" : "登录后可跨设备同步喜爱歌曲与专属歌单"}
+              <p className="apple-caption mt-0.5">
+                {isAuthenticated ? "已激活 Apple Music 空间音频订阅服务" : "登录 Apple ID 跨设备同步收藏曲目与自建歌单"}
               </p>
             </div>
 
@@ -70,13 +69,13 @@ export const ProfilePage: React.FC = () => {
                   size="sm"
                   className="text-xs text-red-500 hover:bg-red-500/10 rounded-xl"
                 >
-                  <LogOut className="w-3.5 h-3.5 mr-1.5" /> 退出登录
+                  <LogOut className="w-3.5 h-3.5 mr-1" /> 退出登录
                 </Button>
               ) : (
                 <Button
                   onClick={() => setIsLoginOpen(true)}
-                  size="sm"
-                  className="rounded-xl font-semibold text-xs"
+                  size="default"
+                  className="font-semibold text-xs h-8.5 px-5"
                 >
                   登录 Apple ID
                 </Button>
@@ -84,7 +83,7 @@ export const ProfilePage: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center justify-center sm:justify-start gap-3 pt-1 text-xs text-neutral-500">
+          <div className="flex items-center justify-center sm:justify-start gap-3 pt-1 text-xs text-[#86868b]">
             <span className="font-semibold text-neutral-800 dark:text-neutral-200">
               {favorites.length} 首喜爱曲目
             </span>
@@ -92,11 +91,12 @@ export const ProfilePage: React.FC = () => {
             <span>{history.length} 条播放足迹</span>
           </div>
         </div>
-      </Card>
+      </div>
 
       {/* Tabs Switcher */}
       <div className="flex items-center justify-between">
         <SegmentedTabs
+          layoutId="profile-tabs-pill"
           value={activeTab}
           onValueChange={setActiveTab}
           items={[
@@ -113,7 +113,7 @@ export const ProfilePage: React.FC = () => {
             }}
             variant="ghost"
             size="sm"
-            className="text-xs text-neutral-400 hover:text-red-500 rounded-xl"
+            className="text-xs text-[#86868b] hover:text-red-500"
           >
             <Trash2 className="w-3.5 h-3.5 mr-1" /> 清空历史
           </Button>
@@ -123,32 +123,32 @@ export const ProfilePage: React.FC = () => {
       {/* Content List */}
       {activeTab === "favorites" ? (
         favorites.length === 0 ? (
-          <div className="py-20 text-center text-neutral-400 space-y-2">
-            <Heart className="w-10 h-10 mx-auto opacity-20" />
+          <div className="py-24 text-center text-neutral-400 space-y-2">
+            <Heart className="w-12 h-12 mx-auto opacity-20" />
             <div className="text-sm font-semibold">暂无喜爱歌曲</div>
-            <div className="text-xs">在搜索或发现页面点击红心图标即可收藏</div>
+            <div className="apple-caption">在探索或专辑页面点击红心图标即可收藏</div>
           </div>
         ) : (
-          <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+          <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
             {favorites.map((track) => {
               const isCurrent = currentTrack?.id === track.id || currentTrack?.url === track.url;
               return (
                 <motion.div key={track.id} variants={staggerItem}>
-                  <Card
+                  <div
                     onClick={() => playTrack(track, favorites)}
-                    className={`flex items-center justify-between p-2.5 rounded-2xl border transition-all group cursor-pointer ${
+                    className={`bento-card flex items-center justify-between p-3 transition-all group cursor-pointer ${
                       isCurrent
-                        ? "border-[#fa2d48]/40 bg-[#fa2d48]/5 dark:bg-[#fa2d48]/10"
-                        : "border-black/[0.04] dark:border-white/[0.06] bg-white/60 dark:bg-white/[0.03] hover:bg-white/90 dark:hover:bg-white/[0.07]"
+                        ? "ring-2 ring-[#FA2D48]/40 bg-[#FA2D48]/5 dark:bg-[#FA2D48]/10"
+                        : "hover:scale-[1.01]"
                     }`}
                   >
                     <div className="flex items-center gap-3 overflow-hidden pr-2">
-                      <img src={track.pic} alt={track.name} className="w-10 h-10 rounded-xl object-cover shadow-sm flex-shrink-0" />
+                      <img src={track.pic} alt={track.name} className="w-11 h-11 rounded-xl object-cover shadow-sm flex-shrink-0" />
                       <div className="overflow-hidden">
-                        <div className={`text-xs font-semibold truncate ${isCurrent ? "text-[#fa2d48]" : "group-hover:text-[#fa2d48]"}`}>
+                        <div className={`text-[13px] font-semibold truncate ${isCurrent ? "text-[#FA2D48]" : "group-hover:text-[#FA2D48]"}`}>
                           {track.name}
                         </div>
-                        <div className="text-[11px] text-neutral-400 truncate">{track.artist}</div>
+                        <div className="apple-caption truncate">{track.artist}</div>
                       </div>
                     </div>
                     <button
@@ -157,11 +157,11 @@ export const ProfilePage: React.FC = () => {
                         toggleFavMutation.mutate(track);
                         toast.info("已移出喜爱歌曲", track.name);
                       }}
-                      className="p-1.5 text-[#fa2d48] hover:bg-[#fa2d48]/10 rounded-lg transition-colors cursor-pointer"
+                      className="p-1.5 text-[#FA2D48] hover:bg-[#FA2D48]/10 rounded-lg transition-colors cursor-pointer"
                     >
-                      <Heart className="w-3.5 h-3.5 fill-current" />
+                      <Heart className="w-4 h-4 fill-current" />
                     </button>
-                  </Card>
+                  </div>
                 </motion.div>
               );
             })}
@@ -169,45 +169,47 @@ export const ProfilePage: React.FC = () => {
         )
       ) : (
         history.length === 0 ? (
-          <div className="py-20 text-center text-neutral-400 space-y-2">
-            <Clock className="w-10 h-10 mx-auto opacity-20" />
+          <div className="py-24 text-center text-neutral-400 space-y-2">
+            <Clock className="w-12 h-12 mx-auto opacity-20" />
             <div className="text-sm font-semibold">暂无播放记录</div>
-            <div className="text-xs">播放任意歌曲后将在此自动记录</div>
+            <div className="apple-caption">播放任意歌曲后将在此自动记录</div>
           </div>
         ) : (
-          <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="space-y-1">
-            {history.map((item, idx) => {
-              const isCurrent = currentTrack?.id === item.track.id || currentTrack?.url === item.track.url;
-              return (
-                <motion.div key={item.track.id + idx} variants={staggerItem}>
-                  <div
-                    onClick={() => playTrack(item.track, history.map((h) => h.track))}
-                    className={`flex items-center justify-between px-3 py-2.5 rounded-xl transition-all group cursor-pointer ${
-                      isCurrent
-                        ? "bg-[#fa2d48]/10 text-[#fa2d48]"
-                        : "hover:bg-black/[0.04] dark:hover:bg-white/[0.06] text-neutral-800 dark:text-neutral-200"
-                    }`}
-                  >
-                    <div className="flex items-center gap-3 overflow-hidden pr-2">
-                      <span className="text-xs font-semibold text-neutral-400 w-5 text-center tabular-nums">
-                        {idx + 1}
-                      </span>
-                      <img src={item.track.pic} alt={item.track.name} className="w-9 h-9 rounded-lg object-cover flex-shrink-0" />
-                      <div className="overflow-hidden">
-                        <div className={`text-xs font-semibold truncate ${isCurrent ? "text-[#fa2d48]" : "group-hover:text-[#fa2d48]"}`}>
-                          {item.track.name}
+          <div className="inset-group divide-y divide-black/[0.05] dark:divide-white/[0.06] overflow-hidden">
+            <motion.div variants={staggerContainer} initial="hidden" animate="visible">
+              {history.map((item, idx) => {
+                const isCurrent = currentTrack?.id === item.track.id || currentTrack?.url === item.track.url;
+                return (
+                  <motion.div key={item.track.id + idx} variants={staggerItem}>
+                    <div
+                      onClick={() => playTrack(item.track, history.map((h) => h.track))}
+                      className={`flex items-center justify-between px-4 py-3 transition-colors group cursor-pointer ${
+                        isCurrent
+                          ? "bg-[#FA2D48]/10 text-[#FA2D48]"
+                          : "hover:bg-black/[0.03] dark:hover:bg-white/[0.03] text-neutral-800 dark:text-neutral-200"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3.5 overflow-hidden pr-2">
+                        <span className="text-xs font-semibold text-neutral-400 w-5 text-center tabular-nums">
+                          {idx + 1}
+                        </span>
+                        <img src={item.track.pic} alt={item.track.name} className="w-10 h-10 rounded-xl object-cover flex-shrink-0" />
+                        <div className="overflow-hidden">
+                          <div className={`text-[13px] font-semibold truncate ${isCurrent ? "text-[#FA2D48]" : "group-hover:text-[#FA2D48]"}`}>
+                            {item.track.name}
+                          </div>
+                          <div className="apple-caption truncate">{item.track.artist}</div>
                         </div>
-                        <div className="text-[11px] text-neutral-400 truncate">{item.track.artist}</div>
                       </div>
+                      <span className="tabular-nums font-mono text-[11px] text-[#86868b] w-12 text-right">
+                        {formatDuration(item.track.duration)}
+                      </span>
                     </div>
-                    <span className="text-[11px] text-neutral-400 font-mono">
-                      {formatDuration(item.track.duration)}
-                    </span>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </motion.div>
+                  </motion.div>
+                );
+              })}
+            </motion.div>
+          </div>
         )
       )}
 
