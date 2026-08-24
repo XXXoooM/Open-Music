@@ -66,7 +66,7 @@ export const SearchView: React.FC = () => {
   };
 
   return (
-    <div className="space-y-8 max-w-5xl mx-auto pb-20 select-none animate-in fade-in duration-300">
+    <div className="space-y-8 max-w-5xl mx-auto pb-20 select-none animate-in fade-in duration-300 min-w-0">
       {/* Search Header & Controls */}
       <div className="space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -141,7 +141,7 @@ export const SearchView: React.FC = () => {
               size="sm"
               variant="secondary"
               onClick={() => handleTagClick(tag)}
-              className="h-6 px-3 rounded-full text-xs font-medium"
+              className="h-6 px-3 rounded-full text-xs font-medium flex-shrink-0"
             >
               {tag}
             </Button>
@@ -149,7 +149,7 @@ export const SearchView: React.FC = () => {
         </div>
       </div>
 
-      {/* Discovery Bento Categories (Show when no active results or browsing) */}
+      {/* Discovery Bento Categories */}
       {(!hasSearched || results.length === 0) && !isSearching && (
         <section className="space-y-4">
           <div className="flex items-center justify-between">
@@ -168,9 +168,9 @@ export const SearchView: React.FC = () => {
                 onClick={() => handleCategoryClick(cat.query)}
                 className={`h-24 rounded-2xl p-4 bg-gradient-to-br ${cat.gradient} text-white shadow-md cursor-pointer flex flex-col justify-between relative overflow-hidden group select-none`}
               >
-                <div className="relative z-10">
-                  <h3 className="text-sm font-bold tracking-tight">{cat.title}</h3>
-                  <p className="text-[10px] text-white/80 font-medium">{cat.subtitle}</p>
+                <div className="relative z-10 min-w-0">
+                  <h3 className="text-sm font-bold tracking-tight truncate">{cat.title}</h3>
+                  <p className="text-[10px] text-white/80 font-medium truncate">{cat.subtitle}</p>
                 </div>
                 <div className="self-end relative z-10 opacity-80 group-hover:opacity-100 transition-opacity">
                   <Play className="w-4 h-4 fill-current ml-0.5" />
@@ -186,7 +186,7 @@ export const SearchView: React.FC = () => {
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold apple-title flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-[#FA2D48]" />
+            <Sparkles className="w-4 h-4 text-[#FA2D48] flex-shrink-0" />
             {isSearching ? "正在连接云端多线路搜索..." : `搜索匹配结果 (${results.length})`}
           </h2>
           <span className="apple-caption font-mono">
@@ -212,18 +212,18 @@ export const SearchView: React.FC = () => {
               const isFav = isFavorite(track.id);
 
               return (
-                <motion.div key={track.id + idx} variants={staggerItem}>
+                <motion.div key={track.id + idx} variants={staggerItem} className="min-w-0">
                   <div
                     onClick={() => playTrack(track, results)}
-                    className={`bento-card flex items-center justify-between p-3 transition-all group cursor-pointer ${
+                    className={`bento-card flex items-center justify-between p-3 transition-all group cursor-pointer overflow-hidden ${
                       isCurrent
                         ? "ring-2 ring-[#FA2D48]/40 bg-[#FA2D48]/5 dark:bg-[#FA2D48]/10 shadow-sm"
                         : "hover:scale-[1.01]"
                     }`}
                   >
                     {/* Track Info */}
-                    <div className="flex items-center gap-3 overflow-hidden pr-2">
-                      <span className="text-xs font-semibold text-neutral-400 w-5 text-center tabular-nums">
+                    <div className="flex items-center gap-3 overflow-hidden min-w-0 flex-1 pr-2">
+                      <span className="text-xs font-semibold text-neutral-400 w-5 text-center tabular-nums flex-shrink-0">
                         {isCurrent && isPlaying ? (
                           <Volume2 className="w-3.5 h-3.5 text-[#FA2D48] animate-pulse" />
                         ) : (
@@ -235,7 +235,7 @@ export const SearchView: React.FC = () => {
                         alt={track.name}
                         className="w-11 h-11 rounded-xl object-cover shadow-sm flex-shrink-0"
                       />
-                      <div className="overflow-hidden">
+                      <div className="overflow-hidden min-w-0 flex-1">
                         <div
                           className={`text-sm font-semibold truncate transition-colors ${
                             isCurrent ? "text-[#FA2D48]" : "group-hover:text-[#FA2D48]"
@@ -250,7 +250,7 @@ export const SearchView: React.FC = () => {
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex items-center gap-1.5 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
                       <Button
                         size="icon"
                         variant="ghost"
@@ -262,7 +262,7 @@ export const SearchView: React.FC = () => {
                             toast.success("已添加到喜爱歌曲", track.name);
                           }
                         }}
-                        className={`h-7.5 w-7.5 ${isFav ? "text-[#FA2D48]" : "text-neutral-400"}`}
+                        className={`h-7.5 w-7.5 flex-shrink-0 ${isFav ? "text-[#FA2D48]" : "text-neutral-400"}`}
                         title={isFav ? "取消喜爱" : "添加到喜爱歌曲"}
                       >
                         <Heart className={`w-3.5 h-3.5 ${isFav ? "fill-current" : ""}`} />
@@ -276,7 +276,7 @@ export const SearchView: React.FC = () => {
                             addTrackToPlaylist(customPlaylists[0].id, track);
                             toast.success(`已添加到歌单「${customPlaylists[0].title}」`, track.name);
                           }}
-                          className="h-7.5 w-7.5 text-neutral-400"
+                          className="h-7.5 w-7.5 text-neutral-400 flex-shrink-0"
                           title={`添加到歌单: ${customPlaylists[0].title}`}
                         >
                           <Plus className="w-3.5 h-3.5" />
@@ -293,7 +293,7 @@ export const SearchView: React.FC = () => {
                             playTrack(track, results);
                           }
                         }}
-                        className={`w-8 h-8 rounded-full ${isCurrent ? "shadow-md shadow-[#FA2D48]/30" : ""}`}
+                        className={`w-8 h-8 rounded-full flex-shrink-0 ${isCurrent ? "shadow-md shadow-[#FA2D48]/30" : ""}`}
                       >
                         {isCurrent && isPlaying ? (
                           <Pause className="w-3.5 h-3.5 fill-current" />
