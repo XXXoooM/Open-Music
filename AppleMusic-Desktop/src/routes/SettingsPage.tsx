@@ -120,23 +120,26 @@ export const SettingsPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6 pb-24 select-none animate-in fade-in duration-200">
-      {/* Header */}
-      <div className="flex items-center justify-between pb-2 border-b border-black/[0.06] dark:border-white/[0.08]">
+    <div className="max-w-2xl mx-auto space-y-6 pb-24 select-none animate-in fade-in duration-200">
+      {/* Settings Header */}
+      <div className="flex items-center justify-between pb-3 border-b border-black/[0.06] dark:border-white/[0.08]">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
             偏好设置
           </h1>
           <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
-            配置 Apple Music 播放体验、音频解码与云端多线路
+            配置播放体验、音质解码与云端多线路
           </p>
         </div>
-        <Badge variant="apple">macOS Sequoia</Badge>
+        <Badge variant="secondary" className="text-[11px] font-medium">
+          Apple Music Desktop
+        </Badge>
       </div>
 
       {/* Top Segmented Navigation Tabs */}
       <div className="flex justify-center sm:justify-start">
         <SegmentedTabs
+          layoutId="settings-nav-tabs"
           value={activeTab}
           onValueChange={(v) => setActiveTab(v as SettingsTab)}
           items={[
@@ -156,33 +159,34 @@ export const SettingsPage: React.FC = () => {
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: 0.18 }}
             className="space-y-4"
           >
-            <div className="text-xs font-semibold text-neutral-500 uppercase tracking-wider px-1">
-              外观模式
+            <div className="text-[11px] font-semibold text-neutral-400 uppercase tracking-wider px-1">
+              外观与启动行为
             </div>
-            <div className="rounded-2xl bg-white/70 dark:bg-white/[0.04] border border-black/5 dark:border-white/5 divide-y divide-black/[0.04] dark:divide-white/[0.06] overflow-hidden">
+            <div className="inset-group divide-y divide-black/[0.05] dark:divide-white/[0.06] overflow-hidden">
               <div className="flex items-center justify-between p-4">
                 <div className="space-y-0.5">
-                  <div className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">主题配色</div>
-                  <div className="text-xs text-neutral-400">选择应用在系统中的显示外观</div>
+                  <div className="text-[13px] font-semibold text-neutral-900 dark:text-neutral-100">主题配色</div>
+                  <div className="text-[11px] text-neutral-500 dark:text-neutral-400">选择应用在系统中的显示外观</div>
                 </div>
                 <SegmentedTabs
+                  layoutId="settings-theme-selector"
                   value={mode}
                   onValueChange={(v) => setMode(v as any)}
                   items={[
-                    { value: "system", label: "跟随系统", icon: <Laptop className="w-3.5 h-3.5" /> },
-                    { value: "light", label: "浅色", icon: <Sun className="w-3.5 h-3.5" /> },
-                    { value: "dark", label: "深色", icon: <Moon className="w-3.5 h-3.5" /> },
+                    { value: "system", label: "跟随系统", icon: <Laptop className="w-3 h-3" /> },
+                    { value: "light", label: "浅色", icon: <Sun className="w-3 h-3" /> },
+                    { value: "dark", label: "深色", icon: <Moon className="w-3 h-3" /> },
                   ]}
                 />
               </div>
 
               <div className="flex items-center justify-between p-4">
                 <div className="space-y-0.5">
-                  <div className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">启动时自动播放</div>
-                  <div className="text-xs text-neutral-400">应用打开后自动加载并播放精选歌单第一首歌曲</div>
+                  <div className="text-[13px] font-semibold text-neutral-900 dark:text-neutral-100">启动时自动播放</div>
+                  <div className="text-[11px] text-neutral-500 dark:text-neutral-400">应用打开后自动加载并播放精选歌单曲目</div>
                 </div>
                 <Switch checked={autoPlayOnStart} onCheckedChange={setAutoPlayOnStart} />
               </div>
@@ -196,31 +200,31 @@ export const SettingsPage: React.FC = () => {
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: 0.18 }}
             className="space-y-4"
           >
-            <div className="text-xs font-semibold text-neutral-500 uppercase tracking-wider px-1">
-              输出与音量
+            <div className="text-[11px] font-semibold text-neutral-400 uppercase tracking-wider px-1">
+              默认音量
             </div>
-            <div className="rounded-2xl bg-white/70 dark:bg-white/[0.04] border border-black/5 dark:border-white/5 p-4 space-y-2">
+            <div className="inset-group p-4 space-y-2">
               <div className="flex items-center justify-between text-xs font-semibold">
-                <span className="flex items-center gap-1.5 text-neutral-800 dark:text-neutral-200">
-                  <Volume2 className="w-3.5 h-3.5 text-[#fa2d48]" /> 默认播放音量
+                <span className="flex items-center gap-1.5 text-neutral-800 dark:text-neutral-200 text-[13px]">
+                  <Volume2 className="w-3.5 h-3.5 text-[#fa2d48]" /> 播放器初始音量
                 </span>
-                <span className="tabular-nums text-[#fa2d48] font-bold">{Math.round(volume * 100)}%</span>
+                <span className="tabular-nums text-[#fa2d48] font-bold text-xs">{Math.round(volume * 100)}%</span>
               </div>
               <Slider value={volume} onValueChange={setVolume} />
             </div>
 
-            <div className="text-xs font-semibold text-neutral-500 uppercase tracking-wider px-1 pt-2">
-              音频质量与空间音频格式
+            <div className="text-[11px] font-semibold text-neutral-400 uppercase tracking-wider px-1 pt-2">
+              音频解码格式与空间音频
             </div>
-            <div className="rounded-2xl bg-white/70 dark:bg-white/[0.04] border border-black/5 dark:border-white/5 divide-y divide-black/[0.04] dark:divide-white/[0.06] overflow-hidden">
+            <div className="inset-group divide-y divide-black/[0.05] dark:divide-white/[0.06] overflow-hidden">
               {[
                 {
                   id: "spatial" as AudioQuality,
                   title: "杜比全景声 (Spatial Audio)",
-                  desc: "提供 360 度多维空间环绕立体声场，带来身临其境的剧场级体验",
+                  desc: "提供 360 度多维空间环绕立体声场，身临其境的剧场级体验",
                   badge: "Dolby Atmos",
                 },
                 {
@@ -252,14 +256,14 @@ export const SettingsPage: React.FC = () => {
                   >
                     <div className="space-y-0.5 pr-4">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+                        <span className="text-[13px] font-semibold text-neutral-900 dark:text-neutral-100">
                           {item.title}
                         </span>
                         <span className="text-[10px] px-1.5 py-0.5 rounded bg-black/5 dark:bg-white/10 text-neutral-500 font-mono">
                           {item.badge}
                         </span>
                       </div>
-                      <div className="text-xs text-neutral-400">{item.desc}</div>
+                      <div className="text-[11px] text-neutral-500 dark:text-neutral-400">{item.desc}</div>
                     </div>
                     {isSelected && (
                       <div className="w-5 h-5 rounded-full bg-[#fa2d48] text-white flex items-center justify-center flex-shrink-0 shadow-sm">
@@ -279,24 +283,24 @@ export const SettingsPage: React.FC = () => {
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: 0.18 }}
             className="space-y-4"
           >
-            <div className="text-xs font-semibold text-neutral-500 uppercase tracking-wider px-1">
-              云端 API 线路与容灾
+            <div className="text-[11px] font-semibold text-neutral-400 uppercase tracking-wider px-1">
+              云端解析线路
             </div>
-            <div className="rounded-2xl bg-white/70 dark:bg-white/[0.04] border border-black/5 dark:border-white/5 divide-y divide-black/[0.04] dark:divide-white/[0.06] overflow-hidden">
+            <div className="inset-group divide-y divide-black/[0.05] dark:divide-white/[0.06] overflow-hidden">
               {[
                 {
                   id: "qijieya" as ApiSource,
                   title: "线路一 · 祈杰 Meting VIP 节点",
-                  desc: "支持网易云 VIP 无损音质解析，推荐高速宽带用户首选",
+                  desc: "支持网易云 VIP 无损音质解析，推荐高速宽带首选",
                   url: "api.qijieya.cn/meting/",
                 },
                 {
                   id: "mikus" as ApiSource,
                   title: "线路二 · Mikus 官方分布式镜像",
-                  desc: "全球分布式多节点高可用集群，具备强大的智能容灾能力",
+                  desc: "全球分布式多节点高可用集群，具备强大的容灾能力",
                   url: "meting.mikus.ink/api",
                 },
               ].map((route) => {
@@ -316,10 +320,10 @@ export const SettingsPage: React.FC = () => {
                     }`}
                   >
                     <div className="space-y-0.5 pr-4">
-                      <div className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+                      <div className="text-[13px] font-semibold text-neutral-900 dark:text-neutral-100">
                         {route.title}
                       </div>
-                      <div className="text-xs text-neutral-400">{route.desc}</div>
+                      <div className="text-[11px] text-neutral-500 dark:text-neutral-400">{route.desc}</div>
                       <div className="text-[10px] font-mono text-[#fa2d48]">{route.url}</div>
                     </div>
                     {isSelected && (
@@ -332,16 +336,17 @@ export const SettingsPage: React.FC = () => {
               })}
             </div>
 
-            <div className="text-xs font-semibold text-neutral-500 uppercase tracking-wider px-1 pt-2">
-              音乐服务商与歌单导入
+            <div className="text-[11px] font-semibold text-neutral-400 uppercase tracking-wider px-1 pt-2">
+              音乐平台与歌单导入
             </div>
-            <div className="rounded-2xl bg-white/70 dark:bg-white/[0.04] border border-black/5 dark:border-white/5 p-4 space-y-4">
+            <div className="inset-group p-4 space-y-4">
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <div className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">默认解析平台</div>
-                  <div className="text-xs text-neutral-400">选择歌单与歌曲搜索的主数据源</div>
+                  <div className="text-[13px] font-semibold text-neutral-900 dark:text-neutral-100">默认音乐平台</div>
+                  <div className="text-[11px] text-neutral-500 dark:text-neutral-400">选择歌单与歌曲搜索的主数据源</div>
                 </div>
                 <SegmentedTabs
+                  layoutId="settings-music-server"
                   value={musicServer}
                   onValueChange={(v) => {
                     const s = v as MusicServer;
@@ -349,14 +354,14 @@ export const SettingsPage: React.FC = () => {
                     queryClient.invalidateQueries({ queryKey: ["playlist"] });
                   }}
                   items={[
-                    { value: "netease", label: "网易云音乐", icon: <Music className="w-3.5 h-3.5" /> },
-                    { value: "tencent", label: "QQ 音乐", icon: <Radio className="w-3.5 h-3.5" /> },
+                    { value: "netease", label: "网易云音乐", icon: <Music className="w-3 h-3" /> },
+                    { value: "tencent", label: "QQ 音乐", icon: <Radio className="w-3 h-3" /> },
                   ]}
                 />
               </div>
 
               <form onSubmit={handleSavePlaylistId} className="space-y-2 pt-2 border-t border-black/[0.04] dark:border-white/[0.06]">
-                <div className="text-xs font-semibold text-neutral-800 dark:text-neutral-200">
+                <div className="text-[12px] font-semibold text-neutral-800 dark:text-neutral-200">
                   导入外部歌单 ID (当前: {defaultPlaylistId})
                 </div>
                 <div className="flex items-center gap-2">
@@ -365,7 +370,7 @@ export const SettingsPage: React.FC = () => {
                     value={customIdInput}
                     onChange={(e) => setCustomIdInput(e.target.value)}
                     placeholder="输入公开歌单 ID (如: 17910751956 或 2619366284)"
-                    className="h-8 text-xs rounded-xl"
+                    className="h-8 text-xs rounded-xl bg-white dark:bg-[#2C2C2E]"
                   />
                   <Button type="submit" size="default" className="flex-shrink-0">
                     载入并同步
@@ -382,21 +387,21 @@ export const SettingsPage: React.FC = () => {
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: 0.18 }}
             className="space-y-4"
           >
-            <div className="text-xs font-semibold text-neutral-500 uppercase tracking-wider px-1">
+            <div className="text-[11px] font-semibold text-neutral-400 uppercase tracking-wider px-1">
               本地存储空间
             </div>
-            <div className="rounded-2xl bg-white/70 dark:bg-white/[0.04] border border-black/5 dark:border-white/5 p-4 flex items-center justify-between">
+            <div className="inset-group p-4 flex items-center justify-between">
               <div className="space-y-0.5">
-                <div className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-2">
+                <div className="text-[13px] font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-2">
                   <HardDrive className="w-4 h-4 text-[#fa2d48]" />
                   <span>缓存与临时数据</span>
                   <span className="text-xs font-mono text-neutral-400">({cacheSize})</span>
                 </div>
-                <div className="text-xs text-neutral-400">
-                  清理歌曲音频流切片与歌词离线缓存，重置本地临时数据
+                <div className="text-[11px] text-neutral-500 dark:text-neutral-400">
+                  清理音频流切片与歌词离线缓存，重置本地临时数据
                 </div>
               </div>
               <Button
@@ -415,16 +420,16 @@ export const SettingsPage: React.FC = () => {
               </Button>
             </div>
 
-            <div className="text-xs font-semibold text-neutral-500 uppercase tracking-wider px-1 pt-2">
+            <div className="text-[11px] font-semibold text-neutral-400 uppercase tracking-wider px-1 pt-2">
               应用版本与信息
             </div>
-            <div className="rounded-2xl bg-white/70 dark:bg-white/[0.04] border border-black/5 dark:border-white/5 p-4 space-y-3">
+            <div className="inset-group p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+                  <div className="text-[13px] font-semibold text-neutral-900 dark:text-neutral-100">
                     Apple Music Desktop
                   </div>
-                  <div className="text-xs text-neutral-400 mt-0.5">
+                  <div className="text-[11px] text-neutral-400 mt-0.5">
                     版本 v1.0.0 (Tauri 2 + React 19 + Liquid Glass)
                   </div>
                 </div>

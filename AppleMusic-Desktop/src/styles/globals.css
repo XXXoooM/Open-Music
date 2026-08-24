@@ -6,79 +6,61 @@
 
 @layer base {
   :root {
-    /* 8px Apple Grid Spacing System */
-    --space-1: 0.25rem;  /* 4px */
-    --space-2: 0.5rem;   /* 8px */
-    --space-3: 0.75rem;  /* 12px */
-    --space-4: 1rem;     /* 16px */
-    --space-5: 1.25rem;  /* 20px */
-    --space-6: 1.5rem;   /* 24px */
-    --space-8: 2rem;     /* 32px */
-    --space-10: 2.5rem;  /* 40px */
-    --space-12: 3rem;    /* 48px */
-
-    /* Apple Light Palette: Clean Studio White Canvas */
-    --background: 240 6% 97%;
+    /* Apple Light Canvas Palette */
+    --background: 0 0% 100%;       /* Pure White Main Window #FFFFFF */
     --foreground: 240 10% 12%;
-    --card: 0 0% 100%;
+    --card: 240 5% 96%;           /* Inset Group Grey #F2F2F7 */
     --card-foreground: 240 10% 12%;
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 12%;
-    --primary: 350 95% 58%; /* Apple Music Signature Crimson #FA2D48 */
+    --primary: 350 95% 58%;        /* Apple Music Signature Red #FA2D48 */
     --primary-foreground: 0 0% 100%;
     --apple-blue: 211 100% 50%;
-    --secondary: 240 5% 92%;
+    --secondary: 240 5% 90%;
     --secondary-foreground: 240 6% 15%;
-    --muted: 240 5% 94%;
+    --muted: 240 5% 92%;
     --muted-foreground: 240 4% 46%;
     --accent: 240 5% 92%;
     --accent-foreground: 240 6% 15%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 6% 90%;
-    --input: 240 6% 90%;
+    --border: 240 6% 88%;
+    --input: 240 6% 88%;
     --ring: 350 95% 58%;
     --radius: 1rem;
 
-    /* Apple Liquid Glass Light Tokens */
-    --apple-glass: rgba(255, 255, 255, 0.72);
-    --apple-glass-border: rgba(0, 0, 0, 0.07);
-    --apple-glass-highlight: rgba(255, 255, 255, 0.95);
-    --apple-glass-glow: rgba(0, 0, 0, 0.04);
-    --apple-sidebar: rgba(246, 246, 248, 0.84);
-    --apple-player-bar: rgba(255, 255, 255, 0.88);
+    /* Apple Sidebar & Player Glass */
+    --apple-sidebar: #F2F2F7;
+    --apple-player-bar: rgba(255, 255, 255, 0.92);
+    --apple-glass-border: rgba(0, 0, 0, 0.08);
   }
 
   .dark {
-    /* Apple Dark Palette: #0A0A0F OLED & Liquid Acrylic */
-    --background: 240 6% 5.5%;
+    /* Apple Dark Canvas Palette */
+    --background: 240 6% 7%;      /* Dark Canvas #121214 */
     --foreground: 0 0% 98%;
-    --card: 240 5% 9%;
+    --card: 240 5% 11%;           /* Dark Inset Group #1C1C1E */
     --card-foreground: 0 0% 98%;
-    --popover: 240 5% 9%;
+    --popover: 240 5% 11%;
     --popover-foreground: 0 0% 98%;
     --primary: 350 95% 60%;
     --primary-foreground: 0 0% 100%;
     --apple-blue: 211 100% 55%;
-    --secondary: 240 4% 15%;
+    --secondary: 240 4% 16%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 240 4% 15%;
+    --muted: 240 4% 16%;
     --muted-foreground: 240 5% 65%;
-    --accent: 240 4% 17%;
+    --accent: 240 4% 18%;
     --accent-foreground: 0 0% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 4% 16%;
-    --input: 240 4% 16%;
+    --border: 240 4% 18%;
+    --input: 240 4% 18%;
     --ring: 350 95% 60%;
 
-    /* Apple Liquid Glass Dark Tokens */
-    --apple-glass: rgba(24, 24, 28, 0.72);
-    --apple-glass-border: rgba(255, 255, 255, 0.09);
-    --apple-glass-highlight: rgba(255, 255, 255, 0.12);
-    --apple-glass-glow: rgba(0, 0, 0, 0.45);
-    --apple-sidebar: rgba(16, 16, 20, 0.82);
-    --apple-player-bar: rgba(20, 20, 24, 0.9);
+    --apple-sidebar: #18181B;
+    --apple-player-bar: rgba(22, 22, 26, 0.92);
+    --apple-glass-border: rgba(255, 255, 255, 0.1);
   }
 }
 
@@ -95,72 +77,43 @@ body {
   overflow: hidden;
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
-  transition: background-color 0.35s cubic-bezier(0.16, 1, 0.3, 1), color 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background-color 0.3s cubic-bezier(0.16, 1, 0.3, 1), color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ==========================================================================
-   Apple Liquid Glass Design System
-   ========================================================================== */
-
-.glass {
-  background: var(--apple-glass);
-  backdrop-filter: blur(28px) saturate(190%);
-  -webkit-backdrop-filter: blur(28px) saturate(190%);
-  border: 1px solid var(--apple-glass-border);
-  box-shadow: 0 4px 20px -2px var(--apple-glass-glow), inset 0 1px 0 0 var(--apple-glass-highlight);
-}
-
-.glass-enhanced {
-  background: var(--apple-glass);
-  backdrop-filter: blur(40px) saturate(210%);
-  -webkit-backdrop-filter: blur(40px) saturate(210%);
-  border: 1px solid var(--apple-glass-border);
-  box-shadow: 
-    0 8px 32px 0 var(--apple-glass-glow),
-    inset 0 1px 1px 0 var(--apple-glass-highlight),
-    inset 0 -1px 1px 0 rgba(0, 0, 0, 0.05);
-}
-
-.glass-dark {
-  background: rgba(18, 18, 22, 0.78);
-  backdrop-filter: blur(36px) saturate(200%);
-  -webkit-backdrop-filter: blur(36px) saturate(200%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.42), inset 0 1px 0 0 rgba(255, 255, 255, 0.12);
-}
-
-.apple-glass {
-  background: var(--apple-glass);
-  backdrop-filter: blur(28px) saturate(190%);
-  -webkit-backdrop-filter: blur(28px) saturate(190%);
-  border: 1px solid var(--apple-glass-border);
-  box-shadow: 0 4px 20px -2px var(--apple-glass-glow), inset 0 1px 0 0 var(--apple-glass-highlight);
-}
-
+/* Apple Sidebar & Player Glasses */
 .apple-sidebar-glass {
-  background: var(--apple-sidebar);
-  backdrop-filter: blur(36px) saturate(200%);
-  -webkit-backdrop-filter: blur(36px) saturate(200%);
+  background-color: var(--apple-sidebar);
   border-right: 1px solid var(--apple-glass-border);
 }
 
 .apple-player-glass {
   background: var(--apple-player-bar);
-  backdrop-filter: blur(36px) saturate(200%);
-  -webkit-backdrop-filter: blur(36px) saturate(200%);
+  backdrop-filter: blur(32px) saturate(200%);
+  -webkit-backdrop-filter: blur(32px) saturate(200%);
   border-top: 1px solid var(--apple-glass-border);
-  box-shadow: 0 -6px 28px var(--apple-glass-glow);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.04);
 }
 
-/* Atmospheric Floating Color Orb */
+/* Inset Group Card Container */
+.inset-group {
+  background-color: #F2F2F7;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 1rem;
+}
+
+.dark .inset-group {
+  background-color: #1C1C1E;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Atmospheric Glow */
 .aura-orb {
   filter: blur(80px);
   pointer-events: none;
   opacity: 0.35;
   border-radius: 9999px;
-  will-change: transform, opacity;
 }
 
 /* Custom Scrollbars */
