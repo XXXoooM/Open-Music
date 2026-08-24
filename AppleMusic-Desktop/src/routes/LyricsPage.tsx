@@ -1,15 +1,15 @@
-import React, { useEffect, useRef, useState, useMemo } from "react";
+import React, { useEffect, useRef, useState, useMemo, useCallback } from "react";
 import { usePlayerStore } from "@/stores/playerStore";
 import { useLyrics } from "@/hooks/useLyrics";
 import { useDominantColor } from "@/hooks/useDominantColor";
 import { AudioVisualizer } from "@/components/Player/AudioVisualizer";
-import { Music2, Disc3, Mic2, AlertCircle, Loader2 } from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
+import { Music2, Mic2, AlertCircle, Loader2 } from "lucide-react";
+import { motion } from "motion/react";
 
 export const LyricsPage: React.FC = () => {
   const { currentTrack, currentTime, isPlaying, seek } = usePlayerStore();
   const { data: lyrics = [], isLoading, isError } = useLyrics(currentTrack);
-  const { primary, secondary, glow } = useDominantColor(currentTrack?.pic);
+  const { primary, secondary, accent, glow, meshGradient } = useDominantColor(currentTrack?.pic);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const activeLineRef = useRef<HTMLDivElement>(null);
@@ -30,7 +30,7 @@ export const LyricsPage: React.FC = () => {
     return index;
   }, [lyrics, currentTime]);
 
-  // Smooth Auto-scroll to center active line with easing
+  // Smooth Auto-scroll to center active line with spring-like easing
   useEffect(() => {
     if (isUserScrolling || activeIndex < 0) return;
 
@@ -42,8 +42,8 @@ export const LyricsPage: React.FC = () => {
     }
   }, [activeIndex, isUserScrolling]);
 
-  // User manual scroll detection: disable auto-scroll for 2.5 seconds
-  const handleScroll = () => {
+  // Handle user manual scrolling without interrupting immediate navigation
+  const handleScroll = useCallback(() => {
     setIsUserScrolling(true);
     if (scrollTimeoutRef.current) {
       clearTimeout(scrollTimeoutRef.current);
@@ -51,7 +51,7 @@ export const LyricsPage: React.FC = () => {
     scrollTimeoutRef.current = setTimeout(() => {
       setIsUserScrolling(false);
     }, 2500);
-  };
+  }, []);
 
   const handleLineClick = (time: number) => {
     seek(time);
@@ -60,16 +60,16 @@ export const LyricsPage: React.FC = () => {
 
   if (!currentTrack) {
     return (
-      <div className="h-full flex flex-col items-center justify-center text-center p-8 space-y-4 animate-in fade-in duration-300">
-        <div className="w-16 h-16 rounded-3xl bg-black/5 dark:bg-white/5 flex items-center justify-center text-neutral-400">
-          <Disc3 className="w-8 h-8 opacity-40 animate-spin-slow" />
+      <div className="h-full flex flex-col items-center justify-center text-center p-8 space-y-4 select-none">
+        <div className="w-20 h-20 rounded-3xl glass-enhanced flex items-center justify-center text-neutral-400">
+          <Music2 className="w-10 h-10 stroke-[1.5]" />
         </div>
         <div className="space-y-1">
           <h2 className="text-xl font-bold tracking-tight text-neutral-800 dark:text-neutral-200">
             暂无正在播放的歌曲
           </h2>
           <p className="text-xs text-neutral-500 dark:text-neutral-400">
-            从左侧歌单或搜索页面挑选一首曲目，即可在此同步呈现沉浸式歌词
+            从左侧歌单或搜索页面挑选一首曲目，即可在此同步呈现沉浸式歌词舞台
           </p>
         </div>
       </div>
@@ -78,36 +78,44 @@ export const LyricsPage: React.FC = () => {
 
   return (
     <div className="relative h-full flex flex-col items-center justify-between p-6 sm:p-10 select-none overflow-hidden">
-      {/* Dynamic Apple Music Ambient Aurora / Stage Glow using extracted album art colors */}
+      {/* 1. Multi-Layer Dynamic Apple Mesh Aurora Lighting */}
       <motion.div
         animate={{
-          scale: isPlaying ? [1, 1.18, 1.06, 1.2, 1] : 1,
-          opacity: isPlaying ? [0.35, 0.5, 0.4, 0.55, 0.35] : 0.2,
-          rotate: isPlaying ? [0, 5, -5, 3, 0] : 0,
+          scale: isPlaying ? [1, 1.15, 1.05, 1.2, 1] : 1,
+          opacity: isPlaying ? [0.32, 0.48, 0.36, 0.52, 0.32] : 0.18,
+          rotate: isPlaying ? [0, 4, -4, 2, 0] : 0,
         }}
         transition={{
-          duration: 9,
+          duration: 10,
           repeat: Infinity,
           ease: "easeInOut",
         }}
-        className="absolute inset-0 blur-3xl pointer-events-none -z-10"
+        className="absolute inset-0 aura-orb pointer-events-none -z-10"
         style={{
-          background: `radial-gradient(circle at 50% 45%, ${primary} 0%, ${secondary} 45%, transparent 80%)`,
+          background: meshGradient,
         }}
       />
+      <div
+        className="absolute -top-32 -left-32 w-96 h-96 aura-orb pointer-events-none -z-10"
+        style={{ backgroundColor: accent, opacity: isPlaying ? 0.2 : 0.1 }}
+      />
+      <div
+        className="absolute -bottom-32 -right-32 w-96 h-96 aura-orb pointer-events-none -z-10"
+        style={{ backgroundColor: secondary, opacity: isPlaying ? 0.25 : 0.1 }}
+      />
 
-      {/* Top Track Header */}
-      <header className="w-full max-w-2xl flex items-center justify-between pb-4 border-b border-black/5 dark:border-white/10 z-10">
+      {/* 2. Top Track Glass Header */}
+      <header className="w-full max-w-2xl flex items-center justify-between pb-4 border-b border-black/[0.06] dark:border-white/[0.08] z-10">
         <div className="flex items-center gap-3.5 overflow-hidden">
           <img
             src={currentTrack.pic}
             alt={currentTrack.name}
-            className="w-12 h-12 rounded-2xl object-cover shadow-xl border border-black/5 dark:border-white/10"
+            className="w-12 h-12 rounded-2xl object-cover shadow-xl border border-black/10 dark:border-white/15"
           />
           <div className="overflow-hidden">
             <h1 className="text-base font-bold text-neutral-900 dark:text-white truncate flex items-center gap-2">
-              {currentTrack.name}
-              <AudioVisualizer isPlaying={isPlaying} color={primary} className="ml-1" />
+              <span>{currentTrack.name}</span>
+              <AudioVisualizer isPlaying={isPlaying} color={primary} className="ml-1 flex-shrink-0" />
             </h1>
             <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate">
               {currentTrack.artist} · {currentTrack.album || "单曲精选"}
@@ -120,15 +128,15 @@ export const LyricsPage: React.FC = () => {
           style={{ backgroundColor: glow, color: primary }}
         >
           <Mic2 className="w-3.5 h-3.5" />
-          <span>Apple 沉浸式动态歌词</span>
+          <span>Apple 沉浸式歌词</span>
         </div>
       </header>
 
-      {/* Main Lyrics Scroll Stage */}
+      {/* 3. Main Lyrics Stage with Dynamic Distance Blur */}
       <main
         ref={containerRef}
         onScroll={handleScroll}
-        className="w-full max-w-2xl flex-1 overflow-y-auto py-36 space-y-6 text-center no-scrollbar mask-radial-fade scroll-smooth"
+        className="w-full max-w-2xl flex-1 overflow-y-auto py-40 space-y-7 text-center no-scrollbar scroll-smooth"
       >
         {isLoading ? (
           <div className="h-full flex flex-col items-center justify-center space-y-3 text-neutral-400">
@@ -161,22 +169,22 @@ export const LyricsPage: React.FC = () => {
                 onClick={() => handleLineClick(line.time)}
                 initial={false}
                 animate={{
-                  scale: isActive ? 1.08 : distance <= 2 ? 0.98 : 0.94,
-                  opacity: isActive ? 1 : distance === 1 ? 0.45 : 0.28,
-                  filter: isActive ? "blur(0px)" : distance >= 3 ? "blur(0.6px)" : "blur(0px)",
+                  scale: isActive ? 1.09 : distance === 1 ? 0.98 : distance === 2 ? 0.95 : 0.92,
+                  opacity: isActive ? 1 : distance === 1 ? 0.5 : distance === 2 ? 0.32 : 0.18,
+                  filter: isActive ? "blur(0px)" : distance >= 3 ? "blur(1.2px)" : distance >= 2 ? "blur(0.6px)" : "blur(0px)",
                   color: isActive ? primary : undefined,
                 }}
                 transition={{
-                  duration: 0.35,
+                  duration: 0.36,
                   ease: [0.16, 1, 0.3, 1],
                 }}
                 whileHover={{
-                  scale: isActive ? 1.1 : 1.02,
-                  opacity: isActive ? 1 : 0.8,
+                  scale: isActive ? 1.11 : 1.02,
+                  opacity: isActive ? 1 : 0.85,
                 }}
-                className={`cursor-pointer select-none px-6 py-2.5 rounded-2xl transition-colors duration-200 ${
+                className={`cursor-pointer select-none px-6 py-2 rounded-2xl transition-colors duration-200 ${
                   isActive
-                    ? "text-2xl sm:text-3xl font-extrabold tracking-tight drop-shadow-[0_4px_18px_rgba(0,0,0,0.2)]"
+                    ? "text-2xl sm:text-3xl font-extrabold tracking-tight drop-shadow-[0_4px_24px_rgba(0,0,0,0.18)]"
                     : "text-neutral-800 dark:text-neutral-200 text-lg sm:text-xl font-semibold"
                 }`}
               >
@@ -186,22 +194,8 @@ export const LyricsPage: React.FC = () => {
           })
         )}
       </main>
-
-      {/* Floating prompt when user scrolls manually */}
-      <AnimatePresence>
-        {isUserScrolling && (
-          <motion.div
-            initial={{ opacity: 0, y: 10, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 8, scale: 0.95 }}
-            transition={{ duration: 0.2 }}
-            className="absolute bottom-6 px-4 py-1.5 rounded-full bg-black/70 dark:bg-white/15 backdrop-blur-md text-white text-xs font-medium shadow-lg"
-          >
-            已暂停自动跟随 · 2.5 秒后恢复
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 };
+
 export default LyricsPage;

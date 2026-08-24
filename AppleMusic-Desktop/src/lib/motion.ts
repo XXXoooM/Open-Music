@@ -1,34 +1,37 @@
 import { type Variants, type Transition } from "motion/react";
 
 /**
- * Apple-style spring and cubic bezier transition configurations
+ * Apple-style physics spring configurations (Haptic Touch feel)
  */
 export const appleSpring: Transition = {
   type: "spring",
-  stiffness: 380,
-  damping: 30,
+  stiffness: 420,
+  damping: 32,
+  mass: 0.9,
 };
 
 export const appleSmooth: Transition = {
-  duration: 0.35,
-  ease: [0.16, 1, 0.3, 1], // Apple standard smooth curve
+  duration: 0.38,
+  ease: [0.16, 1, 0.3, 1], // Apple HIG canonical deceleration curve
 };
 
 /**
- * Page level transitions for AnimatePresence
+ * Page level transitions: Scale + Subtle Blur + Vertical Offset
  */
 export const pageTransition: Variants = {
   initial: {
     opacity: 0,
-    y: 10,
-    scale: 0.995,
+    y: 12,
+    scale: 0.992,
+    filter: "blur(4px)",
   },
   animate: {
     opacity: 1,
     y: 0,
     scale: 1,
+    filter: "blur(0px)",
     transition: {
-      duration: 0.28,
+      duration: 0.32,
       ease: [0.16, 1, 0.3, 1],
     },
   },
@@ -36,87 +39,68 @@ export const pageTransition: Variants = {
     opacity: 0,
     y: -8,
     scale: 0.995,
+    filter: "blur(3px)",
     transition: {
-      duration: 0.18,
+      duration: 0.2,
       ease: [0.16, 1, 0.3, 1],
     },
   },
 };
 
 /**
- * Fade in with subtle upward motion
- */
-export const fadeInUp: Variants = {
-  hidden: {
-    opacity: 0,
-    y: 16,
-  },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.35,
-      ease: [0.16, 1, 0.3, 1],
-    },
-  },
-};
-
-/**
- * Pure Fade In
- */
-export const fadeIn: Variants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { duration: 0.25, ease: "easeOut" },
-  },
-};
-
-/**
- * Stagger container for list items (tracks, cards, albums)
+ * Stagger Container for List Items (Cards, Albums, Tracks)
  */
 export const staggerContainer: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.04,
-      delayChildren: 0.03,
+      staggerChildren: 0.045,
+      delayChildren: 0.02,
     },
   },
 };
 
 /**
- * Individual item inside a staggered list
+ * Stagger Child Item (Smooth Bottom Rise + Soft Scale)
  */
 export const staggerItem: Variants = {
   hidden: {
     opacity: 0,
-    y: 12,
-    scale: 0.98,
+    y: 16,
+    scale: 0.97,
   },
   visible: {
     opacity: 1,
     y: 0,
     scale: 1,
     transition: {
-      duration: 0.3,
+      duration: 0.36,
       ease: [0.16, 1, 0.3, 1],
     },
   },
 };
 
 /**
- * Scale on hover and tap micro-interactions
+ * Interactive Scale on Hover and Tap
  */
 export const scaleHover: Variants = {
   initial: { scale: 1 },
   hover: {
-    scale: 1.03,
-    transition: { duration: 0.2, ease: [0.16, 1, 0.3, 1] },
+    scale: 1.035,
+    transition: { duration: 0.22, ease: [0.16, 1, 0.3, 1] },
   },
   tap: {
-    scale: 0.97,
+    scale: 0.96,
     transition: { duration: 0.1, ease: "easeOut" },
+  },
+};
+
+export const cardHover: Variants = {
+  initial: { y: 0, scale: 1 },
+  hover: {
+    y: -5,
+    scale: 1.015,
+    transition: { duration: 0.25, ease: [0.16, 1, 0.3, 1] },
   },
 };

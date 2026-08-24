@@ -35,7 +35,6 @@ export function App() {
     setActiveView,
   } = usePlaylistStore();
 
-  // Phase 5 System Integrations
   useMediaSession();
   useKeyboardShortcuts();
 
@@ -44,14 +43,11 @@ export function App() {
   }, [initAudio]);
 
   const handleHeroPlay = () => {
-    if (spatialPlaylist?.tracks && spatialPlaylist.tracks.length > 0) {
-      if (currentTrack && isPlaying) {
-        togglePlay();
-      } else if (currentTrack && !isPlaying) {
-        togglePlay();
-      } else {
-        playTrack(spatialPlaylist.tracks[0], spatialPlaylist.tracks);
-      }
+    if (!spatialPlaylist?.tracks || spatialPlaylist.tracks.length === 0) return;
+    if (isPlaying) {
+      togglePlay();
+    } else {
+      playTrack(spatialPlaylist.tracks[0], spatialPlaylist.tracks);
     }
   };
 
@@ -60,15 +56,17 @@ export function App() {
       ? {
           id: "favorites",
           title: "喜爱歌曲",
-          description: "你点亮红心收藏的所有珍藏曲目。",
-          cover: "https://images.unsplash.com/photo-1518609878373-06d740f60d8b?w=400&auto=format&fit=crop&q=80",
+          description: "你点亮红心收藏的所有珍藏单曲",
+          cover:
+            favoriteTracks[0]?.pic ||
+            "https://images.unsplash.com/photo-1518609878373-06d740f60d8b?w=400&auto=format&fit=crop&q=80",
           trackCount: favoriteTracks.length,
           tracks: favoriteTracks,
         }
       : customPlaylists.find((pl) => pl.id === selectedPlaylistId) || spatialPlaylist;
 
   return (
-    <div className="w-screen h-screen overflow-hidden flex flex-col bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-50 transition-colors duration-300">
+    <div className="w-screen h-screen overflow-hidden flex flex-col bg-neutral-50 dark:bg-[#0a0a0f] text-neutral-900 dark:text-neutral-50 transition-colors duration-300">
       {/* Custom Frameless Apple Window Bar */}
       <TitleBar />
 
@@ -77,7 +75,7 @@ export function App() {
         <Sidebar />
 
         {/* Main Content Area with AnimatePresence */}
-        <main className="flex-1 h-[calc(100vh-44px-80px)] overflow-y-auto p-8">
+        <main className="flex-1 h-[calc(100vh-44px-80px)] overflow-y-auto px-8 py-6 max-w-7xl mx-auto w-full">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeView + (selectedPlaylistId || selectedAlbumId || selectedArtistId || "")}
@@ -90,8 +88,8 @@ export function App() {
               <Suspense
                 fallback={
                   <div className="h-96 flex flex-col items-center justify-center space-y-3 text-neutral-400">
-                    <Loader2 className="w-8 h-8 animate-spin text-[#fa2d48]" />
-                    <span className="text-sm font-medium">加载中...</span>
+                    <Loader2 className="w-7 h-7 animate-spin text-[#fa2d48]" />
+                    <span className="text-xs font-semibold">正在载入 Apple Music 视效...</span>
                   </div>
                 }
               >
@@ -111,7 +109,7 @@ export function App() {
                   currentDetailPlaylist ? (
                     <PlaylistDetailView playlist={currentDetailPlaylist} />
                   ) : (
-                    <div className="text-center py-20 text-neutral-400">歌单不存在或已被移除</div>
+                    <div className="text-center py-24 text-neutral-400">歌单不存在或已被移除</div>
                   )
                 ) : (
                   <>
@@ -124,7 +122,7 @@ export function App() {
                     >
                       <div className="max-w-xl space-y-3 relative z-10">
                         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/20 dark:bg-white/20 backdrop-blur-md text-[11px] font-semibold tracking-wide uppercase">
-                          <Sparkles className="w-3.5 h-3.5" /> 今日聚焦 · 空间音频
+                          <Sparkles className="w-3.5 h-3.5" /> 今日聚焦 · 杜比全景声
                         </span>
                         <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight leading-tight line-clamp-2">
                           {spatialPlaylist?.title || "Apple Spatial Audio 空间音频精选"}
@@ -163,13 +161,13 @@ export function App() {
                       <div className="absolute -right-10 -bottom-10 w-72 h-72 bg-white/15 rounded-full blur-2xl pointer-events-none" />
                     </motion.section>
 
-                    {/* Online Dynamic Tracks List (TanStack Query) */}
+                    {/* Online Dynamic Tracks List */}
                     <section className="space-y-3.5">
                       <div className="flex items-center justify-between">
                         <h2 className="text-lg font-bold tracking-tight flex items-center gap-2">
                           <Disc3 className="w-4 h-4 text-[#fa2d48]" /> 精选曲目列表 (在线流播放)
                         </h2>
-                        <span className="text-xs text-neutral-400 font-medium">
+                        <span className="text-xs text-neutral-400 font-medium font-mono">
                           {isLoading ? "正在同步云端曲目..." : `共 ${spatialPlaylist?.tracks?.length || 0} 首曲目`}
                         </span>
                       </div>
@@ -257,67 +255,67 @@ export function App() {
                       )}
                     </section>
 
-                    {/* Quick Recommendations Grid */}
+                    {/* Quick Recommendations 1:1 Aspect Ratio Grid */}
                     <section className="space-y-3.5">
                       <div className="flex items-center justify-between">
                         <h2 className="text-lg font-bold tracking-tight flex items-center gap-2">
                           <Flame className="w-4 h-4 text-[#fa2d48]" /> 热门歌单推荐
                         </h2>
-                      <Button
-                        variant="link"
-                        size="sm"
-                        onClick={() => setActiveView("search")}
-                        className="text-xs font-semibold text-[#fa2d48] p-0 h-auto"
-                      >
-                        查看全部
-                      </Button>
-                    </div>
+                        <Button
+                          variant="link"
+                          size="sm"
+                          onClick={() => setActiveView("search")}
+                          className="text-xs font-semibold text-[#fa2d48] p-0 h-auto"
+                        >
+                          查看全部
+                        </Button>
+                      </div>
 
-                    <motion.div
-                      variants={staggerContainer}
-                      initial="hidden"
-                      animate="visible"
-                      className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5"
-                    >
-                      {[
-                        { title: "Today's Hits", desc: "全球热歌榜单", cover: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=300&auto=format&fit=crop&q=80" },
-                        { title: "A-List Pop", desc: "华语与欧美流行金曲", cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=300&auto=format&fit=crop&q=80" },
-                        { title: "Pure Focus", desc: "深度心流工作学习", cover: "https://images.unsplash.com/photo-1518609878373-06d740f60d8b?w=300&auto=format&fit=crop&q=80" },
-                        { title: "Spatial Audio", desc: "杜比全景声环绕", cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=300&auto=format&fit=crop&q=80" },
-                        { title: "Late Night Jazz", desc: "微醺慵懒爵士夜", cover: "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=300&auto=format&fit=crop&q=80" },
-                      ].map((item, idx) => (
-                        <motion.div key={idx} variants={staggerItem}>
-                          <Card
-                            onClick={() => setActiveView("album", "17910751956")}
-                            className="group cursor-pointer space-y-2 p-2 border-0 bg-transparent shadow-none"
-                          >
-                            <div className="aspect-square rounded-2xl overflow-hidden bg-neutral-200 dark:bg-neutral-800 relative shadow-md group-hover:shadow-xl transition-all duration-300">
-                              <img
-                                src={item.cover}
-                                alt={item.title}
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                              />
-                              <Button
-                                size="icon"
-                                variant="apple"
-                                className="absolute right-3 bottom-3 w-10 h-10 rounded-full opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0"
-                              >
-                                <Play className="w-4 h-4 fill-current ml-0.5" />
-                              </Button>
-                            </div>
-                            <CardContent className="p-0">
-                              <h3 className="text-sm font-semibold truncate group-hover:text-[#fa2d48] transition-colors">
-                                {item.title}
-                              </h3>
-                              <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate">{item.desc}</p>
-                            </CardContent>
-                          </Card>
-                        </motion.div>
-                      ))}
-                    </motion.div>
-                  </section>
-                </>
-              )}
+                      <motion.div
+                        variants={staggerContainer}
+                        initial="hidden"
+                        animate="visible"
+                        className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"
+                      >
+                        {[
+                          { title: "Today's Hits", desc: "全球热歌榜单", cover: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=300&auto=format&fit=crop&q=80" },
+                          { title: "A-List Pop", desc: "华语与欧美流行金曲", cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=300&auto=format&fit=crop&q=80" },
+                          { title: "Pure Focus", desc: "深度心流工作学习", cover: "https://images.unsplash.com/photo-1518609878373-06d740f60d8b?w=300&auto=format&fit=crop&q=80" },
+                          { title: "Spatial Audio", desc: "杜比全景声环绕", cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=300&auto=format&fit=crop&q=80" },
+                          { title: "Late Night Jazz", desc: "微醺慵懒爵士夜", cover: "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=300&auto=format&fit=crop&q=80" },
+                        ].map((item, idx) => (
+                          <motion.div key={idx} variants={staggerItem}>
+                            <Card
+                              onClick={() => setActiveView("album", "17910751956")}
+                              className="group cursor-pointer space-y-2 p-2 border-0 bg-transparent shadow-none"
+                            >
+                              <div className="aspect-square rounded-2xl overflow-hidden bg-neutral-200 dark:bg-neutral-800 relative shadow-sm group-hover:shadow-xl transition-all duration-300">
+                                <img
+                                  src={item.cover}
+                                  alt={item.title}
+                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                />
+                                <Button
+                                  size="icon"
+                                  variant="apple"
+                                  className="absolute right-2.5 bottom-2.5 w-9 h-9 rounded-full opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 shadow-lg"
+                                >
+                                  <Play className="w-3.5 h-3.5 fill-current ml-0.5" />
+                                </Button>
+                              </div>
+                              <CardContent className="p-0">
+                                <h3 className="text-xs font-semibold truncate group-hover:text-[#fa2d48] transition-colors">
+                                  {item.title}
+                                </h3>
+                                <p className="text-[11px] text-neutral-500 dark:text-neutral-400 truncate">{item.desc}</p>
+                              </CardContent>
+                            </Card>
+                          </motion.div>
+                        ))}
+                      </motion.div>
+                    </section>
+                  </>
+                )}
               </Suspense>
             </motion.div>
           </AnimatePresence>

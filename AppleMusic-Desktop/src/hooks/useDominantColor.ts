@@ -1,19 +1,23 @@
 import { useState, useEffect } from "react";
 
-interface ColorPalette {
+export interface ColorPalette {
   primary: string;
   secondary: string;
+  accent: string;
   glow: string;
+  meshGradient: string;
 }
 
 const DEFAULT_PALETTE: ColorPalette = {
   primary: "#fa2d48",
   secondary: "#9333ea",
+  accent: "#3b82f6",
   glow: "rgba(250, 45, 72, 0.35)",
+  meshGradient: "radial-gradient(circle at 50% 40%, #fa2d48 0%, rgba(147, 51, 234, 0.3) 40%, transparent 75%)",
 };
 
 /**
- * Extracts vibrant dominant colors from an album art image using offscreen canvas
+ * Extracts vibrant dominant colors and builds an Apple Music mesh gradient
  */
 export function useDominantColor(imageUrl?: string): ColorPalette {
   const [palette, setPalette] = useState<ColorPalette>(DEFAULT_PALETTE);
@@ -45,9 +49,8 @@ export function useDominantColor(imageUrl?: string): ColorPalette {
           const pr = imageData[i];
           const pg = imageData[i + 1];
           const pb = imageData[i + 2];
-          // Exclude extreme darks and extreme whites to get vibrant midtones
           const brightness = (pr + pg + pb) / 3;
-          if (brightness > 30 && brightness < 225) {
+          if (brightness > 35 && brightness < 220) {
             r += pr;
             g += pg;
             b += pb;
@@ -61,13 +64,17 @@ export function useDominantColor(imageUrl?: string): ColorPalette {
           const avgB = Math.round(b / count);
 
           const primary = `rgb(${avgR}, ${avgG}, ${avgB})`;
-          const secondary = `rgb(${Math.max(0, avgR - 40)}, ${Math.max(0, avgG - 30)}, ${Math.min(255, avgB + 50)})`;
-          const glow = `rgba(${avgR}, ${avgG}, ${avgB}, 0.4)`;
+          const secR = Math.max(0, avgR - 50);
+          const secG = Math.max(0, avgG - 40);
+          const secB = Math.min(255, avgB + 60);
+          const secondary = `rgb(${secR}, ${secG}, ${secB})`;
+          const accent = `rgb(${Math.min(255, avgR + 40)}, ${Math.max(0, avgG - 20)}, ${Math.max(0, avgB - 30)})`;
+          const glow = `rgba(${avgR}, ${avgG}, ${avgB}, 0.38)`;
+          const meshGradient = `radial-gradient(ellipse at 50% 30%, ${primary} 0%, ${secondary} 50%, transparent 80%)`;
 
-          setPalette({ primary, secondary, glow });
+          setPalette({ primary, secondary, accent, glow, meshGradient });
         }
-      } catch (err) {
-        // Fallback for CORS restricted images
+      } catch {
         setPalette(DEFAULT_PALETTE);
       }
     };
