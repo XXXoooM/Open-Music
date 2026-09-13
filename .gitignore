@@ -15,3 +15,9 @@ node_modules/
 src-tauri/*.key
 src-tauri/*.key.pub
 
+# Local storage overrides
+.vscode/
+**/.idea/
+
+# Sub-projects
+AppleMusicNext/
