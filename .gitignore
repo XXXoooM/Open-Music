@@ -13,4 +13,7 @@ package-lock.json
 
 # Local storage overrides
 .vscode/
-.idea/
+**/.idea/
+
+# Sub-projects
+AppleMusicNext/
